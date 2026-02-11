@@ -12,9 +12,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "experiments": {
-      "baseUrl": "/diploma-generator"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -27,17 +24,10 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow $(PRODUCT_NAME) to save diplomas.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save diplomas to your photos."
-        }
-      ]
+      "expo-font"
     ]
   }
 }
