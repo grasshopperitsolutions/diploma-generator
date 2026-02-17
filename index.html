@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CertifyPro - Professional Certificate Generator</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto+Mono:wght@400;700&family=Great+Vibes&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      /* Custom Animations */
+      @keyframes blob {
+        0% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        33% {
+          transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+          transform: translate(-20px, 20px) scale(0.9);
+        }
+        100% {
+          transform: translate(0px, 0px) scale(1);
+        }
+      }
+      .animate-blob {
+        animation: blob 7s infinite;
+      }
+      .animation-delay-2000 {
+        animation-delay: 2s;
+      }
+      .animation-delay-4000 {
+        animation-delay: 4s;
+      }
+
+      /* Fade-in transition */
+      .fade-in {
+        animation: fadeIn 0.3s ease-in;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Print Styles */
+      @media print {
+        @page {
+          margin: 0;
+        }
+        body {
+          background: white;
+          margin: 0;
+          padding: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+        #dashboard-view {
+          display: block !important;
+          height: auto !important;
+          overflow: visible !important;
+        }
+        #app-container {
+          height: auto;
+          overflow: visible;
+        }
+        #preview-area {
+          background: white;
+          padding: 0;
+          margin: 0;
+          display: block !important;
+          overflow: visible;
+        }
+        #sidebar,
+        aside {
+          display: none;
+        }
+        #preview-scaler {
+          margin: 0 !important;
+          transform: scale(1) !important;
+        }
+        #certificate-container {
+          width: 100% !important;
+          height: 100% !important;
+          page-break-after: always;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+        .print-landscape {
+          width: 1123px;
+          height: 794px;
+        }
+        .print-portrait {
+          width: 794px;
+          height: 1123px;
+        }
+      }
+
+      /* Utility */
+      .font-handwriting {
+        font-family: "Great Vibes", cursive;
+      }
+
+      /* App Layout */
+      #preview-scaler {
+        transform-origin: top center;
+        transition: transform 0.2s;
+      }
+
+      /* Auth UI Utilities */
+      .auth-hidden {
+        display: none;
+      }
+
+      /* View Management */
+      .section-view {
+        display: none;
+        width: 100%;
+        height: 100%;
+      }
+      .section-view.active {
+        display: flex;
+        flex-direction: column;
+      }
+      @media (min-width: 1024px) {
+        .section-view.active {
+          flex-direction: row;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col overflow-hidden"
+  >
+    <!-- SPLASH SCREEN -->
+    <div id="splash-view" class="flex flex-col min-h-screen overflow-auto">
+      <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div
+          class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center"
+        >
+          <div class="flex items-center space-x-2">
+            <i data-lucide="award" class="h-8 w-8 text-indigo-600"></i>
+            <span class="text-xl font-bold text-gray-900">CertifyPro</span>
+          </div>
+          <button
+            onclick="openAuth('login')"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-md"
+          >
+            Sign In / Register
+          </button>
+        </div>
+      </header>
+
+      <main
+        class="flex-grow flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-indigo-50 to-white"
+      >
+        <h1
+          class="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight"
+        >
+          Professional Certificates <br />
+          <span class="text-indigo-600">Made Simple</span>
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mb-10 leading-relaxed">
+          Create, customize, and print stunning certificates for your company or
+          institution. Secure, verifiable, and beautifully designed.
+        </p>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-12 text-left"
+        >
+          <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div
+              class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4"
+            >
+              <i data-lucide="layout" class="text-blue-600 h-6 w-6"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Beautiful Themes</h3>
+            <p class="text-gray-600">
+              Academic, Professional, and Creative styles included.
+            </p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div
+              class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mb-4"
+            >
+              <i data-lucide="shield" class="text-green-600 h-6 w-6"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Secure & Verifiable</h3>
+            <p class="text-gray-600">Unique IDs and auto-generated QR codes.</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div
+              class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4"
+            >
+              <i data-lucide="printer" class="text-purple-600 h-6 w-6"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Print Ready</h3>
+            <p class="text-gray-600">Export to perfectly aligned A4 PDFs.</p>
+          </div>
+        </div>
+      </main>
+
+      <footer class="bg-gray-900 text-gray-300 py-12">
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 mb-4 md:mb-0">
+              <i data-lucide="award" class="h-6 w-6 text-indigo-400"></i>
+              <span class="text-lg font-bold text-white">CertifyPro</span>
+            </div>
+            <div class="flex space-x-6 text-sm">
+              <button onclick="showLegal('privacy')" class="hover:text-white">
+                Privacy Policy
+              </button>
+              <button onclick="showLegal('terms')" class="hover:text-white">
+                Terms & Conditions
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- AUTH MODAL SYSTEM -->
+    <div
+      id="auth-modal"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transition-all duration-300 scale-95"
+        id="auth-card"
+      >
+        <div class="p-8">
+          <!-- Modal Header -->
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h2 id="auth-title" class="text-3xl font-bold text-gray-900">
+                Sign In
+              </h2>
+              <p id="auth-subtitle" class="text-gray-500 mt-1">
+                Access your certificate dashboard
+              </p>
+            </div>
+            <button
+              onclick="closeAuth()"
+              class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+            >
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+
+          <!-- Error Message Box -->
+          <div
+            id="auth-error"
+            class="hidden mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-start gap-2"
+          >
+            <i data-lucide="alert-circle" class="h-4 w-4 mt-0.5"></i>
+            <span id="auth-error-text"></span>
+          </div>
+
+          <!-- Success Message Box -->
+          <div
+            id="auth-success"
+            class="hidden mb-6 p-3 bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg flex items-start gap-2"
+          >
+            <i data-lucide="check-circle" class="h-4 w-4 mt-0.5"></i>
+            <span id="auth-success-text"></span>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <form
+            id="login-form"
+            onsubmit="handleAuthAction(event, 'login')"
+            class="space-y-4"
+          >
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="login-email"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="admin@company.com"
+              />
+            </div>
+            <div>
+              <div class="flex justify-between">
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Password</label
+                >
+                <button
+                  type="button"
+                  onclick="toggleAuthMode('forgot')"
+                  class="text-sm text-indigo-600 hover:underline"
+                >
+                  Forgot?
+                </button>
+              </div>
+              <input
+                type="password"
+                id="login-pass"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+            <button
+              type="submit"
+              class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <span>Sign In</span>
+            </button>
+            <p class="text-center text-sm text-gray-600 mt-4">
+              Don't have an account?
+              <button
+                type="button"
+                onclick="toggleAuthMode('register')"
+                class="text-indigo-600 font-semibold hover:underline"
+              >
+                Create one
+              </button>
+            </p>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form
+            id="register-form"
+            onsubmit="handleAuthAction(event, 'register')"
+            class="auth-hidden space-y-4 max-h-[70vh] overflow-y-auto pr-2"
+          >
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >First Name</label
+                >
+                <input
+                  type="text"
+                  id="reg-fname"
+                  required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Last Name</label
+                >
+                <input
+                  type="text"
+                  id="reg-lname"
+                  required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Company Name</label
+              >
+              <input
+                type="text"
+                id="reg-company"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="Acme Corp"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Company Logo (Optional)</label
+              >
+              <input
+                type="file"
+                id="reg-logo"
+                accept="image/*"
+                class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="reg-email"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="reg-pass"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="Min 8 characters"
+              />
+            </div>
+            <button
+              type="submit"
+              class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <span>Create Account</span>
+            </button>
+            <p class="text-center text-sm text-gray-600 mt-4">
+              Already have an account?
+              <button
+                type="button"
+                onclick="toggleAuthMode('login')"
+                class="text-indigo-600 font-semibold hover:underline"
+              >
+                Sign In
+              </button>
+            </p>
+          </form>
+
+          <!-- FORGOT PASSWORD FORM -->
+          <form
+            id="forgot-form"
+            onsubmit="handleAuthAction(event, 'forgot')"
+            class="auth-hidden space-y-4"
+          >
+            <p class="text-sm text-gray-600">
+              Enter your email and we'll send you a link to reset your password.
+            </p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="forgot-email"
+                required
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="you@example.com"
+              />
+            </div>
+            <button
+              type="submit"
+              class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <span>Send Reset Link</span>
+            </button>
+            <button
+              type="button"
+              onclick="toggleAuthMode('login')"
+              class="w-full text-center text-sm text-indigo-600 font-semibold hover:underline mt-4 block"
+            >
+              Back to Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEGAL VIEW -->
+    <div
+      id="legal-view"
+      class="hidden min-h-screen bg-white p-8 md:p-16 overflow-auto"
+    >
+      <button
+        onclick="hideLegal()"
+        class="flex items-center text-indigo-600 font-medium mb-8 hover:underline"
+      >
+        ← Back
+      </button>
+      <div class="max-w-3xl mx-auto prose lg:prose-xl">
+        <h1 id="legal-title" class="text-4xl font-bold text-gray-900 mb-8"></h1>
+        <div
+          id="legal-content"
+          class="text-gray-700 whitespace-pre-line leading-relaxed"
+        ></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div
+      id="dashboard-view"
+      class="hidden h-screen bg-gray-50 flex-col overflow-hidden font-sans"
+    >
+      <!-- Header -->
+      <header class="bg-white shadow-sm z-30 no-print flex-shrink-0">
+        <div
+          class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"
+        >
+          <div class="flex items-center space-x-2">
+            <i data-lucide="award" class="h-6 w-6 text-indigo-600"></i>
+            <span class="font-bold text-gray-900">CertifyPro</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <button
+              onclick="switchView('settings')"
+              class="text-gray-500 hover:text-indigo-600 flex items-center gap-1"
+            >
+              <i data-lucide="settings" class="h-4 w-4"></i>
+              <span id="user-display" class="text-sm font-medium"></span>
+            </button>
+            <button onclick="logout()" class="text-gray-400 hover:text-red-600">
+              <i data-lucide="log-out" class="h-5 w-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dashboard Sub-Navigation -->
+        <nav class="bg-white border-t border-gray-100 px-4">
+          <div class="max-w-7xl mx-auto flex space-x-8">
+            <button
+              onclick="switchView('list')"
+              id="nav-list"
+              class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
+            >
+              My Certificates
+            </button>
+            <button
+              onclick="switchView('create')"
+              id="nav-create"
+              class="nav-btn py-3 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600"
+            >
+              Create New
+            </button>
+            <button
+              onclick="switchView('bulk')"
+              id="nav-bulk"
+              class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
+            >
+              Bulk Issue
+            </button>
+            <button
+              onclick="switchView('validate')"
+              id="nav-validate"
+              class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
+            >
+              Validate
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <div
+        id="app-container"
+        class="flex-grow flex flex-col lg:flex-row overflow-hidden relative"
+      >
+        <!-- VIEW: LIST -->
+        <div id="view-list" class="section-view overflow-y-auto bg-gray-50">
+          <div class="p-8 w-full max-w-7xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900">
+                Issued Certificates
+              </h2>
+              <div class="relative">
+                <i
+                  data-lucide="search"
+                  class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                ></i>
+                <input
+                  type="text"
+                  placeholder="Search by recipient or ID..."
+                  class="pl-10 pr-4 py-2 border rounded-lg outline-none w-64 focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+            <div
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                    >
+                      Recipient
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                    >
+                      Course
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                    >
+                      Issued On
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                    >
+                      ID
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="cert-list-body" class="divide-y divide-gray-100">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: CREATE (Sidebar only — preview area appended by JS) -->
+        <div id="view-create" class="section-view active">
+          <aside
+            id="sidebar"
+            class="w-full lg:w-96 bg-white border-r border-gray-200 overflow-y-auto no-print flex-shrink-0 z-20 shadow-lg"
+          >
+            <div class="p-6 space-y-6">
+              <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">
+                  Template Style
+                </h3>
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    onclick="setTheme('academic')"
+                    class="theme-btn p-2 rounded-lg border-2 text-xs border-indigo-600 bg-indigo-50 text-indigo-700 font-medium"
+                    data-theme="academic"
+                  >
+                    Academic
+                  </button>
+                  <button
+                    onclick="setTheme('underwater')"
+                    class="theme-btn p-2 rounded-lg border-2 text-xs border-gray-100 text-gray-600"
+                    data-theme="underwater"
+                  >
+                    Corporate
+                  </button>
+                  <button
+                    onclick="setTheme('programming')"
+                    class="theme-btn p-2 rounded-lg border-2 text-xs border-gray-100 text-gray-600"
+                    data-theme="programming"
+                  >
+                    Modern
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">
+                  Orientation
+                </h3>
+                <div class="flex gap-2">
+                  <button
+                    id="btn-landscape"
+                    onclick="setOrientation('landscape')"
+                    class="p-1.5 rounded bg-indigo-100 text-indigo-600"
+                    title="Landscape"
+                  >
+                    <i data-lucide="monitor" class="h-4 w-4"></i>
+                  </button>
+                  <button
+                    id="btn-portrait"
+                    onclick="setOrientation('portrait')"
+                    class="p-1.5 rounded text-gray-400"
+                    title="Portrait"
+                  >
+                    <i data-lucide="tablet" class="h-4 w-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-2">
+                  Certificate Details
+                </h3>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-1"
+                    >Certificate ID</label
+                  >
+                  <input
+                    type="text"
+                    id="input-id"
+                    class="w-full px-3 py-2 border rounded-md outline-none bg-gray-50 text-gray-500 text-sm font-mono"
+                    placeholder="Auto-generated"
+                    readonly
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-1"
+                    >Recipient Name</label
+                  >
+                  <input
+                    type="text"
+                    id="input-recipient"
+                    class="w-full px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Student Name"
+                    oninput="updateData('recipient', this.value)"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-1"
+                    >Course Title</label
+                  >
+                  <input
+                    type="text"
+                    id="input-course"
+                    class="w-full px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Course Title"
+                    oninput="updateData('course', this.value)"
+                  />
+                </div>
+              </div>
+
+              <div class="pt-4 border-t border-gray-100">
+                <button
+                  onclick="handleSaveCertificate()"
+                  class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <i data-lucide="save" class="h-4 w-4"></i> Save Record
+                </button>
+                <button
+                  onclick="window.print()"
+                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <i data-lucide="printer" class="h-4 w-4"></i> Print PDF
+                </button>
+              </div>
+            </div>
+          </aside>
+          <!-- #preview-area is appended here by JS -->
+        </div>
+
+        <!-- VIEW: BULK (Sidebar + preview area appended by JS) -->
+        <div id="view-bulk" class="section-view">
+          <aside
+            class="w-full lg:w-96 bg-white border-r border-gray-200 overflow-y-auto p-6 flex-shrink-0 z-20 shadow-lg no-print"
+          >
+            <h2 class="text-xl font-bold mb-2">Bulk Issuance</h2>
+            <p class="text-sm text-gray-500 mb-6">
+              Upload a CSV to generate certificates in batch. A preview of the
+              first record will appear on the right.
+            </p>
+
+            <div
+              class="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer mb-6"
+              onclick="handleBulkUpload()"
+            >
+              <i
+                data-lucide="upload-cloud"
+                class="text-indigo-600 h-10 w-10 mx-auto mb-3"
+              ></i>
+              <p class="text-sm font-medium text-gray-700">
+                Click to Upload CSV
+              </p>
+              <p class="text-xs text-gray-400 mt-1">recipient, course, date</p>
+            </div>
+
+            <button
+              onclick="downloadSampleCSV()"
+              class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg mb-6 w-full"
+            >
+              <i data-lucide="download" class="inline mr-2"></i> Download Sample
+              CSV
+            </button>
+
+            <div id="bulk-stats" class="hidden">
+              <div
+                class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4"
+              >
+                <div
+                  class="flex items-center gap-2 text-blue-800 font-bold mb-1"
+                >
+                  <i data-lucide="file-check" class="h-4 w-4"></i> File Parsed
+                </div>
+                <p class="text-xs text-blue-600" id="bulk-count-text">
+                  Found 0 records.
+                </p>
+              </div>
+              <button
+                onclick="handleBulkGenerate()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md"
+              >
+                Generate All & Save
+              </button>
+            </div>
+
+            <div
+              class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3"
+            >
+              <i
+                data-lucide="info"
+                class="text-amber-600 h-5 w-5 mt-0.5 flex-shrink-0"
+              ></i>
+              <p class="text-sm text-amber-800 leading-relaxed">
+                Ensure your file has <strong>recipient</strong>,
+                <strong>course</strong>, and optionally
+                <strong>date</strong> columns.
+              </p>
+            </div>
+          </aside>
+          <!-- #preview-area is appended here by JS -->
+        </div>
+
+        <!-- VIEW: VALIDATE (Sidebar + preview area appended by JS) -->
+        <div id="view-validate" class="section-view">
+          <aside
+            class="w-full lg:w-96 bg-white border-r border-gray-200 p-8 flex-shrink-0 z-20 shadow-lg no-print overflow-y-auto"
+          >
+            <h2 class="text-xl font-bold mb-2">Validator</h2>
+            <p class="text-sm text-gray-500 mb-6">
+              Enter a certificate ID to verify its authenticity and view the
+              original document.
+            </p>
+
+            <div class="space-y-4">
+              <div>
+                <label
+                  class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                  >Certificate ID</label
+                >
+                <input
+                  type="text"
+                  id="validate-id"
+                  placeholder="CERT-XXXX-XXXX"
+                  class="w-full px-4 py-3 border rounded-lg outline-none focus:ring-2 focus:ring-gray-900 font-mono uppercase"
+                />
+              </div>
+              <button
+                onclick="handleValidateCert()"
+                class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-md"
+              >
+                <i data-lucide="shield-check" class="h-4 w-4"></i> Verify
+              </button>
+            </div>
+
+            <div
+              id="validation-result"
+              class="hidden mt-6 p-4 rounded-lg text-sm border-l-4"
+            ></div>
+          </aside>
+          <!-- #preview-area is appended here by JS -->
+        </div>
+
+        <!-- VIEW: SETTINGS -->
+        <div id="view-settings" class="section-view overflow-y-auto bg-gray-50">
+          <div class="p-8 w-full max-w-2xl mx-auto">
+            <div
+              class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200"
+            >
+              <h2 class="text-2xl font-bold mb-6">
+                Account & Company Settings
+              </h2>
+              <form onsubmit="handleSaveSettings(event)" class="space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                      >First Name</label
+                    >
+                    <input
+                      type="text"
+                      id="set-fname"
+                      class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                      >Last Name</label
+                    >
+                    <input
+                      type="text"
+                      id="set-lname"
+                      class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                    >Email</label
+                  >
+                  <input
+                    type="email"
+                    id="set-email"
+                    readonly
+                    class="w-full px-4 py-2 border rounded-lg bg-gray-50 text-gray-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                    >Company Name (Issuer)</label
+                  >
+                  <input
+                    type="text"
+                    id="set-company"
+                    class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                    >Logo URL</label
+                  >
+                  <input
+                    type="text"
+                    id="set-logo"
+                    class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="https://..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-lg shadow-md transition-colors"
+                >
+                  Update Profile
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHARED PREVIEW AREA (moved between views by JS) -->
+        <div
+          id="preview-area"
+          class="flex-grow bg-slate-200 overflow-auto flex items-start justify-center p-8 transition-opacity duration-300"
+        >
+          <div id="preview-scaler">
+            <div
+              id="certificate-container"
+              class="bg-white shadow-2xl relative transition-all duration-300"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        sendPasswordResetEmail,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        doc,
+        setDoc,
+        getDoc,
+        getDocs,
+        query,
+        where,
+        orderBy,
+        updateDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCAl88I8PN2MEoXvV4vPRFFlGvS34wgQX0",
+        authDomain: "diploma-generator-1c6af.firebaseapp.com",
+        projectId: "diploma-generator-1c6af",
+        storageBucket: "diploma-generator-1c6af.firebasestorage.app",
+        messagingSenderId: "417325219775",
+        appId: "1:417325219775:web:413f83ca5d921aec316b0a",
+        measurementId: "G-L1PKKMXN1Z",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      // Make Firebase available globally
+      window.firebaseAuth = auth;
+      window.firebaseDB = db;
+      window.firebaseSignIn = signInWithEmailAndPassword;
+      window.firebaseSignUp = createUserWithEmailAndPassword;
+      window.firebaseResetPassword = sendPasswordResetEmail;
+      window.firebaseSignOut = signOut;
+      window.firebaseAuthStateChanged = onAuthStateChanged;
+
+      // Firestore functions
+      window.firestoreDoc = doc;
+      window.firestoreSetDoc = setDoc;
+      window.firestoreGetDoc = getDoc;
+      window.firestoreGetDocs = getDocs;
+      window.firestoreCollection = collection;
+      window.firestoreQuery = query;
+      window.firestoreWhere = where;
+      window.firestoreOrderBy = orderBy;
+      window.firestoreUpdateDoc = updateDoc;
+      window.firestoreTimestamp = serverTimestamp;
+
+      // Check for existing auth state on load
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const userData = userDoc.data();
+
+          window.completeLogin({
+            uid: user.uid,
+            email: user.email,
+            firstName: userData?.firstName || "",
+            lastName: userData?.lastName || "",
+            name: userData
+              ? `${userData.firstName} ${userData.lastName}`
+              : user.email.split("@")[0],
+            company: userData?.company || "",
+            logoUrl: userData?.logoUrl || "",
+          });
+        }
+      });
+      console.log("✅ Firebase initialized");
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>
