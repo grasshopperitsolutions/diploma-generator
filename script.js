@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
   lucide.createIcons();
   handleResize();
   window.addEventListener("resize", handleResize);
+
+  // Initialize dynamic theme lists
+  initThemeLists();
 });
 
 // --- View Logic ---
@@ -179,9 +182,11 @@ function renderCertificateList() {
       <td class="px-6 py-4 text-xs font-mono text-gray-400">${cert.id}</td>
       <td class="px-6 py-4 text-right">
         <button
-          onclick="viewCertificate('${cert.id}')"
-          class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-        >Download PDF</button>
+          onclick="openDownloadModal({recipient: '${cert.recipient}', course: '${cert.course}', id: '${cert.id}', date: '${cert.date}', issuer: '${cert.issuer}'})"
+          class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center justify-end gap-1 ml-auto"
+        >
+          <i data-lucide="download" class="h-4 w-4"></i> Download
+        </button>
       </td>
     </tr>
   `,
@@ -840,6 +845,10 @@ function setTheme(themeName) {
       ? "theme-btn p-2 rounded-lg border-2 text-xs border-indigo-600 bg-indigo-50 text-indigo-700 font-medium"
       : "theme-btn p-2 rounded-lg border-2 text-xs border-gray-100 text-gray-600";
   });
+
+  // Refresh theme lists to update active states
+  initThemeLists();
+
   renderCertificate();
 }
 
@@ -911,6 +920,289 @@ function showLegal(type) {
 function hideLegal() {
   document.getElementById("legal-view").classList.add("hidden");
   document.getElementById("splash-view").classList.remove("hidden");
+}
+
+// --- Download Modal Logic ---
+const THEMES = [
+  {
+    id: "academic",
+    name: "Academic Standard",
+    icon: "graduation-cap",
+    desc: "Classic & Elegant",
+  },
+  {
+    id: "underwater",
+    name: "Deep Blue Corporate",
+    icon: "anchor",
+    desc: "Modern & Professional",
+  },
+  {
+    id: "programming",
+    name: "Tech Terminal",
+    icon: "terminal",
+    desc: "Dark & Geeky",
+  },
+];
+
+/**
+ * Initialize dynamic theme lists in all views
+ */
+function initThemeLists() {
+  // Initialize modal theme list
+  const modalList = document.getElementById("theme-list-container");
+  if (modalList) {
+    renderThemeList(modalList, "modal");
+  }
+
+  // Initialize sidebar theme list
+  const sidebarList = document.getElementById("theme-list-sidebar");
+  if (sidebarList) {
+    renderThemeList(sidebarList, "sidebar");
+  }
+}
+
+/**
+ * Render theme list to a specific container
+ */
+function renderThemeList(container, context) {
+  container.innerHTML = "";
+
+  THEMES.forEach((t) => {
+    const isActive = t.id === state.theme;
+    const div = document.createElement("div");
+
+    if (context === "modal") {
+      // Modal layout: vertical list with larger items
+      div.className = `p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${isActive ? "border-indigo-600 bg-indigo-50" : "border-gray-200 hover:border-indigo-300 hover:bg-white"}`;
+      div.onclick = () => selectModalTheme(t.id);
+      div.innerHTML = `
+        <div class="h-10 w-10 rounded-full ${isActive ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500"} flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${t.icon}" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold ${isActive ? "text-indigo-900" : "text-gray-700"}">${t.name}</p>
+          <p class="text-xs text-gray-500">${t.desc}</p>
+        </div>
+      `;
+    } else {
+      // Sidebar layout: grid with smaller buttons
+      div.className = `theme-btn p-2 rounded-lg border-2 text-xs ${isActive ? "border-indigo-600 bg-indigo-50 text-indigo-700 font-medium" : "border-gray-100 text-gray-600"}`;
+      div.onclick = () => setTheme(t.id);
+      div.innerHTML = t.name;
+    }
+
+    container.appendChild(div);
+  });
+
+  lucide.createIcons();
+}
+
+/**
+ * Open the download modal with certificate data
+ */
+function openDownloadModal(data) {
+  // Use provided data or fall back to current editor data
+  state.modalData = data || { ...state.data };
+  state.modalTheme = state.theme; // Default to current theme
+
+  // Build theme list
+  const listContainer = document.getElementById("theme-list-container");
+  listContainer.innerHTML = "";
+
+  THEMES.forEach((t) => {
+    const isActive = t.id === state.modalTheme;
+    const div = document.createElement("div");
+    div.className = `p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${isActive ? "border-indigo-600 bg-indigo-50" : "border-gray-200 hover:border-indigo-300 hover:bg-white"}`;
+    div.onclick = () => selectModalTheme(t.id);
+    div.innerHTML = `
+      <div class="h-10 w-10 rounded-full ${isActive ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500"} flex items-center justify-center flex-shrink-0">
+        <i data-lucide="${t.icon}" class="h-5 w-5"></i>
+      </div>
+      <div>
+        <p class="text-sm font-bold ${isActive ? "text-indigo-900" : "text-gray-700"}">${t.name}</p>
+        <p class="text-xs text-gray-500">${t.desc}</p>
+      </div>
+    `;
+    listContainer.appendChild(div);
+  });
+
+  // Show modal
+  document.getElementById("theme-modal").classList.remove("hidden");
+
+  // Render initial preview
+  setTimeout(() => {
+    renderModalPreview();
+    lucide.createIcons();
+  }, 50);
+}
+
+/**
+ * Select a theme for the modal preview
+ */
+function selectModalTheme(themeId) {
+  setTheme(themeId); // Update main theme selection for consistency
+  state.modalTheme = themeId;
+  openDownloadModal(state.modalData); // Re-render list to update active state
+  renderModalPreview();
+}
+
+/**
+ * Render the modal preview with selected theme and data
+ */
+function renderModalPreview() {
+  const container = document.getElementById("modal-certificate-container");
+  const wrapper = document.getElementById("modal-preview-wrapper");
+
+  // Set fixed dimensions for rendering (A4 Landscape)
+  const w = 1123;
+  const h = 794;
+  container.style.width = w + "px";
+  container.style.height = h + "px";
+
+  renderCertificateToTarget(container, state.modalData, state.modalTheme);
+
+  // Scale to fit modal preview area
+  const parent = wrapper.parentElement;
+  const scale = Math.min(
+    (parent.clientWidth - 40) / w,
+    (parent.clientHeight - 40) / h,
+  );
+
+  wrapper.style.width = w + "px";
+  wrapper.style.height = h + "px";
+  wrapper.style.transform = `scale(${scale})`;
+}
+
+/**
+ * Close the download modal
+ */
+function closeThemeModal() {
+  document.getElementById("theme-modal").classList.add("hidden");
+}
+
+/**
+ * Confirm download - apply selected theme and data, then print
+ */
+function confirmDownload() {
+  // Apply selected theme and data to main view temporarily for printing
+  const originalTheme = state.theme;
+  const originalData = { ...state.data };
+
+  state.theme = state.modalTheme;
+  state.data = state.modalData;
+
+  renderCertificate(); // Render main container with modal choice
+
+  // Give browser a moment to repaint before print dialog
+  setTimeout(() => {
+    window.print();
+  }, 100);
+
+  closeThemeModal();
+}
+
+/**
+ * Render certificate to a specific target container (reusable for modal)
+ */
+function renderCertificateToTarget(targetElement, data, theme) {
+  const d = data;
+  const logoSrc = d.logo || defaultLogo;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
+
+  let template = "";
+
+  if (theme === "academic") {
+    template = `
+      <div class="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 p-16 flex flex-col justify-between font-serif relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-600 to-blue-500"></div>
+        <div class="text-center">
+          <img src="${logoSrc}" class="h-20 mx-auto mb-6" onerror="this.src='${defaultLogo}'">
+          <div class="text-6xl font-bold text-indigo-900 mb-2">Certificate</div>
+          <div class="text-2xl text-indigo-700">of Achievement</div>
+        </div>
+        <div class="text-center space-y-6">
+          <p class="text-lg text-gray-700">This certificate is proudly presented to</p>
+          <div class="text-5xl font-bold text-gray-900 font-handwriting">${d.recipient || "Recipient Name"}</div>
+          <p class="text-lg text-gray-700">For outstanding performance and completion of</p>
+          <div class="text-3xl font-semibold text-indigo-800">${d.course || "Course Name"}</div>
+        </div>
+        <div class="flex justify-between items-end">
+          <div class="text-center flex-1">
+            <div class="border-t-2 border-gray-400 w-48 mx-auto mb-2"></div>
+            <p class="text-sm text-gray-600">${d.issuer || "Issuer"}</p>
+          </div>
+          <img src="${qr}" class="h-24 w-24">
+          <div class="text-center flex-1">
+            <div class="text-2xl font-bold text-gray-900 mb-1">${d.date}</div>
+            <p class="text-sm text-gray-600">Date</p>
+          </div>
+        </div>
+        <div class="absolute bottom-4 left-16 text-xs text-gray-400 font-mono">${d.id}</div>
+      </div>
+    `;
+  } else if (theme === "underwater") {
+    template = `
+      <div class="w-full h-full bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-700 p-16 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+          <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+          <div class="absolute bottom-20 right-20 w-40 h-40 bg-cyan-200 rounded-full blur-3xl"></div>
+        </div>
+        <div class="relative z-10 text-center">
+          <img src="${logoSrc}" class="h-20 mx-auto mb-6 drop-shadow-lg" onerror="this.src='${defaultLogo}'">
+          <div class="text-5xl font-bold text-white drop-shadow-lg">Certificate</div>
+          <div class="text-xl text-cyan-100">Of Completion</div>
+        </div>
+        <div class="relative z-10 text-center space-y-6 bg-white/10 backdrop-blur-md rounded-2xl p-8">
+          <p class="text-white text-lg">This acknowledges that</p>
+          <div class="text-5xl font-bold text-white font-handwriting drop-shadow">${d.recipient || "Recipient Name"}</div>
+          <p class="text-white text-lg">Has successfully completed the course</p>
+          <div class="text-3xl font-semibold text-cyan-100">${d.course || "Course Name"}</div>
+        </div>
+        <div class="relative z-10 flex justify-between items-end text-white">
+          <div class="text-center">
+            <div class="text-2xl font-bold mb-1">${d.issuer || "Issuer"}</div>
+            <p class="text-sm text-cyan-200">Instructor</p>
+          </div>
+          <img src="${qr}" class="h-24 w-24 bg-white p-2 rounded-lg">
+          <div class="text-center">
+            <div class="text-2xl font-bold mb-1">${d.date}</div>
+            <p class="text-sm text-cyan-200">Date</p>
+          </div>
+        </div>
+        <div class="absolute bottom-4 left-16 text-xs text-white/60 font-mono">${d.id}</div>
+      </div>
+    `;
+  } else if (theme === "programming") {
+    template = `
+      <div class="w-full h-full bg-gray-900 text-green-400 p-16 flex flex-col justify-between font-mono relative overflow-hidden">
+        <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px);"></div>
+        <div class="relative z-10">
+          <img src="${logoSrc}" class="h-16 mb-4 opacity-80" onerror="this.src='${defaultLogo}'">
+          <div class="text-sm text-gray-500 mb-2">// Achievement Certificate</div>
+          <div class="text-4xl font-bold text-green-400">class Achievement implements Success</div>
+        </div>
+        <div class="relative z-10 space-y-4 text-lg">
+          <div><span class="text-blue-400">const</span> recipient = <span class="text-yellow-300">"${d.recipient || "Recipient Name"}"</span></div>
+          <div><span class="text-blue-400">const</span> achievement = <span class="text-yellow-300">"${d.course || "Course Name"}"</span></div>
+          <div class="text-gray-500 text-sm mt-4">// Verified hash</div>
+          <div class="text-xs text-gray-600">${d.id}</div>
+        </div>
+        <div class="relative z-10 flex justify-between items-end">
+          <div>
+            <div class="text-sm text-gray-500">admin.sign()</div>
+            <div class="text-xl text-green-300">${d.issuer || "Issuer"}</div>
+          </div>
+          <img src="${qr}" class="h-24 w-24 bg-white p-2 rounded">
+          <div>
+            <div class="text-sm text-gray-500">new Date()</div>
+            <div class="text-xl text-green-300">${d.date}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  targetElement.innerHTML = template;
 }
 
 // --- Rendering ---
