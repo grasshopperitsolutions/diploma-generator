@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize dynamic theme lists
   initThemeLists();
+
+  // Initialize new design features
+  initializeNewDesign();
 });
 
 // --- View Logic ---
@@ -295,9 +298,14 @@ async function handleSaveCertificate() {
 /**
  * Validate a certificate by ID against Firestore
  */
-async function handleValidateCert() {
-  const id = document.getElementById("validate-id").value.trim().toUpperCase();
-  const resultBox = document.getElementById("validation-result");
+async function handleValidateCert(id, isPublic = false) {
+  if (!id) {
+    id = document.getElementById("validate-id").value.trim().toUpperCase();
+  }
+
+  const resultBox = isPublic
+    ? document.getElementById("verify-result-public")
+    : document.getElementById("verify-result");
   const certContainer = document.getElementById("certificate-container");
 
   if (!id) {
@@ -776,6 +784,7 @@ function completeLogin(userData) {
   // Hide splash, show dashboard
   document.getElementById("splash-view").classList.add("hidden");
   document.getElementById("auth-modal").classList.add("hidden");
+  document.getElementById("public-nav").classList.add("hidden");
   document.getElementById("dashboard-view").classList.remove("hidden");
   document.getElementById("dashboard-view").classList.add("flex");
 
@@ -818,6 +827,7 @@ async function logout() {
     document.getElementById("dashboard-view").classList.add("hidden");
     document.getElementById("dashboard-view").classList.remove("flex");
     document.getElementById("splash-view").classList.remove("hidden");
+    document.getElementById("public-nav").classList.remove("hidden");
   } catch (error) {
     console.error("Logout error:", error);
   }
@@ -1203,6 +1213,55 @@ function renderCertificateToTarget(targetElement, data, theme) {
   }
 
   targetElement.innerHTML = template;
+}
+
+// --- New Design Features ---
+function initializeNewDesign() {
+  // Set current year in footer
+  const yearEl = document.getElementById("year");
+  if (yearEl) {
+    yearEl.innerText = new Date().getFullYear();
+  }
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Add scroll behavior for navigation links
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      e.preventDefault();
+      const targetId = this.getAttribute("href");
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    });
+  });
+
+  // Initialize the new public validator functionality
+  initializePublicValidator();
+}
+
+/**
+ * Initialize the public validator section with mock functionality
+ */
+function initializePublicValidator() {
+  // Set up the public validator handler (same as the dashboard validator but for the splash page)
+  window.handleVerify = function () {
+    const input = document.getElementById("verify-input").value.trim();
+    handleValidateCert(input, true);
+  };
+
+  // Add scroll helper function
+  window.scrollToSection = function (id) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 }
 
 // --- Rendering ---
