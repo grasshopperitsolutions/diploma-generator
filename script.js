@@ -13,11 +13,11 @@ const state = {
     issuer: "Tech Academy Inc.",
     date: new Date().toLocaleDateString(),
     id: "",
-    logo: "default-logo.svg",
+    logo: "default-logo.ico",
   },
 };
 
-const defaultLogo = "default-logo.svg";
+const defaultLogo = "default-logo.ico";
 
 // Shared preview area element (moved between views)
 let previewArea = null;
