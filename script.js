@@ -8,9 +8,9 @@ const state = {
   certificates: [],
   bulkCertificates: [],
   data: {
-    recipient: "Jane Doe",
-    course: "Advanced Web Development",
-    issuer: "Tech Academy Inc.",
+    recipient: "",
+    course: "",
+    issuer: "",
     date: new Date().toLocaleDateString(),
     id: "",
     logo: "default-logo.ico",
@@ -26,7 +26,10 @@ let previewArea = null;
 document.addEventListener("DOMContentLoaded", () => {
   previewArea = document.getElementById("preview-area");
   generateId();
-  updateData("date", new Date().toLocaleDateString());
+  const today = new Date().toLocaleDateString();
+  state.data.date = today;
+  const dateInput = document.getElementById("input-date");
+  if (dateInput) dateInput.value = today;
   renderCertificate();
   lucide.createIcons();
   handleResize();
@@ -98,6 +101,11 @@ function switchView(viewId) {
   // Fetch data for list view
   if (viewId === "list") {
     fetchUserCertificates();
+  }
+
+  // Initialize settings logo preview when settings view is loaded
+  if (viewId === "settings") {
+    initializeSettingsLogoPreview();
   }
 
   lucide.createIcons();
@@ -429,6 +437,112 @@ async function handleSaveSettings(e) {
 }
 
 /**
+ * Delete user account and all associated data
+ */
+async function handleDeleteUser() {
+  if (!state.user) return;
+
+  const confirmed = confirm(
+    "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
+  );
+
+  if (!confirmed) return;
+
+  const deleteBtn = document.querySelector(
+    'button[onclick="handleDeleteUser()"]',
+  );
+
+  deleteBtn.disabled = true;
+  deleteBtn.innerText = "Deleting...";
+  lucide.createIcons();
+
+  try {
+    const userDoc = window.firestoreDoc(
+      window.firebaseDB,
+      "users",
+      state.user.uid,
+    );
+    await window.firestoreDeleteDoc(userDoc);
+    await window.firebaseDeleteUser(window.firebaseAuth.currentUser);
+    alert("✅ Account deleted successfully!");
+
+    // Clear local state and redirect to splash
+    state.user = null;
+    state.certificates = [];
+    state.bulkCertificates = [];
+
+    const userDisplayEl = document.getElementById("user-display");
+    if (userDisplayEl) userDisplayEl.classList.add("hidden");
+
+    document.getElementById("dashboard-view").classList.add("hidden");
+    document.getElementById("dashboard-view").classList.remove("flex");
+    document.getElementById("splash-view").classList.remove("hidden");
+    document.getElementById("public-nav").classList.remove("hidden");
+  } catch (error) {
+    console.error("Error deleting user:", error);
+
+    // Handle specific error cases
+    if (error.code === "auth/requires-recent-login") {
+      alert(
+        "❌ For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
+      );
+    } else {
+      alert("❌ Error deleting account. Please try again.");
+    }
+  } finally {
+    deleteBtn.disabled = false;
+    deleteBtn.innerText = "Delete Account";
+    lucide.createIcons();
+  }
+}
+
+/**
+ * Initialize logo preview functionality for settings modal
+ */
+function initializeSettingsLogoPreview() {
+  const logoInput = document.getElementById("set-logo");
+
+  if (logoInput) {
+    // Create preview element if it doesn't exist
+    let logoPreview = document.getElementById("settings-logo-preview");
+    if (!logoPreview) {
+      logoPreview = document.createElement("div");
+      logoPreview.id = "settings-logo-preview";
+      logoPreview.className =
+        "hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200";
+      logoPreview.innerHTML = `
+        <label class="block text-sm font-medium text-gray-700 mb-2">Logo Preview</label>
+        <div class="flex items-center gap-4">
+          <img id="settings-logo-preview-img" src="" alt="Logo Preview" class="h-16 w-16 object-contain" />
+          <div class="text-sm text-gray-500">
+            <p>Logo will appear on certificates</p>
+            <p class="mt-1">Recommended: PNG, SVG, or transparent background</p>
+          </div>
+        </div>
+      `;
+
+      // Insert preview after the logo input
+      logoInput.parentNode.insertBefore(logoPreview, logoInput.nextSibling);
+    }
+
+    const logoPreviewImg = document.getElementById("settings-logo-preview-img");
+
+    logoInput.addEventListener("input", () => {
+      const url = logoInput.value.trim();
+      if (url) {
+        logoPreview.classList.remove("hidden");
+        logoPreviewImg.src = url;
+        logoPreviewImg.onerror = () => {
+          logoPreviewImg.src = "default-logo.ico";
+        };
+      } else {
+        logoPreview.classList.add("hidden");
+      }
+    });
+  }
+}
+
+/**
  * Bulk upload — parse CSV and show preview of first record
  */
 function handleBulkUpload() {
@@ -554,12 +668,26 @@ async function handleBulkGenerate() {
  * Download sample CSV template
  */
 function downloadSampleCSV() {
-  const csvContent = `recipient,course,date
-John Smith,Web Development Fundamentals,2024-05-20
-Sarah Johnson,Advanced JavaScript,2024-05-21
-Michael Brown,React Native Development,2024-05-22
-Emily Davis,Python for Data Science,2024-05-23
-David Wilson,Cloud Computing Essentials,2024-05-24`;
+  const today = new Date();
+  const dates = Array.from({ length: 10 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    return d.toLocaleDateString();
+  });
+
+  const csvContent = [
+    "recipient,course,date",
+    `John Smith,Web Development Fundamentals,${dates[0]}`,
+    `Sarah Johnson,Advanced JavaScript,${dates[1]}`,
+    `Michael Brown,React Native Development,${dates[2]}`,
+    `Emily Davis,Python for Data Science,${dates[3]}`,
+    `David Wilson,Cloud Computing Essentials,${dates[4]}`,
+    `Jessica Martinez,Cybersecurity Basics,${dates[5]}`,
+    `James Anderson,Mobile App Design,${dates[6]}`,
+    `Jennifer Taylor,Database Management,${dates[7]}`,
+    `Robert Thomas,Machine Learning Fundamentals,${dates[8]}`,
+    `Linda Garcia,Digital Marketing Strategy,${dates[9]}`,
+  ].join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv" });
   const url = window.URL.createObjectURL(blob);
@@ -616,6 +744,26 @@ function toggleAuthMode(mode) {
     if (title) title.innerText = "Create Account";
     if (subtitle) subtitle.innerText = "Start generating professional certs";
     if (regForm) regForm.classList.remove("auth-hidden");
+
+    // Add event listener for logo URL preview
+    const logoInput = document.getElementById("reg-logo");
+    const logoPreview = document.getElementById("reg-logo-preview");
+    const logoPreviewImg = document.getElementById("reg-logo-preview-img");
+
+    if (logoInput && logoPreview && logoPreviewImg) {
+      logoInput.addEventListener("input", () => {
+        const url = logoInput.value.trim();
+        if (url) {
+          logoPreview.classList.remove("hidden");
+          logoPreviewImg.src = url;
+          logoPreviewImg.onerror = () => {
+            logoPreviewImg.src = "default-logo.ico";
+          };
+        } else {
+          logoPreview.classList.add("hidden");
+        }
+      });
+    }
   } else if (mode === "forgot") {
     if (title) title.innerText = "Reset Password";
     if (subtitle) subtitle.innerText = "We'll help you get back in";
@@ -673,6 +821,7 @@ async function handleAuthAction(e, type) {
       const fname = document.getElementById("reg-fname").value;
       const lname = document.getElementById("reg-lname").value;
       const company = document.getElementById("reg-company").value;
+      const logoUrl = document.getElementById("reg-logo").value;
 
       if (pass.length < 6) {
         throw new Error("Password must be at least 6 characters");
@@ -695,7 +844,7 @@ async function handleAuthAction(e, type) {
           firstName: fname,
           lastName: lname,
           company: company || "",
-          logoUrl: "",
+          logoUrl: logoUrl || "",
           createdAt: window.firestoreTimestamp(),
           updatedAt: window.firestoreTimestamp(),
         },
@@ -715,6 +864,7 @@ async function handleAuthAction(e, type) {
         "reg-fname",
         "reg-lname",
         "reg-company",
+        "reg-logo",
       ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = "";
@@ -820,6 +970,22 @@ async function logout() {
     state.user = null;
     state.certificates = [];
     state.bulkCertificates = [];
+
+    state.data = {
+      recipient: "",
+      course: "",
+      issuer: "",
+      date: new Date().toLocaleDateString(),
+      id: "",
+      logo: defaultLogo,
+    };
+
+    ["input-recipient", "input-course", "input-issuer", "input-date"].forEach(
+      (id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = id === "input-date" ? state.data.date : "";
+      },
+    );
 
     const userDisplayEl = document.getElementById("user-display");
     if (userDisplayEl) userDisplayEl.classList.add("hidden");
