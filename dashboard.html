@@ -161,10 +161,14 @@
         >
           <div>
             <h2 class="text-2xl font-bold text-gray-900">
-              Download Certificate
+              <span data-en>Download Certificate</span>
+              <span data-es class="hidden">Descargar Certificado</span>
             </h2>
             <p class="text-sm text-gray-500">
-              Select a theme for your PDF export
+              <span data-en>Select a theme for your PDF export</span>
+              <span data-es class="hidden"
+                >Selecciona un tema para tu exportación PDF</span
+              >
             </p>
           </div>
           <button
@@ -186,7 +190,8 @@
             <h3
               class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"
             >
-              Available Themes
+              <span data-en>Available Themes</span>
+              <span data-es class="hidden">Temas Disponibles</span>
             </h3>
             <div class="space-y-3" id="theme-list-container">
               <!-- Theme items injected here via JS -->
@@ -200,7 +205,8 @@
             <div
               class="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-mono text-slate-500 shadow-sm z-10"
             >
-              Print Preview
+              <span data-en>Print Preview</span>
+              <span data-es class="hidden">Vista Previa</span>
             </div>
             <!-- Scaled Preview Container -->
             <div
@@ -223,14 +229,16 @@
             onclick="closeThemeModal()"
             class="px-6 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-50 transition-colors"
           >
-            Cancel
+            <span data-en>Cancel</span>
+            <span data-es class="hidden">Cancelar</span>
           </button>
           <button
             onclick="confirmDownload()"
             class="px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 flex items-center gap-2 transition-transform active:scale-95"
           >
             <i data-lucide="printer" class="h-4 w-4"></i>
-            Print / Save PDF
+            <span data-en>Print / Save PDF</span>
+            <span data-es class="hidden">Imprimir / Guardar PDF</span>
           </button>
         </div>
       </div>
@@ -251,6 +259,26 @@
             <span class="font-bold text-gray-900">CertifyPro</span>
           </div>
           <div class="flex items-center gap-4">
+            <!-- Language Toggle -->
+            <div
+              class="flex bg-slate-100 p-1 rounded-xl border border-slate-200"
+            >
+              <button
+                onclick="setLanguage('en')"
+                id="btn-en"
+                class="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600"
+              >
+                EN
+              </button>
+              <button
+                onclick="setLanguage('es')"
+                id="btn-es"
+                class="px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500"
+              >
+                ES
+              </button>
+            </div>
+
             <button
               onclick="switchView('settings')"
               class="text-gray-500 hover:text-indigo-600 flex items-center gap-1"
@@ -258,7 +286,11 @@
               <i data-lucide="settings" class="h-4 w-4"></i>
               <span id="user-display" class="text-sm font-medium"></span>
             </button>
-            <button onclick="logout()" class="text-gray-400 hover:text-red-600">
+            <button
+              onclick="logout()"
+              class="text-gray-400 hover:text-red-600"
+              title="Logout"
+            >
               <i data-lucide="log-out" class="h-5 w-5"></i>
             </button>
           </div>
@@ -272,28 +304,32 @@
               id="nav-list"
               class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
             >
-              My Certificates
+              <span data-en>My Certificates</span>
+              <span data-es class="hidden">Mis Certificados</span>
             </button>
             <button
               onclick="switchView('create')"
               id="nav-create"
               class="nav-btn py-3 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600"
             >
-              Create New
+              <span data-en>Create New</span>
+              <span data-es class="hidden">Crear Nuevo</span>
             </button>
             <button
               onclick="switchView('bulk')"
               id="nav-bulk"
               class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
             >
-              Bulk Issue
+              <span data-en>Bulk Issue</span>
+              <span data-es class="hidden">Emisión Masiva</span>
             </button>
             <button
               onclick="switchView('validate')"
               id="nav-validate"
               class="nav-btn py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600"
             >
-              Validate
+              <span data-en>Validate</span>
+              <span data-es class="hidden">Validar</span>
             </button>
           </div>
         </nav>
@@ -308,7 +344,8 @@
           <div class="p-8 w-full max-w-7xl mx-auto">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900">
-                Issued Certificates
+                <span data-en>Issued Certificates</span>
+                <span data-es class="hidden">Certificados Emitidos</span>
               </h2>
               <div class="relative">
                 <i
@@ -317,8 +354,9 @@
                 ></i>
                 <input
                   type="text"
-                  placeholder="Search by recipient or ID..."
                   class="pl-10 pr-4 py-2 border rounded-lg outline-none w-64 focus:ring-2 focus:ring-indigo-500"
+                  data-en-placeholder="Search by recipient or ID..."
+                  data-es-placeholder="Buscar por destinatario o ID..."
                 />
               </div>
             </div>
@@ -331,17 +369,20 @@
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
                     >
-                      Recipient
+                      <span data-en>Recipient</span>
+                      <span data-es class="hidden">Destinatario</span>
                     </th>
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
                     >
-                      Course
+                      <span data-en>Course</span>
+                      <span data-es class="hidden">Curso</span>
                     </th>
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
                     >
-                      Issued On
+                      <span data-en>Issued On</span>
+                      <span data-es class="hidden">Emitido El</span>
                     </th>
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
@@ -351,7 +392,8 @@
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right"
                     >
-                      Actions
+                      <span data-en>Actions</span>
+                      <span data-es class="hidden">Acciones</span>
                     </th>
                   </tr>
                 </thead>
@@ -376,7 +418,8 @@
                 <h3
                   class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"
                 >
-                  Available Themes
+                  <span data-en>Available Themes</span>
+                  <span data-es class="hidden">Temas Disponibles</span>
                 </h3>
                 <div class="space-y-3" id="theme-list-sidebar">
                   <!-- Theme items injected here via JS -->
@@ -385,7 +428,8 @@
 
               <div>
                 <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">
-                  Orientation
+                  <span data-en>Orientation</span>
+                  <span data-es class="hidden">Orientación</span>
                 </h3>
                 <div class="flex gap-2">
                   <button
@@ -409,41 +453,48 @@
 
               <div class="space-y-4">
                 <h3 class="text-xs font-bold text-gray-400 uppercase mb-2">
-                  Certificate Details
+                  <span data-en>Certificate Details</span>
+                  <span data-es class="hidden">Detalles del Certificado</span>
                 </h3>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1"
-                    >Certificate ID</label
-                  >
+                  <label class="block text-xs font-medium text-gray-500 mb-1">
+                    <span data-en>Certificate ID</span>
+                    <span data-es class="hidden">ID del Certificado</span>
+                  </label>
                   <input
                     type="text"
                     id="input-id"
                     class="w-full px-3 py-2 border rounded-md outline-none bg-gray-50 text-gray-500 text-sm font-mono"
-                    placeholder="Auto-generated"
+                    data-en-placeholder="Auto-generated"
+                    data-es-placeholder="Auto-generado"
                     readonly
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1"
-                    >Recipient Name</label
-                  >
+                  <label class="block text-xs font-medium text-gray-500 mb-1">
+                    <span data-en>Recipient Name</span>
+                    <span data-es class="hidden">Nombre del Destinatario</span>
+                  </label>
                   <input
                     type="text"
                     id="input-recipient"
                     class="w-full px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500"
-                    placeholder="Student Name"
+                    data-en-placeholder="Student Name"
+                    data-es-placeholder="Nombre del Estudiante"
                     oninput="updateData('recipient', this.value)"
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-500 mb-1"
-                    >Course Title</label
-                  >
+                  <label class="block text-xs font-medium text-gray-500 mb-1">
+                    <span data-en>Course Title</span>
+                    <span data-es class="hidden">Título del Curso</span>
+                  </label>
                   <input
                     type="text"
                     id="input-course"
                     class="w-full px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500"
-                    placeholder="Course Title"
+                    data-en-placeholder="Course Title"
+                    data-es-placeholder="Título del Curso"
                     oninput="updateData('course', this.value)"
                   />
                 </div>
@@ -454,13 +505,17 @@
                   onclick="handleSaveCertificate()"
                   class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <i data-lucide="save" class="h-4 w-4"></i> Save Record
+                  <i data-lucide="save" class="h-4 w-4"></i>
+                  <span data-en>Save Record</span>
+                  <span data-es class="hidden">Guardar Registro</span>
                 </button>
                 <button
                   onclick="openDownloadModal(null)"
                   class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <i data-lucide="printer" class="h-4 w-4"></i> Print PDF
+                  <i data-lucide="printer" class="h-4 w-4"></i>
+                  <span data-en>Print PDF</span>
+                  <span data-es class="hidden">Imprimir PDF</span>
                 </button>
               </div>
             </div>
@@ -473,10 +528,19 @@
           <aside
             class="w-full lg:w-96 bg-white border-r border-gray-200 overflow-y-auto p-6 flex-shrink-0 z-20 shadow-lg no-print"
           >
-            <h2 class="text-xl font-bold mb-2">Bulk Issuance</h2>
+            <h2 class="text-xl font-bold mb-2">
+              <span data-en>Bulk Issuance</span>
+              <span data-es class="hidden">Emisión Masiva</span>
+            </h2>
             <p class="text-sm text-gray-500 mb-6">
-              Upload a CSV to generate certificates in batch. A preview of the
-              first record will appear on the right.
+              <span data-en
+                >Upload a CSV to generate certificates in batch. A preview of
+                the first record will appear on the right.</span
+              >
+              <span data-es class="hidden"
+                >Sube un CSV para generar certificados en lote. Una vista previa
+                del primer registro aparecerá a la derecha.</span
+              >
             </p>
 
             <div
@@ -488,7 +552,8 @@
                 class="text-indigo-600 h-10 w-10 mx-auto mb-3"
               ></i>
               <p class="text-sm font-medium text-gray-700">
-                Click to Upload CSV
+                <span data-en>Click to Upload CSV</span>
+                <span data-es class="hidden">Clic para Subir CSV</span>
               </p>
               <p class="text-xs text-gray-400 mt-1">recipient, course, date</p>
             </div>
@@ -497,8 +562,9 @@
               onclick="downloadSampleCSV()"
               class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg mb-6 w-full"
             >
-              <i data-lucide="download" class="inline mr-2"></i> Download Sample
-              CSV
+              <i data-lucide="download" class="inline mr-2"></i>
+              <span data-en>Download Sample CSV</span>
+              <span data-es class="hidden">Descargar CSV de Ejemplo</span>
             </button>
 
             <div id="bulk-stats" class="hidden">
@@ -508,17 +574,23 @@
                 <div
                   class="flex items-center gap-2 text-blue-800 font-bold mb-1"
                 >
-                  <i data-lucide="file-check" class="h-4 w-4"></i> File Parsed
+                  <i data-lucide="file-check" class="h-4 w-4"></i>
+                  <span data-en>File Parsed</span>
+                  <span data-es class="hidden">Archivo Procesado</span>
                 </div>
                 <p class="text-xs text-blue-600" id="bulk-count-text">
-                  Found 0 records.
+                  <span data-en>Found 0 records.</span>
+                  <span data-es class="hidden"
+                    >Se encontraron 0 registros.</span
+                  >
                 </p>
               </div>
               <button
                 onclick="handleBulkGenerate()"
                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md"
               >
-                Generate All & Save
+                <span data-en>Generate All & Save</span>
+                <span data-es class="hidden">Generar Todos y Guardar</span>
               </button>
             </div>
 
@@ -530,9 +602,16 @@
                 class="text-amber-600 h-5 w-5 mt-0.5 flex-shrink-0"
               ></i>
               <p class="text-sm text-amber-800 leading-relaxed">
-                Ensure your file has <strong>recipient</strong>,
-                <strong>course</strong>, and optionally
-                <strong>date</strong> columns.
+                <span data-en
+                  >Ensure your file has <strong>recipient</strong>,
+                  <strong>course</strong>, and optionally
+                  <strong>date</strong> columns.</span
+                >
+                <span data-es class="hidden"
+                  >Asegúrate de que tu archivo tenga columnas de
+                  <strong>recipient</strong>, <strong>course</strong>, y
+                  opcionalmente <strong>date</strong>.</span
+                >
               </p>
             </div>
           </aside>
@@ -544,18 +623,29 @@
           <aside
             class="w-full lg:w-96 bg-white border-r border-gray-200 p-8 flex-shrink-0 z-20 shadow-lg no-print overflow-y-auto"
           >
-            <h2 class="text-xl font-bold mb-2">Validator</h2>
+            <h2 class="text-xl font-bold mb-2">
+              <span data-en>Validator</span>
+              <span data-es class="hidden">Validador</span>
+            </h2>
             <p class="text-sm text-gray-500 mb-6">
-              Enter a certificate ID to verify its authenticity and view the
-              original document.
+              <span data-en
+                >Enter a certificate ID to verify its authenticity and view the
+                original document.</span
+              >
+              <span data-es class="hidden"
+                >Ingresa un ID de certificado para verificar su autenticidad y
+                ver el documento original.</span
+              >
             </p>
 
             <div class="space-y-4">
               <div>
                 <label
                   class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                  >Certificate ID</label
                 >
+                  <span data-en>Certificate ID</span>
+                  <span data-es class="hidden">ID del Certificado</span>
+                </label>
                 <input
                   type="text"
                   id="validate-id"
@@ -567,7 +657,9 @@
                 onclick="handleValidateCert()"
                 class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-md"
               >
-                <i data-lucide="shield-check" class="h-4 w-4"></i> Verify
+                <i data-lucide="shield-check" class="h-4 w-4"></i>
+                <span data-en>Verify</span>
+                <span data-es class="hidden">Verificar</span>
               </button>
             </div>
 
@@ -588,15 +680,18 @@
               class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200"
             >
               <h2 class="text-2xl font-bold mb-6">
-                Account & Company Settings
+                <span data-en>Account & Company Settings</span>
+                <span data-es class="hidden">Ajustes de Cuenta y Empresa</span>
               </h2>
               <form onsubmit="handleSaveSettings(event)" class="space-y-5">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label
                       class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                      >First Name</label
                     >
+                      <span data-en>First Name</span>
+                      <span data-es class="hidden">Nombre</span>
+                    </label>
                     <input
                       type="text"
                       id="set-fname"
@@ -606,8 +701,10 @@
                   <div>
                     <label
                       class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                      >Last Name</label
                     >
+                      <span data-en>Last Name</span>
+                      <span data-es class="hidden">Apellido</span>
+                    </label>
                     <input
                       type="text"
                       id="set-lname"
@@ -618,8 +715,10 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                    >Email</label
                   >
+                    <span data-en>Email</span>
+                    <span data-es class="hidden">Correo electrónico</span>
+                  </label>
                   <input
                     type="email"
                     id="set-email"
@@ -630,8 +729,12 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                    >Company Name (Issuer)</label
                   >
+                    <span data-en>Company Name (Issuer)</span>
+                    <span data-es class="hidden"
+                      >Nombre de Empresa (Emisor)</span
+                    >
+                  </label>
                   <input
                     type="text"
                     id="set-company"
@@ -641,8 +744,10 @@
                 <div>
                   <label
                     class="block text-xs font-bold text-gray-400 uppercase mb-1"
-                    >Logo URL</label
                   >
+                    <span data-en>Logo URL</span>
+                    <span data-es class="hidden">URL del Logo</span>
+                  </label>
                   <input
                     type="text"
                     id="set-logo"
@@ -650,18 +755,51 @@
                     placeholder="https://..."
                   />
                 </div>
+
+                <!-- Language Preference -->
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                  >
+                    <span data-en>Language</span>
+                    <span data-es class="hidden">Idioma</span>
+                  </label>
+                  <div
+                    class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit"
+                  >
+                    <button
+                      type="button"
+                      onclick="setLanguage('en')"
+                      id="settings-btn-en"
+                      class="px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600"
+                    >
+                      English
+                    </button>
+                    <button
+                      type="button"
+                      onclick="setLanguage('es')"
+                      id="settings-btn-es"
+                      class="px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500"
+                    >
+                      Español
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-lg shadow-md transition-colors w-full"
                 >
-                  Update Profile
+                  <span data-en>Update Profile</span>
+                  <span data-es class="hidden">Actualizar Perfil</span>
                 </button>
                 <button
                   type="button"
                   onclick="handleDeleteUser()"
                   class="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-lg shadow-md transition-colors mt-4 w-full"
                 >
-                  Delete Account
+                  <span data-en>Delete Account</span>
+                  <span data-es class="hidden">Eliminar Cuenta</span>
                 </button>
               </form>
             </div>

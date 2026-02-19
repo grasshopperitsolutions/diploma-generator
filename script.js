@@ -4,6 +4,7 @@ const state = {
   theme: "academic",
   orientation: "landscape",
   currentView: "create",
+  currentLang: "en",
   authMode: "login",
   certificates: [],
   bulkCertificates: [],
@@ -16,6 +17,163 @@ const state = {
     logo: "default-logo.ico",
   },
 };
+
+// --- Language Toggle Function ---
+function setLanguage(lang) {
+  state.currentLang = lang;
+
+  // Toggle visibility of language-specific elements
+  document.querySelectorAll("[data-en]").forEach((el) => {
+    el.classList.toggle("hidden", lang !== "en");
+  });
+  document.querySelectorAll("[data-es]").forEach((el) => {
+    el.classList.toggle("hidden", lang !== "es");
+  });
+
+  // Update placeholders
+  document.querySelectorAll("[data-en-placeholder]").forEach((el) => {
+    el.placeholder = lang === "en"
+      ? el.getAttribute("data-en-placeholder")
+      : el.getAttribute("data-es-placeholder");
+  });
+
+  // Update header toggle buttons (dashboard)
+  const btnEn = document.getElementById("btn-en");
+  const btnEs = document.getElementById("btn-es");
+
+  if (btnEn && btnEs) {
+    if (lang === "en") {
+      btnEn.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      btnEs.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+    } else {
+      btnEs.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      btnEn.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+    }
+  }
+
+  // Update settings toggle buttons (dashboard)
+  const settingsBtnEn = document.getElementById("settings-btn-en");
+  const settingsBtnEs = document.getElementById("settings-btn-es");
+
+  if (settingsBtnEn && settingsBtnEs) {
+    if (lang === "en") {
+      settingsBtnEn.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      settingsBtnEs.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+    } else {
+      settingsBtnEs.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      settingsBtnEn.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+    }
+  }
+
+  // Update index.html toggle buttons (if on index page)
+  const indexBtnEn = document.getElementById("lang-en");
+  const indexBtnEs = document.getElementById("lang-es");
+
+  if (indexBtnEn && indexBtnEs) {
+    if (lang === "en") {
+      indexBtnEn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+      indexBtnEs.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
+    } else {
+      indexBtnEs.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+      indexBtnEn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
+    }
+  }
+
+  // Re-initialize icons after language change
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+
+  // Update list view translations if it has dynamic content
+  if (typeof state !== 'undefined' && state.certificates && state.certificates.length > 0) {
+    renderCertificateList();
+  }
+}
+
+// Expose globally
+window.setLanguage = setLanguage;
+
+// --- Translation Helper ---
+function t(key) {
+  const lang = state.currentLang || 'en';
+  const translations = {
+    en: {
+      // List view
+      loadingCerts: "Loading certificates...",
+      errorLoading: "Error loading certificates. Please try again.",
+      noCerts: "No certificates issued yet",
+      createFirst: "Create your first certificate →",
+      download: "Download",
+      // Alerts
+      mustBeLoggedIn: "You must be logged in to save certificates",
+      fillRequired: "Please fill in recipient name and course name",
+      certSaved: "✅ Certificate saved successfully!",
+      errorSaving: "❌ Error saving certificate. Please try again.",
+      saving: "Saving...",
+      saveRecord: "Save Record",
+      // Settings
+      profileUpdated: "✅ Profile settings updated successfully!",
+      errorUpdating: "❌ Error updating settings. Please try again.",
+      deleteConfirm: "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
+      deleteSuccess: "✅ Account deleted successfully!",
+      deleteError: "❌ Error deleting account. Please try again.",
+      deleteErrorRelog: "❌ For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
+      deleting: "Deleting...",
+      deleteAccount: "Delete Account",
+      // Bulk
+      noRecords: "No records to generate. Please upload a CSV first.",
+      bulkConfirm: "This will create {count} certificates. Continue?",
+      bulkDone: "✅ Done! {saved} certificate{s} saved.{errors}",
+      bulkFailed: " ⚠️ {errors} failed.",
+      mustBeLoggedInBulk: "You must be logged in to generate certificates",
+      // Themes
+      themeAcademic: "Academic Standard",
+      themeAcademicDesc: "Classic & Elegant",
+      themeUnderwater: "Deep Blue Corporate",
+      themeUnderwaterDesc: "Modern & Professional",
+      themeProgramming: "Tech Terminal",
+      themeProgrammingDesc: "Dark & Geeky",
+    },
+    es: {
+      // List view
+      loadingCerts: "Cargando certificados...",
+      errorLoading: "Error al cargar certificados. Por favor intenta de nuevo.",
+      noCerts: "No hay certificados emitidos",
+      createFirst: "Crear tu primer certificado →",
+      download: "Descargar",
+      // Alerts
+      mustBeLoggedIn: "Debes iniciar sesión para guardar certificados",
+      fillRequired: "Por favor completa el nombre del destinatario y el curso",
+      certSaved: "✅ ¡Certificado guardado exitosamente!",
+      errorSaving: "❌ Error al guardar el certificado. Por favor intenta de nuevo.",
+      saving: "Guardando...",
+      saveRecord: "Guardar Registro",
+      // Settings
+      profileUpdated: "✅ ¡Ajustes de perfil actualizados exitosamente!",
+      errorUpdating: "❌ Error al actualizar ajustes. Por favor intenta de nuevo.",
+      deleteConfirm: "¿Estás seguro de que quieres eliminar tu cuenta? Tus certificados permanecerán disponibles para validación pública.",
+      deleteSuccess: "✅ ¡Cuenta eliminada exitosamente!",
+      deleteError: "❌ Error al eliminar la cuenta. Por favor intenta de nuevo.",
+      deleteErrorRelog: "❌ Por razones de seguridad, necesitas iniciar sesión de nuevo para eliminar tu cuenta. Por favor cierra sesión e inicia de nuevo, luego intenta de nuevo.",
+      deleting: "Eliminando...",
+      deleteAccount: "Eliminar Cuenta",
+      // Bulk
+      noRecords: "No hay registros para generar. Por favor sube un CSV primero.",
+      bulkConfirm: "Esto creará {count} certificados. ¿Continuar?",
+      bulkDone: "✅ ¡Listo! {saved} certificado{s} guardado{s}.{errors}",
+      bulkFailed: " ⚠️ {errors} fallaron.",
+      mustBeLoggedInBulk: "Debes iniciar sesión para generar certificados",
+      // Themes
+      themeAcademic: "Estándar Académico",
+      themeAcademicDesc: "Clásico y Elegante",
+      themeUnderwater: "Corporativo Azul Profundo",
+      themeUnderwaterDesc: "Moderno y Profesional",
+      themeProgramming: "Terminal Tech",
+      themeProgrammingDesc: "Oscuro y Geek",
+    }
+  };
+  return translations[lang]?.[key] || translations.en[key] || key;
+}
 
 const defaultLogo = "default-logo.ico";
 
@@ -132,7 +290,7 @@ async function fetchUserCertificates() {
       <td colspan="5" class="px-6 py-12 text-center">
         <div class="flex flex-col items-center gap-2 text-gray-400">
           <i data-lucide="loader" class="animate-spin h-8 w-8 text-indigo-500"></i>
-          <span class="text-sm">Loading certificates...</span>
+          <span class="text-sm">${t('loadingCerts')}</span>
         </div>
       </td>
     </tr>
@@ -159,7 +317,7 @@ async function fetchUserCertificates() {
     listContainer.innerHTML = `
       <tr>
         <td colspan="5" class="px-6 py-12 text-center text-red-500">
-          <p class="text-sm">Error loading certificates. Please try again.</p>
+          <p class="text-sm">${t('errorLoading')}</p>
         </td>
       </tr>
     `;
@@ -178,9 +336,9 @@ function renderCertificateList() {
         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
           <div class="flex flex-col items-center gap-3">
             <i data-lucide="file-text" class="h-12 w-12 opacity-30"></i>
-            <p class="text-base">No certificates issued yet</p>
+            <p class="text-base">${t('noCerts')}</p>
             <button onclick="switchView('create')" class="text-sm text-indigo-600 hover:underline font-medium">
-              Create your first certificate →
+              ${t('createFirst')}
             </button>
           </div>
         </td>
@@ -203,7 +361,7 @@ function renderCertificateList() {
           onclick="openDownloadModal({recipient: '${cert.recipient}', course: '${cert.course}', id: '${cert.id}', date: '${cert.date}', issuer: '${cert.issuer}'})"
           class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center justify-end gap-1 ml-auto"
         >
-          <i data-lucide="download" class="h-4 w-4"></i> Download
+          <i data-lucide="download" class="h-4 w-4"></i> ${t('download')}
         </button>
       </td>
     </tr>
@@ -246,12 +404,12 @@ function viewCertificate(certId) {
  */
 async function handleSaveCertificate() {
   if (!state.user) {
-    alert("You must be logged in to save certificates");
+    alert(t('mustBeLoggedIn'));
     return;
   }
 
   if (!state.data.recipient || !state.data.course) {
-    alert("Please fill in recipient name and course name");
+    alert(t('fillRequired'));
     return;
   }
 
@@ -261,7 +419,7 @@ async function handleSaveCertificate() {
   if (saveBtn) {
     saveBtn.disabled = true;
     saveBtn.innerHTML =
-      '<i data-lucide="loader" class="animate-spin h-4 w-4 inline"></i> Saving...';
+      `<i data-lucide="loader" class="animate-spin h-4 w-4 inline"></i> ${t('saving')}`;
     lucide.createIcons();
   }
 
@@ -282,7 +440,7 @@ async function handleSaveCertificate() {
       certificateData,
     );
 
-    alert("✅ Certificate saved successfully!");
+    alert(t('certSaved'));
 
     // Generate new ID for the next certificate
     generateId();
@@ -299,12 +457,12 @@ async function handleSaveCertificate() {
     renderCertificate();
   } catch (error) {
     console.error("Error saving certificate:", error);
-    alert("❌ Error saving certificate. Please try again.");
+    alert(t('errorSaving'));
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
       saveBtn.innerHTML =
-        '<i data-lucide="save" class="h-4 w-4"></i> Save Record';
+        `<i data-lucide="save" class="h-4 w-4"></i> ${t('saveRecord')}`;
       lucide.createIcons();
     }
   }
@@ -324,7 +482,7 @@ async function handleValidateCert(id, isPublic = false) {
   const certContainer = document.getElementById("certificate-container");
 
   // Get current language
-  const lang = typeof currentLang !== "undefined" ? currentLang : "en";
+  const lang = state.currentLang || "en";
 
   // Language strings
   const strings = {
@@ -445,7 +603,7 @@ async function handleSaveSettings(e) {
   const saveBtn = e.target.querySelector("button[type='submit']");
   saveBtn.disabled = true;
   saveBtn.innerHTML =
-    '<i data-lucide="loader" class="animate-spin h-4 w-4 inline mr-1"></i> Saving...';
+    `<i data-lucide="loader" class="animate-spin h-4 w-4 inline mr-1"></i> ${t('saving')}`;
   lucide.createIcons();
 
   try {
@@ -472,11 +630,11 @@ async function handleSaveSettings(e) {
     document.getElementById("user-display").innerText =
       `${firstName} ${lastName}`;
 
-    alert("✅ Profile settings updated successfully!");
+    alert(t('profileUpdated'));
     renderCertificate();
   } catch (error) {
     console.error("Error updating settings:", error);
-    alert("❌ Error updating settings. Please try again.");
+    alert(t('errorUpdating'));
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerHTML = "Update Profile";
@@ -490,9 +648,7 @@ async function handleSaveSettings(e) {
 async function handleDeleteUser() {
   if (!state.user) return;
 
-  const confirmed = confirm(
-    "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
-  );
+  const confirmed = confirm(t('deleteConfirm'));
 
   if (!confirmed) return;
 
@@ -501,7 +657,7 @@ async function handleDeleteUser() {
   );
 
   deleteBtn.disabled = true;
-  deleteBtn.innerText = "Deleting...";
+  deleteBtn.innerText = t('deleting');
   lucide.createIcons();
 
   try {
@@ -512,7 +668,7 @@ async function handleDeleteUser() {
     );
     await window.firestoreDeleteDoc(userDoc);
     await window.firebaseDeleteUser(window.firebaseAuth.currentUser);
-    alert("✅ Account deleted successfully!");
+    alert(t('deleteSuccess'));
 
     // Clear local state and redirect to index
     state.user = null;
@@ -526,15 +682,13 @@ async function handleDeleteUser() {
 
     // Handle specific error cases
     if (error.code === "auth/requires-recent-login") {
-      alert(
-        "❌ For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
-      );
+      alert(t('deleteErrorRelog'));
     } else {
-      alert("❌ Error deleting account. Please try again.");
+      alert(t('deleteError'));
     }
   } finally {
     deleteBtn.disabled = false;
-    deleteBtn.innerText = "Delete Account";
+    deleteBtn.innerText = t('deleteAccount');
     lucide.createIcons();
   }
 }
@@ -657,18 +811,17 @@ function handleBulkUpload() {
  */
 async function handleBulkGenerate() {
   if (!state.user) {
-    alert("You must be logged in to generate certificates");
+    alert(t('mustBeLoggedInBulk'));
     return;
   }
 
   if (state.bulkCertificates.length === 0) {
-    alert("No records to generate. Please upload a CSV first.");
+    alert(t('noRecords'));
     return;
   }
 
-  const confirmed = confirm(
-    `This will create ${state.bulkCertificates.length} certificates. Continue?`,
-  );
+  const count = state.bulkCertificates.length;
+  const confirmed = confirm(t('bulkConfirm').replace('{count}', count));
   if (!confirmed) return;
 
   let saved = 0;
@@ -698,9 +851,10 @@ async function handleBulkGenerate() {
     }
   }
 
-  alert(
-    `✅ Done! ${saved} certificate${saved !== 1 ? "s" : ""} saved.${errors > 0 ? ` ⚠️ ${errors} failed.` : ""}`,
-  );
+  const plural = saved !== 1 ? (state.currentLang === 'es' ? 's' : 's') : '';
+  const errorMsg = errors > 0 ? t('bulkFailed').replace('{errors}', errors) : '';
+  alert(t('bulkDone').replace('{saved}', saved).replace('{s}', plural).replace('{errors}', errorMsg));
+  
   state.bulkCertificates = [];
 
   const statsEl = document.getElementById("bulk-stats");

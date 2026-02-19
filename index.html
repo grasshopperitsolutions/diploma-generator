@@ -899,43 +899,5 @@
       console.log("✅ Firebase initialized");
     </script>
     <script src="script.js"></script>
-    <script>
-      // Language State Management
-      let currentLang = "en";
-
-      function setLanguage(lang) {
-        currentLang = lang;
-
-        // Toggle visibility of language-specific elements
-        document.querySelectorAll("[data-en]").forEach((el) => {
-          el.classList.toggle("hidden", lang !== "en");
-        });
-        document.querySelectorAll("[data-es]").forEach((el) => {
-          el.classList.toggle("hidden", lang !== "es");
-        });
-
-        // Update toggle buttons UI
-        const btnEn = document.getElementById("btn-en");
-        const btnEs = document.getElementById("btn-es");
-
-        if (lang === "en") {
-          btnEn.className =
-            "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-          btnEs.className =
-            "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
-        } else {
-          btnEs.className =
-            "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-          btnEn.className =
-            "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
-        }
-
-        // Re-initialize icons after language change
-        lucide.createIcons();
-      }
-
-      // Expose setLanguage globally
-      window.setLanguage = setLanguage;
-    </script>
   </body>
 </html>
