@@ -8,6 +8,7 @@ const state = {
   authMode: "login",
   certificates: [],
   bulkCertificates: [],
+  editingCertificateId: null, // Track if we're editing an existing certificate
   data: {
     recipient: "",
     course: "",
@@ -133,6 +134,20 @@ function t(key) {
       themeUnderwaterDesc: "Modern & Professional",
       themeProgramming: "Tech Terminal",
       themeProgrammingDesc: "Dark & Geeky",
+      // Edit/Delete
+      edit: "Edit",
+      delete: "Delete",
+      editCert: "Edit Certificate",
+      deleteCert: "Delete Certificate",
+      deleteCertConfirm: "Are you sure you want to delete this certificate? This action cannot be undone.",
+      certDeleted: "✅ Certificate deleted successfully!",
+      certUpdated: "✅ Certificate updated successfully!",
+      errorDeleting: "❌ Error deleting certificate. Please try again.",
+      errorUpdating: "❌ Error updating certificate. Please try again.",
+      updateRecord: "Update Record",
+      cancel: "Cancel",
+      creatingNew: "Creating New",
+      editingCert: "Editing Certificate",
     },
     es: {
       // List view
@@ -170,6 +185,20 @@ function t(key) {
       themeUnderwaterDesc: "Moderno y Profesional",
       themeProgramming: "Terminal Tech",
       themeProgrammingDesc: "Oscuro y Geek",
+      // Edit/Delete
+      edit: "Editar",
+      delete: "Eliminar",
+      editCert: "Editar Certificado",
+      deleteCert: "Eliminar Certificado",
+      deleteCertConfirm: "¿Estás seguro de que quieres eliminar este certificado? Esta acción no se puede deshacer.",
+      certDeleted: "✅ ¡Certificado eliminado exitosamente!",
+      certUpdated: "✅ ¡Certificado actualizado exitosamente!",
+      errorDeleting: "❌ Error al eliminar el certificado. Por favor intenta de nuevo.",
+      errorUpdating: "❌ Error al actualizar el certificado. Por favor intenta de nuevo.",
+      updateRecord: "Actualizar Registro",
+      cancel: "Cancelar",
+      creatingNew: "Creando Nuevo",
+      editingCert: "Editando Certificado",
     }
   };
   return translations[lang]?.[key] || translations.en[key] || key;
@@ -298,17 +327,42 @@ async function fetchUserCertificates() {
   lucide.createIcons();
 
   try {
-    const q = window.firestoreQuery(
-      window.firestoreCollection(window.firebaseDB, "certificates"),
-      window.firestoreWhere("issuedByEmail", "==", state.user.email),
-      window.firestoreOrderBy("createdAt", "desc"),
-    );
+    // Try with orderBy first
+    let querySnapshot;
+    try {
+      const q = window.firestoreQuery(
+        window.firestoreCollection(window.firebaseDB, "certificates"),
+        window.firestoreWhere("issuedByEmail", "==", state.user.email),
+        window.firestoreOrderBy("createdAt", "desc"),
+      );
+      querySnapshot = await window.firestoreGetDocs(q);
+    } catch (orderError) {
+      // If orderBy fails (missing index), fall back to simple query
+      console.warn("OrderBy failed, using simple query:", orderError.message);
+      const q = window.firestoreQuery(
+        window.firestoreCollection(window.firebaseDB, "certificates"),
+        window.firestoreWhere("issuedByEmail", "==", state.user.email),
+      );
+      querySnapshot = await window.firestoreGetDocs(q);
+    }
 
-    const querySnapshot = await window.firestoreGetDocs(q);
     state.certificates = [];
 
     querySnapshot.forEach((doc) => {
-      state.certificates.push({ docId: doc.id, ...doc.data() });
+      const data = doc.data();
+      state.certificates.push({ 
+        docId: doc.id, 
+        ...data,
+        // Store createdAt as a serializable format
+        createdAt: data.createdAt || null
+      });
+    });
+
+    // Sort in memory if we couldn't use orderBy
+    state.certificates.sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA; // desc order
     });
 
     renderCertificateList();
@@ -318,6 +372,7 @@ async function fetchUserCertificates() {
       <tr>
         <td colspan="5" class="px-6 py-12 text-center text-red-500">
           <p class="text-sm">${t('errorLoading')}</p>
+          <p class="text-xs mt-2 text-gray-400">${error.message}</p>
         </td>
       </tr>
     `;
@@ -356,13 +411,36 @@ function renderCertificateList() {
       <td class="px-6 py-4 text-gray-600">${cert.course}</td>
       <td class="px-6 py-4 text-gray-500">${cert.date}</td>
       <td class="px-6 py-4 text-xs font-mono text-gray-400">${cert.id}</td>
-      <td class="px-6 py-4 text-right">
-        <button
-          onclick="openDownloadModal({recipient: '${cert.recipient}', course: '${cert.course}', id: '${cert.id}', date: '${cert.date}', issuer: '${cert.issuer}'})"
-          class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center justify-end gap-1 ml-auto"
-        >
-          <i data-lucide="download" class="h-4 w-4"></i> ${t('download')}
-        </button>
+      <td class="px-6 py-4">
+        <div class="flex items-center justify-end gap-2">
+          <button
+            onclick="handleEditCertificate('${cert.id}')"
+            class="text-amber-600 hover:text-amber-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-amber-50 transition-colors"
+            title="${t('edit')}"
+          >
+            <i data-lucide="pencil" class="h-4 w-4"></i>
+            <span data-en>${t('edit')}</span>
+            <span data-es class="hidden">${t('edit')}</span>
+          </button>
+          <button
+            onclick="handleDeleteCertificate('${cert.id}')"
+            class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+            title="${t('delete')}"
+          >
+            <i data-lucide="trash-2" class="h-4 w-4"></i>
+            <span data-en>${t('delete')}</span>
+            <span data-es class="hidden">${t('delete')}</span>
+          </button>
+          <button
+            onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}'})"
+            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
+            title="${t('download')}"
+          >
+            <i data-lucide="download" class="h-4 w-4"></i>
+            <span data-en>${t('download')}</span>
+            <span data-es class="hidden">${t('download')}</span>
+          </button>
+        </div>
       </td>
     </tr>
   `,
@@ -400,7 +478,150 @@ function viewCertificate(certId) {
 }
 
 /**
- * Save a new certificate to Firestore
+ * Edit a certificate - load it into the editor
+ */
+function handleEditCertificate(certId) {
+  const cert = state.certificates.find((c) => c.id === certId || c.docId === certId);
+  if (!cert) return;
+
+  // Set editing state
+  state.editingCertificateId = cert.id;
+
+  // Load certificate data into state
+  state.data.recipient = cert.recipient;
+  state.data.course = cert.course;
+  state.data.issuer = cert.issuer;
+  state.data.date = cert.date;
+  state.data.id = cert.id;
+
+  // Update form inputs
+  const recipientInput = document.getElementById("input-recipient");
+  const courseInput = document.getElementById("input-course");
+  const idInput = document.getElementById("input-id");
+
+  if (recipientInput) recipientInput.value = cert.recipient;
+  if (courseInput) courseInput.value = cert.course;
+  if (idInput) idInput.value = cert.id;
+
+  // Update save button to show update mode
+  updateSaveButtonState();
+
+  // Switch to create view and render
+  switchView("create");
+  renderCertificate();
+}
+
+/**
+ * Cancel editing and reset to create new mode
+ */
+function handleCancelEdit() {
+  // Clear editing state
+  state.editingCertificateId = null;
+
+  // Clear form
+  state.data.recipient = "";
+  state.data.course = "";
+  
+  const recipientInput = document.getElementById("input-recipient");
+  const courseInput = document.getElementById("input-course");
+  
+  if (recipientInput) recipientInput.value = "";
+  if (courseInput) courseInput.value = "";
+
+  // Generate new ID
+  generateId();
+
+  // Update save button
+  updateSaveButtonState();
+}
+
+/**
+ * Update the save button to reflect edit or create mode
+ */
+function updateSaveButtonState() {
+  const saveBtn = document.querySelector(
+    "#view-create button[onclick*='handleSaveCertificate']",
+  );
+  
+  if (saveBtn) {
+    if (state.editingCertificateId) {
+      saveBtn.innerHTML = `
+        <i data-lucide="save" class="h-4 w-4"></i>
+        <span data-en>${t('updateRecord')}</span>
+        <span data-es class="hidden">${t('updateRecord')}</span>
+      `;
+      saveBtn.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+      
+      // Add cancel button if it doesn't exist
+      let cancelBtn = document.getElementById("cancel-edit-btn");
+      if (!cancelBtn) {
+        cancelBtn = document.createElement("button");
+        cancelBtn.id = "cancel-edit-btn";
+        cancelBtn.onclick = handleCancelEdit;
+        cancelBtn.className = "w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+        cancelBtn.innerHTML = `
+          <i data-lucide="x" class="h-4 w-4"></i>
+          <span data-en>${t('cancel')}</span>
+          <span data-es class="hidden">${t('cancel')}</span>
+        `;
+        saveBtn.parentNode.insertBefore(cancelBtn, saveBtn);
+      }
+      cancelBtn.classList.remove("hidden");
+    } else {
+      saveBtn.innerHTML = `
+        <i data-lucide="save" class="h-4 w-4"></i>
+        <span data-en>${t('saveRecord')}</span>
+        <span data-es class="hidden">${t('saveRecord')}</span>
+      `;
+      saveBtn.className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+      
+      // Hide cancel button
+      const cancelBtn = document.getElementById("cancel-edit-btn");
+      if (cancelBtn) {
+        cancelBtn.classList.add("hidden");
+      }
+    }
+    lucide.createIcons();
+  }
+}
+
+/**
+ * Delete a certificate from Firestore
+ */
+async function handleDeleteCertificate(certId) {
+  if (!state.user) {
+    alert(t('mustBeLoggedIn'));
+    return;
+  }
+
+  const confirmed = confirm(t('deleteCertConfirm'));
+  if (!confirmed) return;
+
+  try {
+    // Find the certificate to get its docId
+    const cert = state.certificates.find((c) => c.id === certId || c.docId === certId);
+    if (!cert) {
+      alert(t('errorDeleting'));
+      return;
+    }
+
+    // Delete from Firestore using the document ID (which is the certificate ID)
+    await window.firestoreDeleteDoc(
+      window.firestoreDoc(window.firebaseDB, "certificates", cert.id),
+    );
+
+    alert(t('certDeleted'));
+
+    // Refresh the list
+    fetchUserCertificates();
+  } catch (error) {
+    console.error("Error deleting certificate:", error);
+    alert(t('errorDeleting'));
+  }
+}
+
+/**
+ * Save a new certificate or update existing one
  */
 async function handleSaveCertificate() {
   if (!state.user) {
@@ -424,23 +645,43 @@ async function handleSaveCertificate() {
   }
 
   try {
-    const certificateData = {
-      id: state.data.id,
-      recipient: state.data.recipient,
-      course: state.data.course,
-      issuer: state.data.issuer || state.user.company,
-      date: state.data.date,
-      issuedByEmail: state.user.email,
-      createdAt: window.firestoreTimestamp(),
-      updatedAt: window.firestoreTimestamp(),
-    };
+    const isEditing = !!state.editingCertificateId;
+    
+    if (isEditing) {
+      // Use updateDoc for edits to preserve existing fields
+      await window.firestoreUpdateDoc(
+        window.firestoreDoc(window.firebaseDB, "certificates", state.data.id),
+        {
+          recipient: state.data.recipient,
+          course: state.data.course,
+          issuer: state.data.issuer || state.user.company,
+          date: state.data.date,
+          updatedAt: window.firestoreTimestamp(),
+        },
+      );
+    } else {
+      // Use setDoc for new certificates
+      const certificateData = {
+        id: state.data.id,
+        recipient: state.data.recipient,
+        course: state.data.course,
+        issuer: state.data.issuer || state.user.company,
+        date: state.data.date,
+        issuedByEmail: state.user.email,
+        createdAt: window.firestoreTimestamp(),
+        updatedAt: window.firestoreTimestamp(),
+      };
 
-    await window.firestoreSetDoc(
-      window.firestoreDoc(window.firebaseDB, "certificates", state.data.id),
-      certificateData,
-    );
+      await window.firestoreSetDoc(
+        window.firestoreDoc(window.firebaseDB, "certificates", state.data.id),
+        certificateData,
+      );
+    }
 
-    alert(t('certSaved'));
+    alert(isEditing ? t('certUpdated') : t('certSaved'));
+
+    // Clear editing state
+    state.editingCertificateId = null;
 
     // Generate new ID for the next certificate
     generateId();
@@ -454,6 +695,10 @@ async function handleSaveCertificate() {
     if (document.getElementById("input-course")) {
       document.getElementById("input-course").value = "";
     }
+
+    // Update save button back to create mode
+    updateSaveButtonState();
+    
     renderCertificate();
   } catch (error) {
     console.error("Error saving certificate:", error);
@@ -461,9 +706,7 @@ async function handleSaveCertificate() {
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
-      saveBtn.innerHTML =
-        `<i data-lucide="save" class="h-4 w-4"></i> ${t('saveRecord')}`;
-      lucide.createIcons();
+      updateSaveButtonState();
     }
   }
 }
