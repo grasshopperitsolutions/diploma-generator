@@ -323,8 +323,49 @@ async function handleValidateCert(id, isPublic = false) {
     : document.getElementById("verify-result");
   const certContainer = document.getElementById("certificate-container");
 
+  // Get current language
+  const lang = typeof currentLang !== "undefined" ? currentLang : "en";
+
+  // Language strings
+  const strings = {
+    en: {
+      enterId: "Please enter a certificate ID",
+      validating: "Validating certificate...",
+      validCert: "✓ Valid Certificate",
+      issuedTo: "Issued to",
+      course: "Course",
+      issuedBy: "Issued by",
+      on: "on",
+      notFound: "✗ Record Not Found",
+      notFoundMsg: `The ID <strong>"${id}"</strong> does not match any issued certificate.`,
+      fakeWarning:
+        "This certificate may be fake or the ID was entered incorrectly.",
+      connectionError: "Connection Error",
+      connectionErrorMsg:
+        "Unable to reach the database. Please check your connection and try again.",
+    },
+    es: {
+      enterId: "Por favor ingresa un ID de certificado",
+      validating: "Validando certificado...",
+      validCert: "✓ Certificado Válido",
+      issuedTo: "Emitido a",
+      course: "Curso",
+      issuedBy: "Emitido por",
+      on: "el",
+      notFound: "✗ Registro No Encontrado",
+      notFoundMsg: `El ID <strong>"${id}"</strong> no coincide con ningún certificado emitido.`,
+      fakeWarning:
+        "Este certificado puede ser falso o el ID fue ingresado incorrectamente.",
+      connectionError: "Error de Conexión",
+      connectionErrorMsg:
+        "No se puede conectar a la base de datos. Verifica tu conexión e intenta nuevamente.",
+    },
+  };
+
+  const t = strings[lang] || strings.en;
+
   if (!id) {
-    alert("Please enter a certificate ID");
+    alert(t.enterId);
     return;
   }
 
@@ -334,7 +375,7 @@ async function handleValidateCert(id, isPublic = false) {
   resultBox.innerHTML = `
     <div class="flex items-center gap-2">
       <i data-lucide="loader" class="animate-spin h-4 w-4"></i>
-      <span>Validating certificate...</span>
+      <span>${t.validating}</span>
     </div>
   `;
   lucide.createIcons();
@@ -350,10 +391,10 @@ async function handleValidateCert(id, isPublic = false) {
       resultBox.className =
         "mt-6 p-4 rounded-lg text-sm border-l-4 border-green-500 bg-green-50 text-green-700 fade-in";
       resultBox.innerHTML = `
-        <p class="font-bold mb-1">✓ Valid Certificate</p>
-        <p>Issued to <strong>${cert.recipient}</strong></p>
-        <p>Course: ${cert.course}</p>
-        <p class="text-green-600 text-xs mt-1">Issued by ${cert.issuer} on ${cert.date}</p>
+        <p class="font-bold mb-1">${t.validCert}</p>
+        <p>${t.issuedTo} <strong>${cert.recipient}</strong></p>
+        <p>${t.course}: ${cert.course}</p>
+        <p class="text-green-600 text-xs mt-1">${t.issuedBy} ${cert.issuer} ${t.on} ${cert.date}</p>
       `;
 
       // Load certificate data and reveal preview
@@ -369,9 +410,9 @@ async function handleValidateCert(id, isPublic = false) {
       resultBox.className =
         "mt-6 p-4 rounded-lg text-sm border-l-4 border-red-500 bg-red-50 text-red-700 fade-in";
       resultBox.innerHTML = `
-        <p class="font-bold mb-1">✗ Record Not Found</p>
-        <p>The ID <strong>"${id}"</strong> does not match any issued certificate.</p>
-        <p class="text-red-500 text-xs mt-1">This certificate may be fake or the ID was entered incorrectly.</p>
+        <p class="font-bold mb-1">${t.notFound}</p>
+        <p>${t.notFoundMsg}</p>
+        <p class="text-red-500 text-xs mt-1">${t.fakeWarning}</p>
       `;
       if (certContainer) certContainer.style.opacity = "0";
     }
@@ -380,8 +421,8 @@ async function handleValidateCert(id, isPublic = false) {
     resultBox.className =
       "mt-6 p-4 rounded-lg text-sm border-l-4 border-amber-500 bg-amber-50 text-amber-700 fade-in";
     resultBox.innerHTML = `
-      <p class="font-bold mb-1">Connection Error</p>
-      <p>Unable to reach the database. Please check your connection and try again.</p>
+      <p class="font-bold mb-1">${t.connectionError}</p>
+      <p>${t.connectionErrorMsg}</p>
     `;
   }
 

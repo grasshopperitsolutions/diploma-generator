@@ -100,6 +100,11 @@
       .auth-hidden {
         display: none;
       }
+
+      /* Language visibility */
+      [data-lang]:hidden {
+        display: none;
+      }
     </style>
   </head>
   <body
@@ -122,20 +127,43 @@
           >
         </div>
 
-        <div class="hidden md:flex items-center space-x-8">
+        <div class="flex items-center space-x-3 md:space-x-6">
+          <!-- Language Toggle -->
+          <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              onclick="setLanguage('en')"
+              id="btn-en"
+              class="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600"
+            >
+              EN
+            </button>
+            <button
+              onclick="setLanguage('es')"
+              id="btn-es"
+              class="px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500"
+            >
+              ES
+            </button>
+          </div>
+
+          <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+
           <button
             onclick="scrollToSection('validator')"
-            class="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-100 transition-all border border-indigo-100"
+            class="hidden sm:flex items-center gap-2 bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-100 transition-all border border-indigo-100"
           >
             <i data-lucide="shield-check" class="h-4 w-4"></i>
-            Verify ID
+            <span data-en>Verify ID</span>
+            <span data-es class="hidden">Verificar ID</span>
           </button>
           <button
             id="login-register-button"
             onclick="openAuth('login')"
-            class="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all border border-indigo-100"
+            class="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
           >
-            Sign In / Register
+            <i data-lucide="user" class="h-4 w-4"></i>
+            <span data-en>Sign In</span>
+            <span data-es class="hidden">Ingresar</span>
           </button>
         </div>
       </div>
@@ -172,32 +200,53 @@
               </span>
               <span
                 class="text-xs font-bold uppercase tracking-widest text-slate-500"
-                >Trusted by 500+ Institutions</span
               >
+                <span data-en>Trusted by 500+ Institutions</span>
+                <span data-es class="hidden"
+                  >Confiado por más de 500 instituciones</span
+                >
+              </span>
             </div>
             <h1
-              class="text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-slate-900"
+              class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-slate-900"
             >
-              Elevate Your
-              <span class="gradient-text italic font-serif">Credentials</span>
-              with Security.
+              <span data-en
+                >Elevate Your
+                <span class="gradient-text italic font-serif">Credentials</span>
+                with Security.</span
+              >
+              <span data-es class="hidden"
+                >Eleva tus
+                <span class="gradient-text italic font-serif"
+                  >Credenciales</span
+                >
+                con seguridad.</span
+              >
             </h1>
             <p class="text-lg text-slate-600 leading-relaxed mb-10 max-w-lg">
-              Issue digital certificates in seconds. Empower your students and
-              protect your institution's reputation.
+              <span data-en
+                >Issue digital certificates in seconds. Empower your students
+                and protect your institution's reputation.</span
+              >
+              <span data-es class="hidden"
+                >Emite certificados digitales en segundos. Empodera a tus
+                estudiantes y protege la reputación de tu institución.</span
+              >
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
               <button
                 onclick="openAuth('login')"
                 class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
               >
-                Get Started for Free
+                <span data-en>Get Started for Free</span>
+                <span data-es class="hidden">Comienza gratis</span>
               </button>
               <button
                 onclick="scrollToSection('validator')"
                 class="bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all"
               >
-                Validate a Certificate
+                <span data-en>Validate a Certificate</span>
+                <span data-es class="hidden">Validar certificado</span>
               </button>
             </div>
           </div>
@@ -214,15 +263,20 @@
                   data-lucide="award"
                   class="h-12 w-12 text-indigo-600 mb-4"
                 ></i>
-                <h3 class="font-serif text-3xl mb-1">Certificate</h3>
+                <h3 class="font-serif text-3xl mb-1">
+                  <span data-en>Certificate</span>
+                  <span data-es class="hidden">Certificado</span>
+                </h3>
                 <p class="text-slate-400 text-sm italic mb-6 text-center">
-                  of Professional Excellence
+                  <span data-en>of Professional Excellence</span>
+                  <span data-es class="hidden">de Excelencia Profesional</span>
                 </p>
                 <div class="h-px w-full bg-slate-100 mb-8"></div>
                 <p
                   class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2"
                 >
-                  Awarded To
+                  <span data-en>Awarded To</span>
+                  <span data-es class="hidden">Otorgado a</span>
                 </p>
                 <h4 class="text-2xl font-bold text-slate-800 mb-10">
                   Alexander Hamilton
@@ -246,11 +300,18 @@
         <div class="max-w-7xl mx-auto">
           <div class="text-center mb-16">
             <h2 class="text-4xl font-extrabold text-slate-900 mb-4">
-              Comprehensive Solutions
+              <span data-en>Comprehensive Solutions</span>
+              <span data-es class="hidden">Soluciones Integrales</span>
             </h2>
             <p class="text-slate-500 max-w-2xl mx-auto">
-              Everything you need to modernize your institutional certification
-              process from end to end.
+              <span data-en
+                >Everything you need to modernize your institutional
+                certification process from end to end.</span
+              >
+              <span data-es class="hidden"
+                >Todo lo que necesitas para modernizar tu proceso de
+                certificación institucional de principio a fin.</span
+              >
             </p>
           </div>
 
@@ -264,11 +325,21 @@
               >
                 <i data-lucide="layout-template" class="h-7 w-7"></i>
               </div>
-              <h3 class="text-xl font-bold mb-3">Dynamic Templating</h3>
+              <h3 class="text-xl font-bold mb-3">
+                <span data-en>Dynamic Templating</span>
+                <span data-es class="hidden">Plantillas Dinámicas</span>
+              </h3>
               <p class="text-slate-600 text-sm leading-relaxed">
-                Design beautiful, responsive certificates that match your brand
-                identity. Switch themes instantly without re-issuing data. (New
-                themes added frequently!)
+                <span data-en
+                  >Design beautiful, responsive certificates that match your
+                  brand identity. Switch themes instantly without re-issuing
+                  data. (New themes added frequently!)</span
+                >
+                <span data-es class="hidden"
+                  >Diseña certificados hermosos y responsivos que coincidan con
+                  tu identidad de marca. Cambia temas instantáneamente sin
+                  reemitir datos. (¡Nuevos temas añadidos frecuentemente!)</span
+                >
               </p>
             </div>
 
@@ -281,10 +352,20 @@
               >
                 <i data-lucide="qr-code" class="h-7 w-7"></i>
               </div>
-              <h3 class="text-xl font-bold mb-3">QR Verification</h3>
+              <h3 class="text-xl font-bold mb-3">
+                <span data-en>QR Verification</span>
+                <span data-es class="hidden">Verificación QR</span>
+              </h3>
               <p class="text-slate-600 text-sm leading-relaxed">
-                Each certificate comes with an encrypted QR code. Employers can
-                verify authenticity instantly via any mobile device.
+                <span data-en
+                  >Each certificate comes with an encrypted QR code. Employers
+                  can verify authenticity instantly via any mobile device.</span
+                >
+                <span data-es class="hidden"
+                  >Cada certificado viene con un código QR encriptado. Los
+                  empleadores pueden verificar la autenticidad instantáneamente
+                  desde cualquier dispositivo móvil.</span
+                >
               </p>
             </div>
 
@@ -297,11 +378,21 @@
               >
                 <i data-lucide="layers" class="h-7 w-7"></i>
               </div>
-              <h3 class="text-xl font-bold mb-3">Bulk Automations</h3>
+              <h3 class="text-xl font-bold mb-3">
+                <span data-en>Bulk Automations</span>
+                <span data-es class="hidden">Automatización Masiva</span>
+              </h3>
               <p class="text-slate-600 text-sm leading-relaxed">
-                Upload a simple CSV and generate thousands of unique,
-                personalized certificates in minutes. Zero manual entry
-                required.
+                <span data-en
+                  >Upload a simple CSV and generate thousands of unique,
+                  personalized certificates in minutes. Zero manual entry
+                  required.</span
+                >
+                <span data-es class="hidden"
+                  >Sube un CSV simple y genera miles de certificados únicos y
+                  personalizados en minutos. No se requiere entrada
+                  manual.</span
+                >
               </p>
             </div>
           </div>
@@ -324,24 +415,34 @@
             >
               <i data-lucide="shield-check" class="h-8 w-8 text-indigo-400"></i>
             </div>
-            <h2 class="text-4xl font-extrabold mb-4">Public Validator</h2>
+            <h2 class="text-4xl font-extrabold mb-4">
+              <span data-en>Public Validator</span>
+              <span data-es class="hidden">Validador Público</span>
+            </h2>
             <p class="text-slate-400 mb-10 max-w-md mx-auto">
-              Enter a Certificate ID below to check its authenticity against our
-              records.
+              <span data-en
+                >Enter a Certificate ID below to check its authenticity against
+                our records.</span
+              >
+              <span data-es class="hidden"
+                >Ingresa el ID del certificado para verificar su autenticidad en
+                nuestros registros.</span
+              >
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
               <input
                 type="text"
                 id="verify-input"
-                placeholder="Enter Certificate ID (e.g. CERT-123)"
+                placeholder="CERT-XXXX"
                 class="flex-grow px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
               />
               <button
                 onclick="handleVerify()"
                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
               >
-                Verify Now
+                <span data-en>Verify Now</span>
+                <span data-es class="hidden">Verificar ahora</span>
               </button>
             </div>
 
@@ -370,9 +471,18 @@
               >
             </div>
             <div class="flex gap-8 text-sm font-semibold text-slate-500">
-              <a href="#" class="hover:text-indigo-600">Privacy Policy</a>
-              <a href="#" class="hover:text-indigo-600">Terms of Service</a>
-              <a href="#" class="hover:text-indigo-600">Contact Support</a>
+              <a href="#" class="hover:text-indigo-600">
+                <span data-en>Privacy Policy</span>
+                <span data-es class="hidden">Política de Privacidad</span>
+              </a>
+              <a href="#" class="hover:text-indigo-600">
+                <span data-en>Terms of Service</span>
+                <span data-es class="hidden">Términos de Servicio</span>
+              </a>
+              <a href="#" class="hover:text-indigo-600">
+                <span data-en>Contact Support</span>
+                <span data-es class="hidden">Soporte</span>
+              </a>
             </div>
           </div>
 
@@ -380,7 +490,9 @@
             class="flex flex-col md:flex-row justify-between items-center border-t border-slate-100 pt-8 gap-4"
           >
             <p class="text-slate-400 text-sm font-medium">
-              &copy; <span id="year"></span> All rights reserved.
+              &copy; <span id="year"></span>
+              <span data-en>All rights reserved.</span>
+              <span data-es class="hidden">Todos los derechos reservados.</span>
             </p>
             <p class="text-slate-400 text-sm">
               Website made by
@@ -410,10 +522,14 @@
           <div class="flex justify-between items-start mb-6">
             <div>
               <h2 id="auth-title" class="text-3xl font-bold text-gray-900">
-                Sign In
+                <span data-en>Sign In</span>
+                <span data-es class="hidden">Iniciar Sesión</span>
               </h2>
               <p id="auth-subtitle" class="text-gray-500 mt-1">
-                Access your certificate dashboard
+                <span data-en>Access your certificate dashboard</span>
+                <span data-es class="hidden"
+                  >Accede a tu panel de certificados</span
+                >
               </p>
             </div>
             <button
@@ -449,9 +565,10 @@
             class="space-y-4"
           >
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Email</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span data-en>Email</span>
+                <span data-es class="hidden">Correo electrónico</span>
+              </label>
               <input
                 type="email"
                 id="login-email"
@@ -462,15 +579,17 @@
             </div>
             <div>
               <div class="flex justify-between">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Password</label
-                >
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <span data-en>Password</span>
+                  <span data-es class="hidden">Contraseña</span>
+                </label>
                 <button
                   type="button"
                   onclick="toggleAuthMode('forgot')"
                   class="text-sm text-indigo-600 hover:underline"
                 >
-                  Forgot?
+                  <span data-en>Forgot?</span>
+                  <span data-es class="hidden">¿Olvidaste?</span>
                 </button>
               </div>
               <input
@@ -485,16 +604,19 @@
               type="submit"
               class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
             >
-              <span>Sign In</span>
+              <span data-en>Sign In</span>
+              <span data-es class="hidden">Iniciar Sesión</span>
             </button>
             <p class="text-center text-sm text-gray-600 mt-4">
-              Don't have an account?
+              <span data-en>Don't have an account?</span>
+              <span data-es class="hidden">¿No tienes cuenta?</span>
               <button
                 type="button"
                 onclick="toggleAuthMode('register')"
                 class="text-indigo-600 font-semibold hover:underline"
               >
-                Create one
+                <span data-en>Create one</span>
+                <span data-es class="hidden">Crea una</span>
               </button>
             </p>
           </form>
@@ -507,9 +629,10 @@
           >
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >First Name</label
-                >
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <span data-en>First Name</span>
+                  <span data-es class="hidden">Nombre</span>
+                </label>
                 <input
                   type="text"
                   id="reg-fname"
@@ -518,9 +641,10 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Last Name</label
-                >
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <span data-en>Last Name</span>
+                  <span data-es class="hidden">Apellido</span>
+                </label>
                 <input
                   type="text"
                   id="reg-lname"
@@ -530,9 +654,10 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Company Name</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span data-en>Company Name</span>
+                <span data-es class="hidden">Nombre de Empresa</span>
+              </label>
               <input
                 type="text"
                 id="reg-company"
@@ -542,9 +667,10 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Company Logo URL (Optional)</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span data-en>Company Logo URL (Optional)</span>
+                <span data-es class="hidden">URL del Logo (Opcional)</span>
+              </label>
               <input
                 type="url"
                 id="reg-logo"
@@ -556,9 +682,10 @@
               id="reg-logo-preview"
               class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
             >
-              <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Logo Preview</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <span data-en>Logo Preview</span>
+                <span data-es class="hidden">Vista previa del logo</span>
+              </label>
               <div class="flex items-center gap-4">
                 <img
                   id="reg-logo-preview-img"
@@ -567,9 +694,15 @@
                   class="h-16 w-16 object-contain"
                 />
                 <div class="text-sm text-gray-500">
-                  <p>Logo will appear on certificates</p>
-                  <p class="mt-1">
+                  <p data-en>Logo will appear on certificates</p>
+                  <p data-es class="hidden">
+                    El logo aparecerá en los certificados
+                  </p>
+                  <p class="mt-1" data-en>
                     Recommended: PNG, SVG, or transparent background
+                  </p>
+                  <p class="mt-1" data-es class="hidden">
+                    Recomendado: PNG, SVG o fondo transparente
                   </p>
                 </div>
               </div>
@@ -587,31 +720,35 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Password</label
-              >
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span data-en>Password</span>
+                <span data-es class="hidden">Contraseña</span>
+              </label>
               <input
                 type="password"
                 id="reg-pass"
                 required
                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                placeholder="Min 8 characters"
+                placeholder="Min 6 characters"
               />
             </div>
             <button
               type="submit"
               class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
             >
-              <span>Create Account</span>
+              <span data-en>Create Account</span>
+              <span data-es class="hidden">Crear Cuenta</span>
             </button>
             <p class="text-center text-sm text-gray-600 mt-4">
-              Already have an account?
+              <span data-en>Already have an account?</span>
+              <span data-es class="hidden">¿Ya tienes cuenta?</span>
               <button
                 type="button"
                 onclick="toggleAuthMode('login')"
                 class="text-indigo-600 font-semibold hover:underline"
               >
-                Sign In
+                <span data-en>Sign In</span>
+                <span data-es class="hidden">Iniciar Sesión</span>
               </button>
             </p>
           </form>
@@ -623,7 +760,14 @@
             class="auth-hidden space-y-4"
           >
             <p class="text-sm text-gray-600">
-              Enter your email and we'll send you a link to reset your password.
+              <span data-en
+                >Enter your email and we'll send you a link to reset your
+                password.</span
+              >
+              <span data-es class="hidden"
+                >Ingresa tu correo y te enviaremos un enlace para restablecer tu
+                contraseña.</span
+              >
             </p>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -641,14 +785,16 @@
               type="submit"
               class="auth-submit-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2"
             >
-              <span>Send Reset Link</span>
+              <span data-en>Send Reset Link</span>
+              <span data-es class="hidden">Enviar Enlace</span>
             </button>
             <button
               type="button"
               onclick="toggleAuthMode('login')"
               class="w-full text-center text-sm text-indigo-600 font-semibold hover:underline mt-4 block"
             >
-              Back to Sign In
+              <span data-en>Back to Sign In</span>
+              <span data-es class="hidden">Volver a Iniciar Sesión</span>
             </button>
           </form>
         </div>
@@ -664,7 +810,7 @@
         onclick="hideLegal()"
         class="flex items-center text-indigo-600 font-medium mb-8 hover:underline"
       >
-        ← Back
+        ← <span data-en>Back</span><span data-es class="hidden">Volver</span>
       </button>
       <div class="max-w-3xl mx-auto prose lg:prose-xl">
         <h1 id="legal-title" class="text-4xl font-bold text-gray-900 mb-8"></h1>
@@ -740,8 +886,10 @@
       // Restore session on page load - redirect to dashboard if already logged in
       // We use a flag to prevent redirect during registration (when user is being created)
       let isRegistering = false;
-      window.setRegisteringFlag = (value) => { isRegistering = value; };
-      
+      window.setRegisteringFlag = (value) => {
+        isRegistering = value;
+      };
+
       onAuthStateChanged(auth, async (user) => {
         if (user && !isRegistering) {
           // User is logged in (and not in the middle of registration), redirect to dashboard
@@ -751,5 +899,43 @@
       console.log("✅ Firebase initialized");
     </script>
     <script src="script.js"></script>
+    <script>
+      // Language State Management
+      let currentLang = "en";
+
+      function setLanguage(lang) {
+        currentLang = lang;
+
+        // Toggle visibility of language-specific elements
+        document.querySelectorAll("[data-en]").forEach((el) => {
+          el.classList.toggle("hidden", lang !== "en");
+        });
+        document.querySelectorAll("[data-es]").forEach((el) => {
+          el.classList.toggle("hidden", lang !== "es");
+        });
+
+        // Update toggle buttons UI
+        const btnEn = document.getElementById("btn-en");
+        const btnEs = document.getElementById("btn-es");
+
+        if (lang === "en") {
+          btnEn.className =
+            "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+          btnEs.className =
+            "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+        } else {
+          btnEs.className =
+            "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+          btnEn.className =
+            "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+        }
+
+        // Re-initialize icons after language change
+        lucide.createIcons();
+      }
+
+      // Expose setLanguage globally
+      window.setLanguage = setLanguage;
+    </script>
   </body>
 </html>
