@@ -22,23 +22,30 @@ const defaultLogo = "default-logo.ico";
 // Shared preview area element (moved between views)
 let previewArea = null;
 
+// Detect current page
+const isDashboardPage = window.location.pathname.includes("dashboard.html");
+
 // --- Init ---
 document.addEventListener("DOMContentLoaded", () => {
   previewArea = document.getElementById("preview-area");
-  generateId();
-  const today = new Date().toLocaleDateString();
-  state.data.date = today;
-  const dateInput = document.getElementById("input-date");
-  if (dateInput) dateInput.value = today;
-  renderCertificate();
-  lucide.createIcons();
-  handleResize();
-  window.addEventListener("resize", handleResize);
 
-  // Initialize dynamic theme lists
-  initThemeLists();
+  // Only run dashboard-specific initialization on dashboard page
+  if (isDashboardPage) {
+    generateId();
+    const today = new Date().toLocaleDateString();
+    state.data.date = today;
+    const dateInput = document.getElementById("input-date");
+    if (dateInput) dateInput.value = today;
+    renderCertificate();
+    lucide.createIcons();
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
-  // Initialize new design features
+    // Initialize dynamic theme lists
+    initThemeLists();
+  }
+
+  // Initialize new design features (runs on both pages)
   initializeNewDesign();
 });
 
@@ -466,18 +473,13 @@ async function handleDeleteUser() {
     await window.firebaseDeleteUser(window.firebaseAuth.currentUser);
     alert("✅ Account deleted successfully!");
 
-    // Clear local state and redirect to splash
+    // Clear local state and redirect to index
     state.user = null;
     state.certificates = [];
     state.bulkCertificates = [];
 
-    const userDisplayEl = document.getElementById("user-display");
-    if (userDisplayEl) userDisplayEl.classList.add("hidden");
-
-    document.getElementById("dashboard-view").classList.add("hidden");
-    document.getElementById("dashboard-view").classList.remove("flex");
-    document.getElementById("splash-view").classList.remove("hidden");
-    document.getElementById("public-nav").classList.remove("hidden");
+    // Redirect to index page
+    window.location.href = "index.html";
   } catch (error) {
     console.error("Error deleting user:", error);
 
@@ -827,12 +829,18 @@ async function handleAuthAction(e, type) {
         throw new Error("Password must be at least 6 characters");
       }
 
+      // Set registering flag to prevent premature redirect by onAuthStateChanged
+      if (window.setRegisteringFlag) {
+        window.setRegisteringFlag(true);
+      }
+
       const userCredential = await window.firebaseSignUp(
         window.firebaseAuth,
         email,
         pass,
       );
 
+      // Create user document in Firestore
       await window.firestoreSetDoc(
         window.firestoreDoc(
           window.firebaseDB,
@@ -849,6 +857,11 @@ async function handleAuthAction(e, type) {
           updatedAt: window.firestoreTimestamp(),
         },
       );
+
+      // Clear registering flag - Firestore document is now created
+      if (window.setRegisteringFlag) {
+        window.setRegisteringFlag(false);
+      }
 
       const successTextEl = document.getElementById("auth-success-text");
       const successEl = document.getElementById("auth-success");
@@ -890,6 +903,11 @@ async function handleAuthAction(e, type) {
       if (forgotEmailEl) forgotEmailEl.value = "";
     }
   } catch (err) {
+    // Clear registering flag on error
+    if (window.setRegisteringFlag) {
+      window.setRegisteringFlag(false);
+    }
+
     let errorMessage = err.message;
 
     const errorMap = {
@@ -924,19 +942,18 @@ function completeLogin(userData) {
   state.data.issuer = userData.company;
   state.data.logo = userData.logoUrl || defaultLogo;
 
-  // Update header display
+  // If on index.html (landing page), redirect to dashboard
+  if (!isDashboardPage) {
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  // Update header display (dashboard page only)
   const userDisplayEl = document.getElementById("user-display");
   if (userDisplayEl) {
     userDisplayEl.innerText = userData.name;
     userDisplayEl.classList.remove("hidden");
   }
-
-  // Hide splash, show dashboard
-  document.getElementById("splash-view").classList.add("hidden");
-  document.getElementById("auth-modal").classList.add("hidden");
-  document.getElementById("public-nav").classList.add("hidden");
-  document.getElementById("dashboard-view").classList.remove("hidden");
-  document.getElementById("dashboard-view").classList.add("flex");
 
   // Populate settings form
   const fields = {
@@ -980,20 +997,8 @@ async function logout() {
       logo: defaultLogo,
     };
 
-    ["input-recipient", "input-course", "input-issuer", "input-date"].forEach(
-      (id) => {
-        const el = document.getElementById(id);
-        if (el) el.value = id === "input-date" ? state.data.date : "";
-      },
-    );
-
-    const userDisplayEl = document.getElementById("user-display");
-    if (userDisplayEl) userDisplayEl.classList.add("hidden");
-
-    document.getElementById("dashboard-view").classList.add("hidden");
-    document.getElementById("dashboard-view").classList.remove("flex");
-    document.getElementById("splash-view").classList.remove("hidden");
-    document.getElementById("public-nav").classList.remove("hidden");
+    // Redirect to index page
+    window.location.href = "index.html";
   } catch (error) {
     console.error("Logout error:", error);
   }
