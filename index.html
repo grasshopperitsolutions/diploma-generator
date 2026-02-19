@@ -19,6 +19,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- HTML5 QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
     <style>
       body {
         font-family: "Plus Jakarta Sans", sans-serif;
@@ -444,6 +447,15 @@
                 <span data-en>Verify Now</span>
                 <span data-es class="hidden">Verificar ahora</span>
               </button>
+              <button
+                onclick="openQRScanner()"
+                class="bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 border border-white/20"
+                title="Scan QR Code"
+              >
+                <i data-lucide="camera" class="h-5 w-5"></i>
+                <span data-en>Scan</span>
+                <span data-es class="hidden">Escanear</span>
+              </button>
             </div>
 
             <div
@@ -797,6 +809,57 @@
               <span data-es class="hidden">Volver a Iniciar Sesión</span>
             </button>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR SCANNER MODAL -->
+    <div
+      id="qr-scanner-modal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+      >
+        <div class="p-6 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">
+              <span data-en>Scan QR Code</span>
+              <span data-es class="hidden">Escanear Código QR</span>
+            </h3>
+            <button
+              onclick="closeQRScanner()"
+              class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
+            >
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+          <p class="text-sm text-gray-500 mt-1">
+            <span data-en>Position the QR code within the frame to scan</span>
+            <span data-es class="hidden">Posiciona el código QR dentro del marco para escanear</span>
+          </p>
+        </div>
+        <div class="p-4">
+          <div
+            id="qr-reader"
+            class="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden"
+          ></div>
+          <div
+            id="qr-scanner-error"
+            class="hidden mt-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg"
+          >
+            <i data-lucide="alert-circle" class="h-4 w-4 inline mr-2"></i>
+            <span id="qr-scanner-error-text"></span>
+          </div>
+          <div class="mt-4 flex gap-3">
+            <button
+              onclick="closeQRScanner()"
+              class="flex-1 px-4 py-3 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            >
+              <span data-en>Cancel</span>
+              <span data-es class="hidden">Cancelar</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

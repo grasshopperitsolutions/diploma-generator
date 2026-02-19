@@ -9,6 +9,7 @@ const state = {
   certificates: [],
   bulkCertificates: [],
   editingCertificateId: null, // Track if we're editing an existing certificate
+  qrScanner: null, // HTML5 QR scanner instance
   data: {
     recipient: "",
     course: "",
@@ -1872,6 +1873,168 @@ function initializePublicValidator() {
     }
   };
 }
+
+// --- QR Scanner Functions ---
+
+/**
+ * Open the QR scanner modal and start the camera
+ */
+async function openQRScanner() {
+  const modal = document.getElementById("qr-scanner-modal");
+  const errorBox = document.getElementById("qr-scanner-error");
+  const errorText = document.getElementById("qr-scanner-error-text");
+  
+  // Hide any previous errors
+  if (errorBox) errorBox.classList.add("hidden");
+  
+  // Show modal
+  if (modal) modal.classList.remove("hidden");
+  
+  // Re-initialize icons for the modal
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+
+  // Check if html5-qrcode is available
+  if (typeof Html5Qrcode === 'undefined') {
+    showScannerError("QR scanner library not loaded. Please refresh the page.");
+    return;
+  }
+
+  try {
+    // Create scanner instance
+    state.qrScanner = new Html5Qrcode("qr-reader");
+    
+    // Start scanning with camera
+    await state.qrScanner.start(
+      { facingMode: "environment" }, // Use back camera on mobile
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+      },
+      onQRCodeScanned,
+      onQRCodeScanError
+    );
+    
+    console.log("✅ QR Scanner started successfully");
+  } catch (err) {
+    console.error("Error starting QR scanner:", err);
+    
+    // Handle specific errors
+    let errorMessage = err.message || "Unable to access camera";
+    
+    if (err.name === "NotAllowedError" || err.message?.includes("Permission")) {
+      errorMessage = state.currentLang === 'es' 
+        ? "Permiso de cámara denegado. Por favor permite el acceso a la cámara en tu navegador."
+        : "Camera permission denied. Please allow camera access in your browser settings.";
+    } else if (err.name === "NotFoundError" || err.message?.includes("not found")) {
+      errorMessage = state.currentLang === 'es'
+        ? "No se encontró ninguna cámara. Asegúrate de que tu dispositivo tiene una cámara."
+        : "No camera found. Please ensure your device has a camera.";
+    } else if (err.name === "NotReadableError") {
+      errorMessage = state.currentLang === 'es'
+        ? "La cámara está en uso por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara."
+        : "Camera is in use by another application. Close other apps that might be using the camera.";
+    }
+    
+    showScannerError(errorMessage);
+  }
+}
+
+/**
+ * Close the QR scanner modal and stop the camera
+ */
+async function closeQRScanner() {
+  const modal = document.getElementById("qr-scanner-modal");
+  
+  // Stop the scanner if it's running
+  if (state.qrScanner) {
+    try {
+      await state.qrScanner.stop();
+      state.qrScanner.clear();
+      console.log("✅ QR Scanner stopped");
+    } catch (err) {
+      console.warn("Error stopping QR scanner:", err);
+    }
+    state.qrScanner = null;
+  }
+  
+  // Hide modal
+  if (modal) modal.classList.add("hidden");
+}
+
+/**
+ * Handle successful QR code scan
+ */
+function onQRCodeScanned(decodedText) {
+  console.log("📱 QR Code scanned:", decodedText);
+  
+  // Extract certificate ID from the scanned text
+  // The QR code contains just the certificate ID (e.g., "CERT-XXXX")
+  let certId = decodedText.trim().toUpperCase();
+  
+  // If the QR code contains a URL, extract the ID from it
+  if (certId.includes("/")) {
+    const parts = certId.split("/");
+    certId = parts[parts.length - 1];
+  }
+  
+  // Validate the ID format (should start with CERT-)
+  if (!certId.startsWith("CERT-")) {
+    showScannerError(
+      state.currentLang === 'es'
+        ? "El código QR escaneado no parece ser un certificado válido."
+        : "The scanned QR code doesn't appear to be a valid certificate."
+    );
+    return;
+  }
+  
+  // Close the scanner
+  closeQRScanner();
+  
+  // Determine if we're on the public page or dashboard
+  const isPublic = !isDashboardPage;
+  
+  if (isPublic) {
+    // On public page, populate the verify input and trigger validation
+    const verifyInput = document.getElementById("verify-input");
+    if (verifyInput) {
+      verifyInput.value = certId;
+    }
+    handleValidateCert(certId, true);
+  } else {
+    // On dashboard, populate the validate input and trigger validation
+    const validateInput = document.getElementById("validate-id");
+    if (validateInput) {
+      validateInput.value = certId;
+    }
+    handleValidateCert(certId, false);
+  }
+}
+
+/**
+ * Handle QR code scan errors (during scanning, not startup)
+ */
+function onQRCodeScanError(errorMessage) {
+  // These are non-critical errors during scanning, just log them
+  console.warn("QR scan error:", errorMessage);
+}
+
+/**
+ * Show an error message in the scanner modal
+ */
+function showScannerError(message) {
+  const errorBox = document.getElementById("qr-scanner-error");
+  const errorText = document.getElementById("qr-scanner-error-text");
+  
+  if (errorText) errorText.textContent = message;
+  if (errorBox) errorBox.classList.remove("hidden");
+}
+
+// Expose QR scanner functions globally
+window.openQRScanner = openQRScanner;
+window.closeQRScanner = closeQRScanner;
 
 // --- Rendering ---
 function renderCertificate() {
