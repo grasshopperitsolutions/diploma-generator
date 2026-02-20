@@ -715,12 +715,12 @@ async function handleSaveCertificate() {
 /**
  * Validate a certificate by ID against Firestore
  */
-async function handleValidateCert(id, isPublic = false) {
+async function handleValidateCert(id) {
   if (!id) {
     id = document.getElementById("validate-id").value.trim().toUpperCase();
   }
 
-  const resultBox = isPublic
+  const resultBox = !isDashboardPage
     ? document.getElementById("verify-result-public")
     : document.getElementById("verify-result");
   const certContainer = document.getElementById("certificate-container");
@@ -790,6 +790,25 @@ async function handleValidateCert(id, isPublic = false) {
     if (certDoc.exists()) {
       const cert = certDoc.data();
 
+      // Build download button HTML based on context (public vs dashboard)
+      const downloadBtnHtml = !isDashboardPage ? `
+        <button
+          onclick="openPublicDownloadModal('${cert.recipient.replace(/'/g, "\\'")}', '${cert.course.replace(/'/g, "\\'")}', '${cert.id}', '${cert.date}', '${(cert.issuer || '').replace(/'/g, "\\'")}')"
+          class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
+        >
+          <i data-lucide="download" class="h-4 w-4"></i>
+          <span>${lang === 'es' ? 'Descargar Certificado' : 'Download Certificate'}</span>
+        </button>
+      ` : `
+        <button
+          onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}'})"
+          class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
+        >
+          <i data-lucide="download" class="h-4 w-4"></i>
+          <span>${lang === 'es' ? 'Descargar Certificado' : 'Download Certificate'}</span>
+        </button>
+      `;
+
       resultBox.className =
         "mt-6 p-4 rounded-lg text-sm border-l-4 border-green-500 bg-green-50 text-green-700 fade-in";
       resultBox.innerHTML = `
@@ -797,6 +816,7 @@ async function handleValidateCert(id, isPublic = false) {
         <p>${t.issuedTo} <strong>${cert.recipient}</strong></p>
         <p>${t.course}: ${cert.course}</p>
         <p class="text-green-600 text-xs mt-1">${t.issuedBy} ${cert.issuer} ${t.on} ${cert.date}</p>
+        ${downloadBtnHtml}
       `;
 
       // Load certificate data and reveal preview
@@ -1862,7 +1882,7 @@ function initializePublicValidator() {
   // Set up the public validator handler (same as the dashboard validator but for the splash page)
   window.handleVerify = function () {
     const input = document.getElementById("verify-input").value.trim();
-    handleValidateCert(input, true);
+    handleValidateCert(input);
   };
 
   // Add scroll helper function
@@ -1994,23 +2014,22 @@ function onQRCodeScanned(decodedText) {
   closeQRScanner();
   
   // Determine if we're on the public page or dashboard
-  const isPublic = !isDashboardPage;
-  
-  if (isPublic) {
+  if (!isDashboardPage) {
     // On public page, populate the verify input and trigger validation
     const verifyInput = document.getElementById("verify-input");
     if (verifyInput) {
       verifyInput.value = certId;
     }
-    handleValidateCert(certId, true);
   } else {
     // On dashboard, populate the validate input and trigger validation
     const validateInput = document.getElementById("validate-id");
     if (validateInput) {
       validateInput.value = certId;
     }
-    handleValidateCert(certId, false);
   }
+  
+  // Trigger validation (function determines context via isDashboardPage)
+  handleValidateCert(certId);
 }
 
 /**
@@ -2035,6 +2054,260 @@ function showScannerError(message) {
 // Expose QR scanner functions globally
 window.openQRScanner = openQRScanner;
 window.closeQRScanner = closeQRScanner;
+
+/**
+ * Open the public download modal (for index.html public validator)
+ * Creates a simple modal if it doesn't exist, or uses the existing one
+ */
+function openPublicDownloadModal(recipient, course, id, date, issuer) {
+  // Store the certificate data
+  const certData = { recipient, course, id, date, issuer, logo: "default-logo.ico" };
+  state.modalData = certData;
+  state.modalTheme = state.theme || "academic";
+
+  // Check if modal exists (it should be in index.html)
+  const modal = document.getElementById("public-download-modal");
+  
+  if (!modal) {
+    // Create modal dynamically if it doesn't exist
+    createPublicDownloadModal();
+  }
+
+  // Show modal
+  const modalEl = document.getElementById("public-download-modal");
+  if (modalEl) modalEl.classList.remove("hidden");
+
+  // Render initial preview
+  setTimeout(() => {
+    renderPublicModalPreview();
+    lucide.createIcons();
+  }, 50);
+}
+
+/**
+ * Create the public download modal dynamically
+ */
+function createPublicDownloadModal() {
+  const modalHtml = `
+    <div
+      id="public-download-modal"
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[80vh] overflow-hidden flex flex-col"
+      >
+        <!-- Modal Header -->
+        <div
+          class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10"
+        >
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">
+              <span data-en>Download Certificate</span>
+              <span data-es class="hidden">Descargar Certificado</span>
+            </h2>
+            <p class="text-sm text-gray-500">
+              <span data-en>Select a theme for your PDF export</span>
+              <span data-es class="hidden">Selecciona un tema para tu exportación PDF</span>
+            </p>
+          </div>
+          <button
+            onclick="closePublicDownloadModal()"
+            class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-colors"
+          >
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div
+          class="flex-grow flex flex-col md:flex-row overflow-hidden bg-gray-50"
+        >
+          <!-- Left: Theme List -->
+          <div
+            class="w-full md:w-80 bg-white border-r border-gray-200 overflow-y-auto p-6 flex-shrink-0"
+          >
+            <h3
+              class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"
+            >
+              <span data-en>Available Themes</span>
+              <span data-es class="hidden">Temas Disponibles</span>
+            </h3>
+            <div class="space-y-3" id="public-theme-list-container">
+              <!-- Theme items injected here via JS -->
+            </div>
+          </div>
+
+          <!-- Right: Preview -->
+          <div
+            class="flex-grow p-8 overflow-hidden relative flex items-center justify-center bg-slate-200"
+          >
+            <div
+              class="absolute top-4 right-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-mono text-slate-500 shadow-sm z-10"
+            >
+              <span data-en>Print Preview</span>
+              <span data-es class="hidden">Vista Previa</span>
+            </div>
+            <!-- Scaled Preview Container -->
+            <div
+              id="public-modal-preview-wrapper"
+              class="shadow-2xl bg-white transition-all duration-300 origin-center"
+            >
+              <div
+                id="public-modal-certificate-container"
+                class="relative overflow-hidden bg-white"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="px-8 py-5 border-t border-gray-100 bg-white flex justify-end items-center gap-3 z-10"
+        >
+          <button
+            onclick="closePublicDownloadModal()"
+            class="px-6 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+          >
+            <span data-en>Cancel</span>
+            <span data-es class="hidden">Cancelar</span>
+          </button>
+          <button
+            onclick="confirmPublicDownload()"
+            class="px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 flex items-center gap-2 transition-transform active:scale-95"
+          >
+            <i data-lucide="printer" class="h-4 w-4"></i>
+            <span data-en>Print / Save PDF</span>
+            <span data-es class="hidden">Imprimir / Guardar PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // Build theme list
+  const listContainer = document.getElementById("public-theme-list-container");
+  if (listContainer) {
+    THEMES.forEach((t) => {
+      const isActive = t.id === state.modalTheme;
+      const div = document.createElement("div");
+      div.className = `p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${isActive ? "border-indigo-600 bg-indigo-50" : "border-gray-200 hover:border-indigo-300 hover:bg-white"}`;
+      div.onclick = () => selectPublicModalTheme(t.id);
+      div.innerHTML = `
+        <div class="h-10 w-10 rounded-full ${isActive ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500"} flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${t.icon}" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold ${isActive ? "text-indigo-900" : "text-gray-700"}">${t.name}</p>
+          <p class="text-xs text-gray-500">${t.desc}</p>
+        </div>
+      `;
+      listContainer.appendChild(div);
+    });
+  }
+  
+  lucide.createIcons();
+}
+
+/**
+ * Select a theme for the public modal preview
+ */
+function selectPublicModalTheme(themeId) {
+  state.modalTheme = themeId;
+  
+  // Re-render theme list
+  const listContainer = document.getElementById("public-theme-list-container");
+  if (listContainer) {
+    listContainer.innerHTML = "";
+    THEMES.forEach((t) => {
+      const isActive = t.id === state.modalTheme;
+      const div = document.createElement("div");
+      div.className = `p-3 rounded-lg border-2 cursor-pointer transition-all flex items-center gap-3 ${isActive ? "border-indigo-600 bg-indigo-50" : "border-gray-200 hover:border-indigo-300 hover:bg-white"}`;
+      div.onclick = () => selectPublicModalTheme(t.id);
+      div.innerHTML = `
+        <div class="h-10 w-10 rounded-full ${isActive ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-500"} flex items-center justify-center flex-shrink-0">
+          <i data-lucide="${t.icon}" class="h-5 w-5"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold ${isActive ? "text-indigo-900" : "text-gray-700"}">${t.name}</p>
+          <p class="text-xs text-gray-500">${t.desc}</p>
+        </div>
+      `;
+      listContainer.appendChild(div);
+    });
+  }
+  
+  renderPublicModalPreview();
+  lucide.createIcons();
+}
+
+/**
+ * Render the public modal preview with selected theme and data
+ */
+function renderPublicModalPreview() {
+  const container = document.getElementById("public-modal-certificate-container");
+  const wrapper = document.getElementById("public-modal-preview-wrapper");
+
+  if (!container || !wrapper) return;
+
+  // Set fixed dimensions for rendering (A4 Landscape)
+  const w = 1123;
+  const h = 794;
+  container.style.width = w + "px";
+  container.style.height = h + "px";
+
+  renderCertificateToTarget(container, state.modalData, state.modalTheme);
+
+  // Scale to fit modal preview area
+  const parent = wrapper.parentElement;
+  if (parent) {
+    const scale = Math.min(
+      (parent.clientWidth - 40) / w,
+      (parent.clientHeight - 40) / h,
+    );
+
+    wrapper.style.width = w + "px";
+    wrapper.style.height = h + "px";
+    wrapper.style.transform = `scale(${scale})`;
+  }
+}
+
+/**
+ * Close the public download modal
+ */
+function closePublicDownloadModal() {
+  const modal = document.getElementById("public-download-modal");
+  if (modal) modal.classList.add("hidden");
+}
+
+/**
+ * Confirm download from public modal - render certificate and print
+ */
+function confirmPublicDownload() {
+  // Apply selected theme and data to main view temporarily for printing
+  const originalTheme = state.theme;
+  const originalData = { ...state.data };
+
+  state.theme = state.modalTheme;
+  state.data = state.modalData;
+
+  // Render to main container for printing
+  renderCertificate();
+
+  // Give browser a moment to repaint before print dialog
+  setTimeout(() => {
+    window.print();
+  }, 100);
+
+  closePublicDownloadModal();
+}
+
+// Expose public download modal functions globally
+window.openPublicDownloadModal = openPublicDownloadModal;
+window.closePublicDownloadModal = closePublicDownloadModal;
+window.selectPublicModalTheme = selectPublicModalTheme;
+window.confirmPublicDownload = confirmPublicDownload;
 
 // --- Rendering ---
 function renderCertificate() {

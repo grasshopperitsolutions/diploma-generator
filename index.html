@@ -108,6 +108,48 @@
       [data-lang]:hidden {
         display: none;
       }
+
+      /* Print Styles */
+      @media print {
+        @page {
+          margin: 0;
+        }
+        body {
+          background: white;
+          margin: 0;
+          padding: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print,
+        #public-nav,
+        #splash-view header,
+        #splash-view section:not(#validator),
+        #splash-view footer,
+        #auth-modal,
+        #qr-scanner-modal,
+        #legal-view {
+          display: none !important;
+        }
+        #preview-area {
+          display: block !important;
+          background: white;
+          padding: 0;
+          margin: 0;
+          overflow: visible;
+        }
+        #preview-scaler {
+          margin: 0 !important;
+          transform: none !important;
+        }
+        #certificate-container {
+          width: 100% !important;
+          height: 100% !important;
+          page-break-after: always;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+      }
     </style>
   </head>
   <body
@@ -458,14 +500,25 @@
               </button>
             </div>
 
-            <div
-              id="verify-result-public"
-              class="hidden mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 animate-in fade-in duration-500"
-            >
-              <!-- Results populated here -->
-            </div>
+          <div
+            id="verify-result-public"
+            class="hidden mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 animate-in fade-in duration-500"
+          >
+            <!-- Results populated here -->
           </div>
         </div>
+      </div>
+
+      <!-- Hidden Certificate Container for Public Download -->
+      <div id="preview-area" class="hidden">
+        <div id="preview-scaler">
+          <div
+            id="certificate-container"
+            class="bg-white shadow-2xl relative transition-all duration-300"
+            style="width: 1123px; height: 794px;"
+          ></div>
+        </div>
+      </div>
       </section>
 
       <!-- FOOTER -->
