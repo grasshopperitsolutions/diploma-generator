@@ -24,6 +24,48 @@ const state = {
   },
 };
 
+// --- Date Helper Functions ---
+/**
+ * Convert a date string to YYYY-MM-DD format for date input
+ * Accepts various formats like "2/20/2026", "02/20/2026", etc.
+ */
+function dateToInputFormat(dateStr) {
+  if (!dateStr) return "";
+  
+  // Try to parse the date
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Convert a date input value (YYYY-MM-DD) to locale date string
+ */
+function inputToLocaleFormat(inputValue) {
+  if (!inputValue) return new Date().toLocaleDateString();
+  
+  const date = new Date(inputValue + "T00:00:00");
+  if (isNaN(date.getTime())) return new Date().toLocaleDateString();
+  
+  return date.toLocaleDateString();
+}
+
+/**
+ * Handle date input change from the date picker
+ */
+function handleDateChange(inputValue) {
+  state.data.date = inputToLocaleFormat(inputValue);
+  renderCertificate();
+}
+
+// Expose globally
+window.handleDateChange = handleDateChange;
+
 // --- Language Toggle Function ---
 function setLanguage(lang) {
   state.currentLang = lang;
@@ -224,10 +266,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Only run dashboard-specific initialization on dashboard page
   if (isDashboardPage) {
     generateId();
-    const today = new Date().toLocaleDateString();
-    state.data.date = today;
+    
+    // Initialize date with today's date
+    const today = new Date();
+    state.data.date = today.toLocaleDateString();
     const dateInput = document.getElementById("input-date");
-    if (dateInput) dateInput.value = today;
+    if (dateInput) {
+      // Set the date input to today in YYYY-MM-DD format
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      dateInput.value = `${year}-${month}-${day}`;
+    }
+    
     renderCertificate();
     lucide.createIcons();
     handleResize();
@@ -666,10 +717,12 @@ function handleEditCertificate(certId) {
   const recipientInput = document.getElementById("input-recipient");
   const courseInput = document.getElementById("input-course");
   const idInput = document.getElementById("input-id");
+  const dateInput = document.getElementById("input-date");
 
   if (recipientInput) recipientInput.value = cert.recipient;
   if (courseInput) courseInput.value = cert.course;
   if (idInput) idInput.value = cert.id;
+  if (dateInput) dateInput.value = dateToInputFormat(cert.date);
 
   // Update save button to show update mode
   updateSaveButtonState();
@@ -692,15 +745,29 @@ function handleCancelEdit() {
   
   const recipientInput = document.getElementById("input-recipient");
   const courseInput = document.getElementById("input-course");
+  const dateInput = document.getElementById("input-date");
   
   if (recipientInput) recipientInput.value = "";
   if (courseInput) courseInput.value = "";
+
+  // Reset date to today
+  const today = new Date();
+  state.data.date = today.toLocaleDateString();
+  if (dateInput) {
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    dateInput.value = `${year}-${month}-${day}`;
+  }
 
   // Generate new ID
   generateId();
 
   // Update save button
   updateSaveButtonState();
+  
+  // Re-render certificate with reset date
+  renderCertificate();
 }
 
 /**
