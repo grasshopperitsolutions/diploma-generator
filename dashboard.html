@@ -401,17 +401,30 @@
                 <span data-en>Issued Certificates</span>
                 <span data-es class="hidden">Certificados Emitidos</span>
               </h2>
-              <div class="relative">
-                <i
-                  data-lucide="search"
-                  class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                ></i>
-                <input
-                  type="text"
-                  class="pl-10 pr-4 py-2 border rounded-lg outline-none w-64 focus:ring-2 focus:ring-indigo-500"
-                  data-en-placeholder="Search by recipient or ID..."
-                  data-es-placeholder="Buscar por destinatario o ID..."
-                />
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <i
+                    data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  ></i>
+                  <input
+                    type="text"
+                    id="cert-search-input"
+                    class="pl-10 pr-4 py-2 border rounded-lg outline-none w-64 focus:ring-2 focus:ring-indigo-500"
+                    data-en-placeholder="Search by name, course or ID..."
+                    data-es-placeholder="Buscar por nombre, curso o ID..."
+                    oninput="handleCertificateSearch(this.value)"
+                  />
+                </div>
+                <button
+                  id="clear-filters-btn"
+                  onclick="clearCertificateFilters()"
+                  class="hidden px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-1"
+                >
+                  <i data-lucide="x" class="h-4 w-4"></i>
+                  <span data-en>Clear</span>
+                  <span data-es class="hidden">Limpiar</span>
+                </button>
               </div>
             </div>
             <div
@@ -421,27 +434,43 @@
                 <thead class="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th
-                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
+                      onclick="handleSort('recipient')"
                     >
-                      <span data-en>Recipient</span>
-                      <span data-es class="hidden">Destinatario</span>
+                      <div class="flex items-center gap-1">
+                        <span data-en>Recipient</span>
+                        <span data-es class="hidden">Destinatario</span>
+                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-recipient"></i>
+                      </div>
                     </th>
                     <th
-                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
+                      onclick="handleSort('course')"
                     >
-                      <span data-en>Course</span>
-                      <span data-es class="hidden">Curso</span>
+                      <div class="flex items-center gap-1">
+                        <span data-en>Course</span>
+                        <span data-es class="hidden">Curso</span>
+                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-course"></i>
+                      </div>
                     </th>
                     <th
-                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
+                      onclick="handleSort('date')"
                     >
-                      <span data-en>Issued On</span>
-                      <span data-es class="hidden">Emitido El</span>
+                      <div class="flex items-center gap-1">
+                        <span data-en>Issued On</span>
+                        <span data-es class="hidden">Emitido El</span>
+                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-date"></i>
+                      </div>
                     </th>
                     <th
-                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
+                      onclick="handleSort('id')"
                     >
-                      ID
+                      <div class="flex items-center gap-1">
+                        ID
+                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-id"></i>
+                      </div>
                     </th>
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right"

@@ -7,9 +7,13 @@ const state = {
   currentLang: "en",
   authMode: "login",
   certificates: [],
+  filteredCertificates: [], // For local filtering/sorting
   bulkCertificates: [],
   editingCertificateId: null, // Track if we're editing an existing certificate
   qrScanner: null, // HTML5 QR scanner instance
+  searchQuery: "", // Current search query
+  sortColumn: null, // Current sort column
+  sortDirection: "asc", // 'asc' or 'desc'
   data: {
     recipient: "",
     course: "",
@@ -386,6 +390,9 @@ async function fetchUserCertificates() {
 function renderCertificateList() {
   const listContainer = document.getElementById("cert-list-body");
 
+  // Apply filtering and sorting
+  applyFiltersAndSort();
+
   if (state.certificates.length === 0) {
     listContainer.innerHTML = `
       <tr>
@@ -404,7 +411,26 @@ function renderCertificateList() {
     return;
   }
 
-  listContainer.innerHTML = state.certificates
+  // Check if filtered results are empty
+  if (state.filteredCertificates.length === 0 && state.searchQuery) {
+    listContainer.innerHTML = `
+      <tr>
+        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+          <div class="flex flex-col items-center gap-3">
+            <i data-lucide="search-x" class="h-12 w-12 opacity-30"></i>
+            <p class="text-base">${state.currentLang === 'es' ? 'No se encontraron resultados' : 'No results found'}</p>
+            <button onclick="clearCertificateFilters()" class="text-sm text-indigo-600 hover:underline font-medium">
+              ${state.currentLang === 'es' ? 'Limpiar búsqueda' : 'Clear search'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  listContainer.innerHTML = state.filteredCertificates
     .map(
       (cert) => `
     <tr class="hover:bg-gray-50 transition-colors">
@@ -449,7 +475,148 @@ function renderCertificateList() {
     .join("");
 
   lucide.createIcons();
+  updateSortIcons();
 }
+
+/**
+ * Apply search filter and sort to certificates
+ */
+function applyFiltersAndSort() {
+  // Start with all certificates
+  let filtered = [...state.certificates];
+
+  // Apply search filter
+  if (state.searchQuery) {
+    const query = state.searchQuery.toLowerCase().trim();
+    filtered = filtered.filter(cert => {
+      const recipient = (cert.recipient || '').toLowerCase();
+      const course = (cert.course || '').toLowerCase();
+      const id = (cert.id || '').toLowerCase();
+      
+      return recipient.includes(query) || 
+             course.includes(query) || 
+             id.includes(query);
+    });
+  }
+
+  // Apply sorting
+  if (state.sortColumn) {
+    filtered.sort((a, b) => {
+      let valA = a[state.sortColumn] || '';
+      let valB = b[state.sortColumn] || '';
+      
+      // Handle string comparison (case-insensitive)
+      valA = valA.toString().toLowerCase();
+      valB = valB.toString().toLowerCase();
+      
+      if (valA < valB) return state.sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return state.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  state.filteredCertificates = filtered;
+}
+
+/**
+ * Handle search input
+ */
+function handleCertificateSearch(query) {
+  state.searchQuery = query;
+  
+  // Show/hide clear button
+  const clearBtn = document.getElementById('clear-filters-btn');
+  if (clearBtn) {
+    if (query.trim() || state.sortColumn) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  
+  renderCertificateList();
+}
+
+/**
+ * Handle column sorting
+ */
+function handleSort(column) {
+  // If clicking the same column, toggle direction
+  if (state.sortColumn === column) {
+    state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortColumn = column;
+    state.sortDirection = 'asc';
+  }
+  
+  // Show clear button when sorting is active
+  const clearBtn = document.getElementById('clear-filters-btn');
+  if (clearBtn) {
+    clearBtn.classList.remove('hidden');
+  }
+  
+  renderCertificateList();
+}
+
+/**
+ * Clear all filters and sorting
+ */
+function clearCertificateFilters() {
+  state.searchQuery = '';
+  state.sortColumn = null;
+  state.sortDirection = 'asc';
+  
+  // Clear search input
+  const searchInput = document.getElementById('cert-search-input');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+  
+  // Hide clear button
+  const clearBtn = document.getElementById('clear-filters-btn');
+  if (clearBtn) {
+    clearBtn.classList.add('hidden');
+  }
+  
+  renderCertificateList();
+}
+
+/**
+ * Update sort icons to show current sort state
+ */
+function updateSortIcons() {
+  const columns = ['recipient', 'course', 'date', 'id'];
+  
+  columns.forEach(col => {
+    const icon = document.getElementById(`sort-${col}`);
+    if (icon) {
+      if (state.sortColumn === col) {
+        // Show active sort icon
+        if (state.sortDirection === 'asc') {
+          icon.setAttribute('data-lucide', 'chevron-up');
+          icon.classList.add('text-indigo-600');
+        } else {
+          icon.setAttribute('data-lucide', 'chevron-down');
+          icon.classList.add('text-indigo-600');
+        }
+      } else {
+        // Show neutral icon
+        icon.setAttribute('data-lucide', 'chevrons-up-down');
+        icon.classList.remove('text-indigo-600');
+      }
+    }
+  });
+  
+  // Re-render icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+}
+
+// Expose filter functions globally
+window.handleCertificateSearch = handleCertificateSearch;
+window.handleSort = handleSort;
+window.clearCertificateFilters = clearCertificateFilters;
 
 /**
  * Load a saved certificate into the editor/preview and navigate to create view
