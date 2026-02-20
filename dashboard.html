@@ -150,6 +150,89 @@
   <body
     class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900"
   >
+    <!-- BULK PROGRESS MODAL -->
+    <div
+      id="bulk-progress-modal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+      >
+        <div class="p-6 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl font-bold text-gray-900">
+              <span data-en>Generating Certificates</span>
+              <span data-es class="hidden">Generando Certificados</span>
+            </h3>
+            <div class="text-indigo-600">
+              <i data-lucide="loader" class="h-5 w-5 animate-spin"></i>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500 mt-1">
+            <span data-en
+              >Please wait while certificates are being created...</span
+            >
+            <span data-es class="hidden"
+              >Por favor espera mientras se crean los certificados...</span
+            >
+          </p>
+        </div>
+        <div class="p-6">
+          <div class="mb-4">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-gray-600">
+                <span data-en>Progress</span>
+                <span data-es class="hidden">Progreso</span>
+              </span>
+              <span id="bulk-progress-text" class="font-bold text-indigo-600"
+                >0 / 0</span
+              >
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                id="bulk-progress-bar"
+                class="bg-indigo-600 h-3 rounded-full transition-all duration-300 ease-out"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center gap-3">
+              <div class="flex-shrink-0">
+                <i data-lucide="file-text" class="h-5 w-5 text-gray-400"></i>
+              </div>
+              <div class="flex-grow min-w-0">
+                <p class="text-xs text-gray-400 uppercase">
+                  <span data-en>Currently Processing</span>
+                  <span data-es class="hidden">Procesando Actualmente</span>
+                </p>
+                <p
+                  id="bulk-current-recipient"
+                  class="text-sm font-medium text-gray-700 truncate"
+                >
+                  -
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 flex gap-4 text-sm">
+            <div class="flex items-center gap-2 text-green-600">
+              <i data-lucide="check-circle" class="h-4 w-4"></i>
+              <span id="bulk-success-count">0</span>
+              <span data-en>saved</span>
+              <span data-es class="hidden">guardados</span>
+            </div>
+            <div class="flex items-center gap-2 text-red-600">
+              <i data-lucide="x-circle" class="h-4 w-4"></i>
+              <span id="bulk-error-count">0</span>
+              <span data-en>failed</span>
+              <span data-es class="hidden">fallidos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- QR SCANNER MODAL -->
     <div
       id="qr-scanner-modal"
@@ -173,7 +256,9 @@
           </div>
           <p class="text-sm text-gray-500 mt-1">
             <span data-en>Position the QR code within the frame to scan</span>
-            <span data-es class="hidden">Posiciona el código QR dentro del marco para escanear</span>
+            <span data-es class="hidden"
+              >Posiciona el código QR dentro del marco para escanear</span
+            >
           </p>
         </div>
         <div class="p-4">
@@ -440,7 +525,11 @@
                       <div class="flex items-center gap-1">
                         <span data-en>Recipient</span>
                         <span data-es class="hidden">Destinatario</span>
-                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-recipient"></i>
+                        <i
+                          data-lucide="chevrons-up-down"
+                          class="h-3 w-3 sort-icon"
+                          id="sort-recipient"
+                        ></i>
                       </div>
                     </th>
                     <th
@@ -450,7 +539,11 @@
                       <div class="flex items-center gap-1">
                         <span data-en>Course</span>
                         <span data-es class="hidden">Curso</span>
-                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-course"></i>
+                        <i
+                          data-lucide="chevrons-up-down"
+                          class="h-3 w-3 sort-icon"
+                          id="sort-course"
+                        ></i>
                       </div>
                     </th>
                     <th
@@ -460,7 +553,11 @@
                       <div class="flex items-center gap-1">
                         <span data-en>Issued On</span>
                         <span data-es class="hidden">Emitido El</span>
-                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-date"></i>
+                        <i
+                          data-lucide="chevrons-up-down"
+                          class="h-3 w-3 sort-icon"
+                          id="sort-date"
+                        ></i>
                       </div>
                     </th>
                     <th
@@ -469,7 +566,11 @@
                     >
                       <div class="flex items-center gap-1">
                         ID
-                        <i data-lucide="chevrons-up-down" class="h-3 w-3 sort-icon" id="sort-id"></i>
+                        <i
+                          data-lucide="chevrons-up-down"
+                          class="h-3 w-3 sort-icon"
+                          id="sort-id"
+                        ></i>
                       </div>
                     </th>
                     <th
@@ -484,6 +585,107 @@
                   <!-- Populated by JS -->
                 </tbody>
               </table>
+
+              <!-- Pagination Controls -->
+              <div
+                id="pagination-controls"
+                class="px-6 py-4 border-t border-gray-200 bg-gray-50"
+              >
+                <div
+                  class="flex flex-col sm:flex-row justify-between items-center gap-4"
+                >
+                  <!-- Items per page selector -->
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-600">
+                      <span data-en>Show</span>
+                      <span data-es class="hidden">Mostrar</span>
+                    </span>
+                    <select
+                      id="items-per-page"
+                      onchange="handleItemsPerPageChange(this.value)"
+                      class="px-2 py-1 border rounded-lg text-sm focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                    <span class="text-sm text-gray-600">
+                      <span data-en>per page</span>
+                      <span data-es class="hidden">por página</span>
+                    </span>
+                  </div>
+
+                  <!-- Page info and navigation -->
+                  <div class="flex items-center gap-4">
+                    <!-- Showing X-Y of Z -->
+                    <span id="pagination-info" class="text-sm text-gray-600">
+                      <span data-en>Showing 0-0 of 0</span>
+                      <span data-es class="hidden">Mostrando 0-0 de 0</span>
+                    </span>
+
+                    <!-- Jump to page -->
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm text-gray-600">
+                        <span data-en>Page</span>
+                        <span data-es class="hidden">Página</span>
+                      </span>
+                      <input
+                        type="number"
+                        id="page-jump-input"
+                        min="1"
+                        class="w-16 px-2 py-1 border rounded-lg text-sm text-center focus:ring-1 focus:ring-indigo-500"
+                        onkeypress="
+                          if (event.key === 'Enter') {
+                            handlePageJump(this.value);
+                          }
+                        "
+                      />
+                      <span
+                        id="total-pages-display"
+                        class="text-sm text-gray-600"
+                        >/ 1</span
+                      >
+                    </div>
+
+                    <!-- Navigation buttons -->
+                    <div class="flex items-center gap-1">
+                      <button
+                        onclick="handlePageChange('first')"
+                        id="btn-first-page"
+                        class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="First page"
+                      >
+                        <i data-lucide="chevrons-left" class="h-4 w-4"></i>
+                      </button>
+                      <button
+                        onclick="handlePageChange('prev')"
+                        id="btn-prev-page"
+                        class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Previous page"
+                      >
+                        <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                      </button>
+                      <button
+                        onclick="handlePageChange('next')"
+                        id="btn-next-page"
+                        class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Next page"
+                      >
+                        <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                      </button>
+                      <button
+                        onclick="handlePageChange('last')"
+                        id="btn-last-page"
+                        class="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Last page"
+                      >
+                        <i data-lucide="chevrons-right" class="h-4 w-4"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -593,7 +795,7 @@
                     oninput="handleDateChange(this.value)"
                   />
                 </div>
-                
+
                 <!-- Skills Selection -->
                 <div>
                   <label class="block text-xs font-medium text-gray-500 mb-1">
@@ -717,6 +919,26 @@
                   >Asegúrate de que tu archivo tenga columnas de
                   <strong>recipient</strong>, <strong>course</strong>, y
                   opcionalmente <strong>date</strong>.</span
+                >
+              </p>
+            </div>
+            <div
+              class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3"
+            >
+              <i
+                data-lucide="info"
+                class="text-amber-600 h-5 w-5 mt-0.5 flex-shrink-0"
+              ></i>
+              <p class="text-sm text-amber-800 leading-relaxed">
+                <span data-en
+                  >Note: <strong>Skills</strong> cannot be added via bulk
+                  upload. <strong>Edit</strong> certificates individually to add
+                  skills.</span
+                >
+                <span data-es class="hidden"
+                  >Nota: Las <strong>habilidades</strong> no se pueden agregar
+                  mediante carga masiva. <strong>Edita</strong> los certificados
+                  individualmente para agregar habilidades.</span
                 >
               </p>
             </div>
@@ -900,18 +1122,27 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Skills Management -->
                 <div class="pt-4 border-t border-gray-100">
                   <label
                     class="block text-xs font-bold text-gray-400 uppercase mb-2"
                   >
                     <span data-en>Skills Library</span>
-                    <span data-es class="hidden">Biblioteca de Habilidades</span>
+                    <span data-es class="hidden"
+                      >Biblioteca de Habilidades</span
+                    >
                   </label>
                   <p class="text-sm text-gray-500 mb-3">
-                    <span data-en>Manage skills that can be added to certificates. Click the × to remove a skill.</span>
-                    <span data-es class="hidden">Administra habilidades que se pueden agregar a los certificados. Haz clic en × para eliminar una habilidad.</span>
+                    <span data-en
+                      >Manage skills that can be added to certificates. Click
+                      the × to remove a skill.</span
+                    >
+                    <span data-es class="hidden"
+                      >Administra habilidades que se pueden agregar a los
+                      certificados. Haz clic en × para eliminar una
+                      habilidad.</span
+                    >
                   </p>
                   <div id="settings-skills-list" class="space-y-2">
                     <!-- Skills list rendered by JS -->
@@ -923,11 +1154,23 @@
                       class="flex-1 px-3 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
                       data-en-placeholder="Enter a new skill"
                       data-es-placeholder="Ingresa una nueva habilidad"
-                      onkeypress="if(event.key === 'Enter') { event.preventDefault(); handleAddSkill(this.value); this.value = ''; }"
+                      onkeypress="
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          handleAddSkill(this.value);
+                          this.value = '';
+                        }
+                      "
                     />
                     <button
                       type="button"
-                      onclick="const input = document.getElementById('settings-new-skill-input'); handleAddSkill(input.value); input.value = '';"
+                      onclick="
+                        const input = document.getElementById(
+                          'settings-new-skill-input',
+                        );
+                        handleAddSkill(input.value);
+                        input.value = '';
+                      "
                       class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors flex items-center gap-1"
                     >
                       <i data-lucide="plus" class="h-4 w-4"></i>

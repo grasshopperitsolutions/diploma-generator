@@ -14,6 +14,11 @@ const state = {
   searchQuery: "", // Current search query
   sortColumn: null, // Current sort column
   sortDirection: "asc", // 'asc' or 'desc'
+  // Pagination state
+  currentPage: 1,
+  itemsPerPage: 10,
+  totalItems: 0,
+  totalPages: 1,
   data: {
     recipient: "",
     course: "",
@@ -33,15 +38,15 @@ const state = {
  */
 function dateToInputFormat(dateStr) {
   if (!dateStr) return "";
-  
+
   // Try to parse the date
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return "";
-  
+
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
   return `${year}-${month}-${day}`;
 }
 
@@ -50,10 +55,10 @@ function dateToInputFormat(dateStr) {
  */
 function inputToLocaleFormat(inputValue) {
   if (!inputValue) return new Date().toLocaleDateString();
-  
+
   const date = new Date(inputValue + "T00:00:00");
   if (isNaN(date.getTime())) return new Date().toLocaleDateString();
-  
+
   return date.toLocaleDateString();
 }
 
@@ -82,9 +87,10 @@ function setLanguage(lang) {
 
   // Update placeholders
   document.querySelectorAll("[data-en-placeholder]").forEach((el) => {
-    el.placeholder = lang === "en"
-      ? el.getAttribute("data-en-placeholder")
-      : el.getAttribute("data-es-placeholder");
+    el.placeholder =
+      lang === "en"
+        ? el.getAttribute("data-en-placeholder")
+        : el.getAttribute("data-es-placeholder");
   });
 
   // Update header toggle buttons (dashboard)
@@ -93,11 +99,15 @@ function setLanguage(lang) {
 
   if (btnEn && btnEs) {
     if (lang === "en") {
-      btnEn.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-      btnEs.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+      btnEn.className =
+        "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      btnEs.className =
+        "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
     } else {
-      btnEs.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-      btnEn.className = "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+      btnEs.className =
+        "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      btnEn.className =
+        "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
     }
   }
 
@@ -107,11 +117,15 @@ function setLanguage(lang) {
 
   if (settingsBtnEn && settingsBtnEs) {
     if (lang === "en") {
-      settingsBtnEn.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-      settingsBtnEs.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+      settingsBtnEn.className =
+        "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      settingsBtnEs.className =
+        "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
     } else {
-      settingsBtnEs.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
-      settingsBtnEn.className = "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+      settingsBtnEs.className =
+        "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+      settingsBtnEn.className =
+        "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
     }
   }
 
@@ -121,21 +135,29 @@ function setLanguage(lang) {
 
   if (indexBtnEn && indexBtnEs) {
     if (lang === "en") {
-      indexBtnEn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
-      indexBtnEs.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
+      indexBtnEn.className =
+        "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+      indexBtnEs.className =
+        "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
     } else {
-      indexBtnEs.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
-      indexBtnEn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
+      indexBtnEs.className =
+        "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+      indexBtnEn.className =
+        "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
     }
   }
 
   // Re-initialize icons after language change
-  if (typeof lucide !== 'undefined') {
+  if (typeof lucide !== "undefined") {
     lucide.createIcons();
   }
 
   // Update list view translations if it has dynamic content
-  if (typeof state !== 'undefined' && state.certificates && state.certificates.length > 0) {
+  if (
+    typeof state !== "undefined" &&
+    state.certificates &&
+    state.certificates.length > 0
+  ) {
     renderCertificateList();
   }
 }
@@ -145,7 +167,7 @@ window.setLanguage = setLanguage;
 
 // --- Translation Helper ---
 function t(key) {
-  const lang = state.currentLang || 'en';
+  const lang = state.currentLang || "en";
   const translations = {
     en: {
       // List view
@@ -164,18 +186,23 @@ function t(key) {
       // Settings
       profileUpdated: "Profile settings updated successfully!",
       errorUpdating: "Error updating settings. Please try again.",
-      deleteConfirm: "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
+      deleteConfirm:
+        "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
       deleteSuccess: "Account deleted successfully!",
       deleteError: "Error deleting account. Please try again.",
-      deleteErrorRelog: "For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
+      deleteErrorRelog:
+        "For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
       deleting: "Deleting...",
       deleteAccount: "Delete Account",
       // Bulk
       noRecords: "No records to generate. Please upload a CSV first.",
-      bulkConfirm: "This will create {count} certificates. Continue?",
+      bulkConfirm:
+        "This will create {count} certificates without skills. Note: Skills cannot be added via bulk upload. You can edit individual certificates later to add skills. Continue?",
       bulkDone: "Done! {saved} certificate{s} saved.{errors}",
       bulkFailed: "{errors} failed.",
       mustBeLoggedInBulk: "You must be logged in to generate certificates",
+      bulkNoSkills:
+        "Note: Skills cannot be added via bulk upload. Edit certificates individually to add skills.",
       // Themes
       themeAcademic: "Academic Standard",
       themeAcademicDesc: "Classic & Elegant",
@@ -188,7 +215,8 @@ function t(key) {
       delete: "Delete",
       editCert: "Edit Certificate",
       deleteCert: "Delete Certificate",
-      deleteCertConfirm: "Are you sure you want to delete this certificate? This action cannot be undone.",
+      deleteCertConfirm:
+        "Are you sure you want to delete this certificate? This action cannot be undone.",
       certDeleted: "Certificate deleted successfully!",
       certUpdated: "Certificate updated successfully!",
       errorDeleting: "Error deleting certificate. Please try again.",
@@ -221,24 +249,31 @@ function t(key) {
       mustBeLoggedIn: "Debes iniciar sesión para guardar certificados",
       fillRequired: "Por favor completa el nombre del destinatario y el curso",
       certSaved: "¡Certificado guardado exitosamente!",
-      errorSaving: "Error al guardar el certificado. Por favor intenta de nuevo.",
+      errorSaving:
+        "Error al guardar el certificado. Por favor intenta de nuevo.",
       saving: "Guardando...",
       saveRecord: "Guardar Registro",
       // Settings
       profileUpdated: "¡Ajustes de perfil actualizados exitosamente!",
       errorUpdating: "Error al actualizar ajustes. Por favor intenta de nuevo.",
-      deleteConfirm: "¿Estás seguro de que quieres eliminar tu cuenta? Tus certificados permanecerán disponibles para validación pública.",
+      deleteConfirm:
+        "¿Estás seguro de que quieres eliminar tu cuenta? Tus certificados permanecerán disponibles para validación pública.",
       deleteSuccess: "¡Cuenta eliminada exitosamente!",
       deleteError: "Error al eliminar la cuenta. Por favor intenta de nuevo.",
-      deleteErrorRelog: "Por razones de seguridad, necesitas iniciar sesión de nuevo para eliminar tu cuenta. Por favor cierra sesión e inicia de nuevo, luego intenta de nuevo.",
+      deleteErrorRelog:
+        "Por razones de seguridad, necesitas iniciar sesión de nuevo para eliminar tu cuenta. Por favor cierra sesión e inicia de nuevo, luego intenta de nuevo.",
       deleting: "Eliminando...",
       deleteAccount: "Eliminar Cuenta",
       // Bulk
-      noRecords: "No hay registros para generar. Por favor sube un CSV primero.",
-      bulkConfirm: "Esto creará {count} certificados. ¿Continuar?",
+      noRecords:
+        "No hay registros para generar. Por favor sube un CSV primero.",
+      bulkConfirm:
+        "Esto creará {count} certificados sin habilidades. Nota: Las habilidades no se pueden agregar mediante carga masiva. Puedes editar certificados individualmente después para agregar habilidades. ¿Continuar?",
       bulkDone: "¡Listo! {saved} certificado{s} guardado{s}.{errors}",
       bulkFailed: "{errors} fallaron.",
       mustBeLoggedInBulk: "Debes iniciar sesión para generar certificados",
+      bulkNoSkills:
+        "Nota: Las habilidades no se pueden agregar mediante carga masiva. Edita los certificados individualmente para agregar habilidades.",
       // Themes
       themeAcademic: "Estándar Académico",
       themeAcademicDesc: "Clásico y Elegante",
@@ -251,11 +286,14 @@ function t(key) {
       delete: "Eliminar",
       editCert: "Editar Certificado",
       deleteCert: "Eliminar Certificado",
-      deleteCertConfirm: "¿Estás seguro de que quieres eliminar este certificado? Esta acción no se puede deshacer.",
+      deleteCertConfirm:
+        "¿Estás seguro de que quieres eliminar este certificado? Esta acción no se puede deshacer.",
       certDeleted: "¡Certificado eliminado exitosamente!",
       certUpdated: "¡Certificado actualizado exitosamente!",
-      errorDeleting: "Error al eliminar el certificado. Por favor intenta de nuevo.",
-      errorUpdating: "Error al actualizar el certificado. Por favor intenta de nuevo.",
+      errorDeleting:
+        "Error al eliminar el certificado. Por favor intenta de nuevo.",
+      errorUpdating:
+        "Error al actualizar el certificado. Por favor intenta de nuevo.",
       updateRecord: "Actualizar Registro",
       cancel: "Cancelar",
       creatingNew: "Creando Nuevo",
@@ -269,10 +307,11 @@ function t(key) {
       skillPlaceholder: "Ingresa una nueva habilidad",
       selectSkills: "Seleccionar Habilidades",
       skillsUpdated: "¡Habilidades actualizadas exitosamente!",
-      errorSkillsUpdate: "Error al actualizar habilidades. Por favor intenta de nuevo.",
+      errorSkillsUpdate:
+        "Error al actualizar habilidades. Por favor intenta de nuevo.",
       addNewSkill: "Agregar nueva habilidad",
       skillsLabel: "Habilidades (Opcional)",
-    }
+    },
   };
   return translations[lang]?.[key] || translations.en[key] || key;
 }
@@ -292,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Only run dashboard-specific initialization on dashboard page
   if (isDashboardPage) {
     generateId();
-    
+
     // Initialize date with today's date
     const today = new Date();
     state.data.date = today.toLocaleDateString();
@@ -300,11 +339,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dateInput) {
       // Set the date input to today in YYYY-MM-DD format
       const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
       dateInput.value = `${year}-${month}-${day}`;
     }
-    
+
     renderCertificate();
     lucide.createIcons();
     handleResize();
@@ -401,7 +440,7 @@ async function fetchUserCertificates() {
       <td colspan="5" class="px-6 py-12 text-center">
         <div class="flex flex-col items-center gap-2 text-gray-400">
           <i data-lucide="loader" class="animate-spin h-8 w-8 text-indigo-500"></i>
-          <span class="text-sm">${t('loadingCerts')}</span>
+          <span class="text-sm">${t("loadingCerts")}</span>
         </div>
       </td>
     </tr>
@@ -432,11 +471,11 @@ async function fetchUserCertificates() {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      state.certificates.push({ 
-        docId: doc.id, 
+      state.certificates.push({
+        docId: doc.id,
         ...data,
         // Store createdAt as a serializable format
-        createdAt: data.createdAt || null
+        createdAt: data.createdAt || null,
       });
     });
 
@@ -453,13 +492,152 @@ async function fetchUserCertificates() {
     listContainer.innerHTML = `
       <tr>
         <td colspan="5" class="px-6 py-12 text-center text-red-500">
-          <p class="text-sm">${t('errorLoading')}</p>
+          <p class="text-sm">${t("errorLoading")}</p>
           <p class="text-xs mt-2 text-gray-400">${error.message}</p>
         </td>
       </tr>
     `;
   }
 }
+
+/**
+ * Calculate pagination values
+ */
+function calculatePagination() {
+  state.totalItems = state.filteredCertificates.length;
+  state.totalPages = Math.max(
+    1,
+    Math.ceil(state.totalItems / state.itemsPerPage),
+  );
+
+  // Ensure current page is valid
+  if (state.currentPage > state.totalPages) {
+    state.currentPage = state.totalPages;
+  }
+  if (state.currentPage < 1) {
+    state.currentPage = 1;
+  }
+}
+
+/**
+ * Get paginated certificates for current page
+ */
+function getPaginatedCertificates() {
+  const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+  const endIndex = startIndex + state.itemsPerPage;
+  return state.filteredCertificates.slice(startIndex, endIndex);
+}
+
+/**
+ * Update pagination UI controls
+ */
+function updatePaginationUI() {
+  const paginationInfo = document.getElementById("pagination-info");
+  const totalPagesDisplay = document.getElementById("total-pages-display");
+  const pageJumpInput = document.getElementById("page-jump-input");
+  const itemsPerPageSelect = document.getElementById("items-per-page");
+
+  // Calculate display values
+  const startItem =
+    state.totalItems === 0
+      ? 0
+      : (state.currentPage - 1) * state.itemsPerPage + 1;
+  const endItem = Math.min(
+    state.currentPage * state.itemsPerPage,
+    state.totalItems,
+  );
+
+  // Update info text
+  if (paginationInfo) {
+    const lang = state.currentLang || "en";
+    if (lang === "es") {
+      paginationInfo.textContent = `Mostrando ${startItem}-${endItem} de ${state.totalItems}`;
+    } else {
+      paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${state.totalItems}`;
+    }
+  }
+
+  // Update total pages display
+  if (totalPagesDisplay) {
+    totalPagesDisplay.textContent = `/ ${state.totalPages}`;
+  }
+
+  // Update page jump input
+  if (pageJumpInput) {
+    pageJumpInput.value = state.currentPage;
+    pageJumpInput.max = state.totalPages;
+  }
+
+  // Update items per page select
+  if (itemsPerPageSelect) {
+    itemsPerPageSelect.value = state.itemsPerPage.toString();
+  }
+
+  // Update navigation buttons
+  const btnFirst = document.getElementById("btn-first-page");
+  const btnPrev = document.getElementById("btn-prev-page");
+  const btnNext = document.getElementById("btn-next-page");
+  const btnLast = document.getElementById("btn-last-page");
+
+  if (btnFirst) btnFirst.disabled = state.currentPage === 1;
+  if (btnPrev) btnPrev.disabled = state.currentPage === 1;
+  if (btnNext) btnNext.disabled = state.currentPage === state.totalPages;
+  if (btnLast) btnLast.disabled = state.currentPage === state.totalPages;
+}
+
+/**
+ * Handle page change (first, prev, next, last)
+ */
+function handlePageChange(action) {
+  switch (action) {
+    case "first":
+      state.currentPage = 1;
+      break;
+    case "prev":
+      if (state.currentPage > 1) state.currentPage--;
+      break;
+    case "next":
+      if (state.currentPage < state.totalPages) state.currentPage++;
+      break;
+    case "last":
+      state.currentPage = state.totalPages;
+      break;
+  }
+
+  renderCertificateList();
+}
+
+/**
+ * Handle jump to specific page
+ */
+function handlePageJump(pageNum) {
+  const page = parseInt(pageNum, 10);
+
+  if (isNaN(page) || page < 1) {
+    state.currentPage = 1;
+  } else if (page > state.totalPages) {
+    state.currentPage = state.totalPages;
+  } else {
+    state.currentPage = page;
+  }
+
+  renderCertificateList();
+}
+
+/**
+ * Handle items per page change
+ */
+function handleItemsPerPageChange(value) {
+  state.itemsPerPage = parseInt(value, 10);
+  state.currentPage = 1; // Reset to first page when changing items per page
+
+  renderCertificateList();
+}
+
+// Expose pagination functions globally
+window.handlePageChange = handlePageChange;
+window.handlePageJump = handlePageJump;
+window.handleItemsPerPageChange = handleItemsPerPageChange;
 
 /**
  * Render the certificate list in the UI
@@ -470,20 +648,26 @@ function renderCertificateList() {
   // Apply filtering and sorting
   applyFiltersAndSort();
 
+  // Calculate pagination
+  calculatePagination();
+
   if (state.certificates.length === 0) {
     listContainer.innerHTML = `
       <tr>
         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
           <div class="flex flex-col items-center gap-3">
             <i data-lucide="file-text" class="h-12 w-12 opacity-30"></i>
-            <p class="text-base">${t('noCerts')}</p>
+            <p class="text-base">${t("noCerts")}</p>
             <button onclick="switchView('create')" class="text-sm text-indigo-600 hover:underline font-medium">
-              ${t('createFirst')}
+              ${t("createFirst")}
             </button>
           </div>
         </td>
       </tr>
     `;
+    // Hide pagination when no certificates
+    const paginationControls = document.getElementById("pagination-controls");
+    if (paginationControls) paginationControls.classList.add("hidden");
     lucide.createIcons();
     return;
   }
@@ -495,19 +679,29 @@ function renderCertificateList() {
         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
           <div class="flex flex-col items-center gap-3">
             <i data-lucide="search-x" class="h-12 w-12 opacity-30"></i>
-            <p class="text-base">${state.currentLang === 'es' ? 'No se encontraron resultados' : 'No results found'}</p>
+            <p class="text-base">${state.currentLang === "es" ? "No se encontraron resultados" : "No results found"}</p>
             <button onclick="clearCertificateFilters()" class="text-sm text-indigo-600 hover:underline font-medium">
-              ${state.currentLang === 'es' ? 'Limpiar búsqueda' : 'Clear search'}
+              ${state.currentLang === "es" ? "Limpiar búsqueda" : "Clear search"}
             </button>
           </div>
         </td>
       </tr>
     `;
+    // Hide pagination when no results
+    const paginationControls = document.getElementById("pagination-controls");
+    if (paginationControls) paginationControls.classList.add("hidden");
     lucide.createIcons();
     return;
   }
 
-  listContainer.innerHTML = state.filteredCertificates
+  // Show pagination controls
+  const paginationControls = document.getElementById("pagination-controls");
+  if (paginationControls) paginationControls.classList.remove("hidden");
+
+  // Get paginated certificates
+  const paginatedCerts = getPaginatedCertificates();
+
+  listContainer.innerHTML = paginatedCerts
     .map(
       (cert) => `
     <tr class="hover:bg-gray-50 transition-colors">
@@ -520,29 +714,29 @@ function renderCertificateList() {
           <button
             onclick="handleEditCertificate('${cert.id}')"
             class="text-amber-600 hover:text-amber-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-amber-50 transition-colors"
-            title="${t('edit')}"
+            title="${t("edit")}"
           >
             <i data-lucide="pencil" class="h-4 w-4"></i>
-            <span data-en>${t('edit')}</span>
-            <span data-es class="hidden">${t('edit')}</span>
+            <span data-en>${t("edit")}</span>
+            <span data-es class="hidden">${t("edit")}</span>
           </button>
           <button
             onclick="handleDeleteCertificate('${cert.id}')"
             class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
-            title="${t('delete')}"
+            title="${t("delete")}"
           >
             <i data-lucide="trash-2" class="h-4 w-4"></i>
-            <span data-en>${t('delete')}</span>
-            <span data-es class="hidden">${t('delete')}</span>
+            <span data-en>${t("delete")}</span>
+            <span data-es class="hidden">${t("delete")}</span>
           </button>
           <button
-            onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}'})"
+            onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || "").replace(/'/g, "\\'")}'})"
             class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
-            title="${t('download')}"
+            title="${t("download")}"
           >
             <i data-lucide="download" class="h-4 w-4"></i>
-            <span data-en>${t('download')}</span>
-            <span data-es class="hidden">${t('download')}</span>
+            <span data-en>${t("download")}</span>
+            <span data-es class="hidden">${t("download")}</span>
           </button>
         </div>
       </td>
@@ -550,6 +744,9 @@ function renderCertificateList() {
   `,
     )
     .join("");
+
+  // Update pagination UI
+  updatePaginationUI();
 
   lucide.createIcons();
   updateSortIcons();
@@ -565,29 +762,31 @@ function applyFiltersAndSort() {
   // Apply search filter
   if (state.searchQuery) {
     const query = state.searchQuery.toLowerCase().trim();
-    filtered = filtered.filter(cert => {
-      const recipient = (cert.recipient || '').toLowerCase();
-      const course = (cert.course || '').toLowerCase();
-      const id = (cert.id || '').toLowerCase();
-      
-      return recipient.includes(query) || 
-             course.includes(query) || 
-             id.includes(query);
+    filtered = filtered.filter((cert) => {
+      const recipient = (cert.recipient || "").toLowerCase();
+      const course = (cert.course || "").toLowerCase();
+      const id = (cert.id || "").toLowerCase();
+
+      return (
+        recipient.includes(query) ||
+        course.includes(query) ||
+        id.includes(query)
+      );
     });
   }
 
   // Apply sorting
   if (state.sortColumn) {
     filtered.sort((a, b) => {
-      let valA = a[state.sortColumn] || '';
-      let valB = b[state.sortColumn] || '';
-      
+      let valA = a[state.sortColumn] || "";
+      let valB = b[state.sortColumn] || "";
+
       // Handle string comparison (case-insensitive)
       valA = valA.toString().toLowerCase();
       valB = valB.toString().toLowerCase();
-      
-      if (valA < valB) return state.sortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return state.sortDirection === 'asc' ? 1 : -1;
+
+      if (valA < valB) return state.sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return state.sortDirection === "asc" ? 1 : -1;
       return 0;
     });
   }
@@ -600,17 +799,20 @@ function applyFiltersAndSort() {
  */
 function handleCertificateSearch(query) {
   state.searchQuery = query;
-  
+
+  // Reset to first page when search changes
+  state.currentPage = 1;
+
   // Show/hide clear button
-  const clearBtn = document.getElementById('clear-filters-btn');
+  const clearBtn = document.getElementById("clear-filters-btn");
   if (clearBtn) {
     if (query.trim() || state.sortColumn) {
-      clearBtn.classList.remove('hidden');
+      clearBtn.classList.remove("hidden");
     } else {
-      clearBtn.classList.add('hidden');
+      clearBtn.classList.add("hidden");
     }
   }
-  
+
   renderCertificateList();
 }
 
@@ -620,18 +822,21 @@ function handleCertificateSearch(query) {
 function handleSort(column) {
   // If clicking the same column, toggle direction
   if (state.sortColumn === column) {
-    state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+    state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
   } else {
     state.sortColumn = column;
-    state.sortDirection = 'asc';
+    state.sortDirection = "asc";
   }
-  
+
+  // Reset to first page when sort changes
+  state.currentPage = 1;
+
   // Show clear button when sorting is active
-  const clearBtn = document.getElementById('clear-filters-btn');
+  const clearBtn = document.getElementById("clear-filters-btn");
   if (clearBtn) {
-    clearBtn.classList.remove('hidden');
+    clearBtn.classList.remove("hidden");
   }
-  
+
   renderCertificateList();
 }
 
@@ -639,22 +844,25 @@ function handleSort(column) {
  * Clear all filters and sorting
  */
 function clearCertificateFilters() {
-  state.searchQuery = '';
+  state.searchQuery = "";
   state.sortColumn = null;
-  state.sortDirection = 'asc';
-  
+  state.sortDirection = "asc";
+
+  // Reset to first page when clearing filters
+  state.currentPage = 1;
+
   // Clear search input
-  const searchInput = document.getElementById('cert-search-input');
+  const searchInput = document.getElementById("cert-search-input");
   if (searchInput) {
-    searchInput.value = '';
+    searchInput.value = "";
   }
-  
+
   // Hide clear button
-  const clearBtn = document.getElementById('clear-filters-btn');
+  const clearBtn = document.getElementById("clear-filters-btn");
   if (clearBtn) {
-    clearBtn.classList.add('hidden');
+    clearBtn.classList.add("hidden");
   }
-  
+
   renderCertificateList();
 }
 
@@ -662,30 +870,30 @@ function clearCertificateFilters() {
  * Update sort icons to show current sort state
  */
 function updateSortIcons() {
-  const columns = ['recipient', 'course', 'date', 'id'];
-  
-  columns.forEach(col => {
+  const columns = ["recipient", "course", "date", "id"];
+
+  columns.forEach((col) => {
     const icon = document.getElementById(`sort-${col}`);
     if (icon) {
       if (state.sortColumn === col) {
         // Show active sort icon
-        if (state.sortDirection === 'asc') {
-          icon.setAttribute('data-lucide', 'chevron-up');
-          icon.classList.add('text-indigo-600');
+        if (state.sortDirection === "asc") {
+          icon.setAttribute("data-lucide", "chevron-up");
+          icon.classList.add("text-indigo-600");
         } else {
-          icon.setAttribute('data-lucide', 'chevron-down');
-          icon.classList.add('text-indigo-600');
+          icon.setAttribute("data-lucide", "chevron-down");
+          icon.classList.add("text-indigo-600");
         }
       } else {
         // Show neutral icon
-        icon.setAttribute('data-lucide', 'chevrons-up-down');
-        icon.classList.remove('text-indigo-600');
+        icon.setAttribute("data-lucide", "chevrons-up-down");
+        icon.classList.remove("text-indigo-600");
       }
     }
   });
-  
+
   // Re-render icons
-  if (typeof lucide !== 'undefined') {
+  if (typeof lucide !== "undefined") {
     lucide.createIcons();
   }
 }
@@ -726,7 +934,9 @@ function viewCertificate(certId) {
  * Edit a certificate - load it into the editor
  */
 function handleEditCertificate(certId) {
-  const cert = state.certificates.find((c) => c.id === certId || c.docId === certId);
+  const cert = state.certificates.find(
+    (c) => c.id === certId || c.docId === certId,
+  );
   if (!cert) return;
 
   // Set editing state
@@ -756,7 +966,7 @@ function handleEditCertificate(certId) {
 
   // Switch to create view and render
   switchView("create");
-  
+
   // Re-render skills selector to show selected skills from certificate
   renderCertificateSkillsSelector();
   renderCertificate();
@@ -773,11 +983,11 @@ function handleCancelEdit() {
   state.data.recipient = "";
   state.data.course = "";
   state.data.skills = [];
-  
+
   const recipientInput = document.getElementById("input-recipient");
   const courseInput = document.getElementById("input-course");
   const dateInput = document.getElementById("input-date");
-  
+
   if (recipientInput) recipientInput.value = "";
   if (courseInput) courseInput.value = "";
 
@@ -786,8 +996,8 @@ function handleCancelEdit() {
   state.data.date = today.toLocaleDateString();
   if (dateInput) {
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
     dateInput.value = `${year}-${month}-${day}`;
   }
 
@@ -796,10 +1006,10 @@ function handleCancelEdit() {
 
   // Update save button
   updateSaveButtonState();
-  
+
   // Re-render skills selector to show cleared state
   renderCertificateSkillsSelector();
-  
+
   // Re-render certificate with reset date
   renderCertificate();
 }
@@ -811,27 +1021,29 @@ function updateSaveButtonState() {
   const saveBtn = document.querySelector(
     "#view-create button[onclick*='handleSaveCertificate']",
   );
-  
+
   if (saveBtn) {
     if (state.editingCertificateId) {
       saveBtn.innerHTML = `
         <i data-lucide="save" class="h-4 w-4"></i>
-        <span data-en>${t('updateRecord')}</span>
-        <span data-es class="hidden">${t('updateRecord')}</span>
+        <span data-en>${t("updateRecord")}</span>
+        <span data-es class="hidden">${t("updateRecord")}</span>
       `;
-      saveBtn.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
-      
+      saveBtn.className =
+        "w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+
       // Add cancel button if it doesn't exist
       let cancelBtn = document.getElementById("cancel-edit-btn");
       if (!cancelBtn) {
         cancelBtn = document.createElement("button");
         cancelBtn.id = "cancel-edit-btn";
         cancelBtn.onclick = handleCancelEdit;
-        cancelBtn.className = "w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+        cancelBtn.className =
+          "w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
         cancelBtn.innerHTML = `
           <i data-lucide="x" class="h-4 w-4"></i>
-          <span data-en>${t('cancel')}</span>
-          <span data-es class="hidden">${t('cancel')}</span>
+          <span data-en>${t("cancel")}</span>
+          <span data-es class="hidden">${t("cancel")}</span>
         `;
         saveBtn.parentNode.insertBefore(cancelBtn, saveBtn);
       }
@@ -839,11 +1051,12 @@ function updateSaveButtonState() {
     } else {
       saveBtn.innerHTML = `
         <i data-lucide="save" class="h-4 w-4"></i>
-        <span data-en>${t('saveRecord')}</span>
-        <span data-es class="hidden">${t('saveRecord')}</span>
+        <span data-en>${t("saveRecord")}</span>
+        <span data-es class="hidden">${t("saveRecord")}</span>
       `;
-      saveBtn.className = "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
-      
+      saveBtn.className =
+        "w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-2 flex items-center justify-center gap-2 shadow-sm";
+
       // Hide cancel button
       const cancelBtn = document.getElementById("cancel-edit-btn");
       if (cancelBtn) {
@@ -859,18 +1072,20 @@ function updateSaveButtonState() {
  */
 async function handleDeleteCertificate(certId) {
   if (!state.user) {
-    alert(t('mustBeLoggedIn'));
+    alert(t("mustBeLoggedIn"));
     return;
   }
 
-  const confirmed = confirm(t('deleteCertConfirm'));
+  const confirmed = confirm(t("deleteCertConfirm"));
   if (!confirmed) return;
 
   try {
     // Find the certificate to get its docId
-    const cert = state.certificates.find((c) => c.id === certId || c.docId === certId);
+    const cert = state.certificates.find(
+      (c) => c.id === certId || c.docId === certId,
+    );
     if (!cert) {
-      alert(t('errorDeleting'));
+      alert(t("errorDeleting"));
       return;
     }
 
@@ -879,13 +1094,13 @@ async function handleDeleteCertificate(certId) {
       window.firestoreDoc(window.firebaseDB, "certificates", cert.id),
     );
 
-    alert(t('certDeleted'));
+    alert(t("certDeleted"));
 
     // Refresh the list
     fetchUserCertificates();
   } catch (error) {
     console.error("Error deleting certificate:", error);
-    alert(t('errorDeleting'));
+    alert(t("errorDeleting"));
   }
 }
 
@@ -894,12 +1109,12 @@ async function handleDeleteCertificate(certId) {
  */
 async function handleSaveCertificate() {
   if (!state.user) {
-    alert(t('mustBeLoggedIn'));
+    alert(t("mustBeLoggedIn"));
     return;
   }
 
   if (!state.data.recipient || !state.data.course) {
-    alert(t('fillRequired'));
+    alert(t("fillRequired"));
     return;
   }
 
@@ -908,14 +1123,13 @@ async function handleSaveCertificate() {
   );
   if (saveBtn) {
     saveBtn.disabled = true;
-    saveBtn.innerHTML =
-      `<i data-lucide="loader" class="animate-spin h-4 w-4 inline"></i> ${t('saving')}`;
+    saveBtn.innerHTML = `<i data-lucide="loader" class="animate-spin h-4 w-4 inline"></i> ${t("saving")}`;
     lucide.createIcons();
   }
 
   try {
     const isEditing = !!state.editingCertificateId;
-    
+
     if (isEditing) {
       // Use updateDoc for edits to preserve existing fields
       await window.firestoreUpdateDoc(
@@ -949,7 +1163,7 @@ async function handleSaveCertificate() {
       );
     }
 
-    alert(isEditing ? t('certUpdated') : t('certSaved'));
+    alert(isEditing ? t("certUpdated") : t("certSaved"));
 
     // Clear editing state
     state.editingCertificateId = null;
@@ -970,13 +1184,13 @@ async function handleSaveCertificate() {
 
     // Update save button back to create mode
     updateSaveButtonState();
-    
+
     // Re-render skills selector to show cleared state
     renderCertificateSkillsSelector();
     renderCertificate();
   } catch (error) {
     console.error("Error saving certificate:", error);
-    alert(t('errorSaving'));
+    alert(t("errorSaving"));
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -1062,32 +1276,38 @@ async function handleValidateCert(id) {
 
     if (certDoc.exists()) {
       const cert = certDoc.data();
-      
+
       // Build skills display HTML if skills exist
       const certSkills = cert.skills || [];
-      const skillsDisplayHtml = certSkills.length > 0 
-        ? `<p class="text-green-600 text-xs mt-1"><strong>${lang === 'es' ? 'Habilidades' : 'Skills'}:</strong> ${certSkills.join(', ')}</p>` 
-        : '';
-      
+      const skillsDisplayHtml =
+        certSkills.length > 0
+          ? `<p class="text-green-600 text-xs mt-1"><strong>${lang === "es" ? "Habilidades" : "Skills"}:</strong> ${certSkills.join(", ")}</p>`
+          : "";
+
       // Build skills parameter for download modals (escape the array for passing)
-      const skillsParam = certSkills.length > 0 ? encodeURIComponent(JSON.stringify(certSkills)) : '';
+      const skillsParam =
+        certSkills.length > 0
+          ? encodeURIComponent(JSON.stringify(certSkills))
+          : "";
 
       // Build download button HTML based on context (public vs dashboard)
-      const downloadBtnHtml = !isDashboardPage ? `
+      const downloadBtnHtml = !isDashboardPage
+        ? `
         <button
-          onclick="openPublicDownloadModal('${cert.recipient.replace(/'/g, "\\'")}', '${cert.course.replace(/'/g, "\\'")}', '${cert.id}', '${cert.date}', '${(cert.issuer || '').replace(/'/g, "\\'")}', '${skillsParam}')"
+          onclick="openPublicDownloadModal('${cert.recipient.replace(/'/g, "\\'")}', '${cert.course.replace(/'/g, "\\'")}', '${cert.id}', '${cert.date}', '${(cert.issuer || "").replace(/'/g, "\\'")}', '${skillsParam}')"
           class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
         >
           <i data-lucide="download" class="h-4 w-4"></i>
-          <span>${lang === 'es' ? 'Descargar Certificado' : 'Download Certificate'}</span>
+          <span>${lang === "es" ? "Descargar Certificado" : "Download Certificate"}</span>
         </button>
-      ` : `
+      `
+        : `
         <button
-          onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}', skills: '${skillsParam}'})"
+          onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || "").replace(/'/g, "\\'")}', skills: '${skillsParam}'})"
           class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
         >
           <i data-lucide="download" class="h-4 w-4"></i>
-          <span>${lang === 'es' ? 'Descargar Certificado' : 'Download Certificate'}</span>
+          <span>${lang === "es" ? "Descargar Certificado" : "Download Certificate"}</span>
         </button>
       `;
 
@@ -1150,8 +1370,7 @@ async function handleSaveSettings(e) {
 
   const saveBtn = e.target.querySelector("button[type='submit']");
   saveBtn.disabled = true;
-  saveBtn.innerHTML =
-    `<i data-lucide="loader" class="animate-spin h-4 w-4 inline mr-1"></i> ${t('saving')}`;
+  saveBtn.innerHTML = `<i data-lucide="loader" class="animate-spin h-4 w-4 inline mr-1"></i> ${t("saving")}`;
   lucide.createIcons();
 
   try {
@@ -1178,11 +1397,11 @@ async function handleSaveSettings(e) {
     document.getElementById("user-display").innerText =
       `${firstName} ${lastName}`;
 
-    alert(t('profileUpdated'));
+    alert(t("profileUpdated"));
     renderCertificate();
   } catch (error) {
     console.error("Error updating settings:", error);
-    alert(t('errorUpdating'));
+    alert(t("errorUpdating"));
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerHTML = "Update Profile";
@@ -1196,7 +1415,7 @@ async function handleSaveSettings(e) {
 async function handleDeleteUser() {
   if (!state.user) return;
 
-  const confirmed = confirm(t('deleteConfirm'));
+  const confirmed = confirm(t("deleteConfirm"));
 
   if (!confirmed) return;
 
@@ -1205,7 +1424,7 @@ async function handleDeleteUser() {
   );
 
   deleteBtn.disabled = true;
-  deleteBtn.innerText = t('deleting');
+  deleteBtn.innerText = t("deleting");
   lucide.createIcons();
 
   try {
@@ -1216,7 +1435,7 @@ async function handleDeleteUser() {
     );
     await window.firestoreDeleteDoc(userDoc);
     await window.firebaseDeleteUser(window.firebaseAuth.currentUser);
-    alert(t('deleteSuccess'));
+    alert(t("deleteSuccess"));
 
     // Clear local state and redirect to index
     state.user = null;
@@ -1230,13 +1449,13 @@ async function handleDeleteUser() {
 
     // Handle specific error cases
     if (error.code === "auth/requires-recent-login") {
-      alert(t('deleteErrorRelog'));
+      alert(t("deleteErrorRelog"));
     } else {
-      alert(t('deleteError'));
+      alert(t("deleteError"));
     }
   } finally {
     deleteBtn.disabled = false;
-    deleteBtn.innerText = t('deleteAccount');
+    deleteBtn.innerText = t("deleteAccount");
     lucide.createIcons();
   }
 }
@@ -1248,22 +1467,22 @@ async function handleDeleteUser() {
  */
 async function handleAddSkill(skill) {
   if (!state.user || !skill || skill.trim() === "") return;
-  
+
   const trimmedSkill = skill.trim();
-  
+
   // Initialize skills array if it doesn't exist
   if (!state.user.skills) {
     state.user.skills = [];
   }
-  
+
   // Check if skill already exists
   if (state.user.skills.includes(trimmedSkill)) {
     return; // Skill already exists
   }
-  
+
   // Add skill locally
   state.user.skills.push(trimmedSkill);
-  
+
   try {
     // Update in Firestore
     await window.firestoreUpdateDoc(
@@ -1273,17 +1492,17 @@ async function handleAddSkill(skill) {
         updatedAt: window.firestoreTimestamp(),
       },
     );
-    
+
     // Re-render skills UI
     renderSettingsSkillsList();
     renderCertificateSkillsSelector();
-    
+
     return true;
   } catch (error) {
     console.error("Error adding skill:", error);
     // Revert local change
-    state.user.skills = state.user.skills.filter(s => s !== trimmedSkill);
-    alert(t('errorSkillsUpdate'));
+    state.user.skills = state.user.skills.filter((s) => s !== trimmedSkill);
+    alert(t("errorSkillsUpdate"));
     return false;
   }
 }
@@ -1293,16 +1512,16 @@ async function handleAddSkill(skill) {
  */
 async function handleRemoveSkill(skill) {
   if (!state.user || !skill) return;
-  
+
   // Initialize skills array if it doesn't exist
   if (!state.user.skills) {
     state.user.skills = [];
   }
-  
+
   // Remove skill locally
   const previousSkills = [...state.user.skills];
-  state.user.skills = state.user.skills.filter(s => s !== skill);
-  
+  state.user.skills = state.user.skills.filter((s) => s !== skill);
+
   try {
     // Update in Firestore
     await window.firestoreUpdateDoc(
@@ -1312,21 +1531,21 @@ async function handleRemoveSkill(skill) {
         updatedAt: window.firestoreTimestamp(),
       },
     );
-    
+
     // Also remove from certificate skills if selected
-    state.data.skills = state.data.skills.filter(s => s !== skill);
-    
+    state.data.skills = state.data.skills.filter((s) => s !== skill);
+
     // Re-render skills UI
     renderSettingsSkillsList();
     renderCertificateSkillsSelector();
     renderCertificate();
-    
+
     return true;
   } catch (error) {
     console.error("Error removing skill:", error);
     // Revert local change
     state.user.skills = previousSkills;
-    alert(t('errorSkillsUpdate'));
+    alert(t("errorSkillsUpdate"));
     return false;
   }
 }
@@ -1338,13 +1557,13 @@ function toggleCertificateSkill(skill) {
   if (!state.data.skills) {
     state.data.skills = [];
   }
-  
+
   if (state.data.skills.includes(skill)) {
-    state.data.skills = state.data.skills.filter(s => s !== skill);
+    state.data.skills = state.data.skills.filter((s) => s !== skill);
   } else {
     state.data.skills.push(skill);
   }
-  
+
   renderCertificateSkillsSelector();
   renderCertificate();
 }
@@ -1354,7 +1573,7 @@ function toggleCertificateSkill(skill) {
  */
 async function addNewSkillFromCertificate(skill) {
   if (!skill || skill.trim() === "") return;
-  
+
   const success = await handleAddSkill(skill);
   if (success) {
     // Also select the new skill for the certificate
@@ -1365,7 +1584,7 @@ async function addNewSkillFromCertificate(skill) {
     renderCertificateSkillsSelector();
     renderCertificate();
   }
-  
+
   // Clear the input
   const input = document.getElementById("new-skill-input");
   if (input) input.value = "";
@@ -1377,32 +1596,36 @@ async function addNewSkillFromCertificate(skill) {
 function renderSettingsSkillsList() {
   const container = document.getElementById("settings-skills-list");
   if (!container) return;
-  
+
   const skills = state.user?.skills || [];
-  
+
   if (skills.length === 0) {
     container.innerHTML = `
       <div class="text-gray-400 text-sm italic py-4 text-center">
-        <span data-en>${t('noSkills')}</span>
-        <span data-es class="hidden">${t('noSkills')}</span>
+        <span data-en>${t("noSkills")}</span>
+        <span data-es class="hidden">${t("noSkills")}</span>
       </div>
     `;
     return;
   }
-  
-  container.innerHTML = skills.map(skill => `
+
+  container.innerHTML = skills
+    .map(
+      (skill) => `
     <div class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
       <span class="text-sm text-gray-700">${skill}</span>
       <button
         onclick="handleRemoveSkill('${skill.replace(/'/g, "\\'")}')"
         class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
-        title="${t('removeSkill')}"
+        title="${t("removeSkill")}"
       >
         <i data-lucide="x" class="h-4 w-4"></i>
       </button>
     </div>
-  `).join("");
-  
+  `,
+    )
+    .join("");
+
   lucide.createIcons();
 }
 
@@ -1412,32 +1635,34 @@ function renderSettingsSkillsList() {
 function renderCertificateSkillsSelector() {
   const container = document.getElementById("certificate-skills-selector");
   if (!container) return;
-  
+
   const userSkills = state.user?.skills || [];
   const selectedSkills = state.data.skills || [];
-  
+
   // Skills chips
   let skillsHtml = "";
-  
+
   if (userSkills.length > 0) {
-    skillsHtml = userSkills.map(skill => {
-      const isSelected = selectedSkills.includes(skill);
-      return `
+    skillsHtml = userSkills
+      .map((skill) => {
+        const isSelected = selectedSkills.includes(skill);
+        return `
         <button
           type="button"
           onclick="toggleCertificateSkill('${skill.replace(/'/g, "\\'")}')"
           class="px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-            isSelected 
-              ? 'bg-indigo-600 text-white' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            isSelected
+              ? "bg-indigo-600 text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }"
         >
           ${skill}
         </button>
       `;
-    }).join("");
+      })
+      .join("");
   }
-  
+
   container.innerHTML = `
     <div class="flex flex-wrap gap-2 mb-2">
       ${skillsHtml}
@@ -1447,8 +1672,8 @@ function renderCertificateSkillsSelector() {
         type="text"
         id="new-skill-input"
         class="flex-1 px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
-        data-en-placeholder="${t('addNewSkill')}"
-        data-es-placeholder="${t('addNewSkill')}"
+        data-en-placeholder="${t("addNewSkill")}"
+        data-es-placeholder="${t("addNewSkill")}"
         onkeypress="if(event.key === 'Enter') { event.preventDefault(); addNewSkillFromCertificate(this.value); }"
       />
       <button
@@ -1460,7 +1685,7 @@ function renderCertificateSkillsSelector() {
       </button>
     </div>
   `;
-  
+
   lucide.createIcons();
 }
 
@@ -1569,9 +1794,7 @@ function handleBulkUpload() {
         if (certContainer) certContainer.style.opacity = "1";
         renderCertificate();
 
-        console.log(
-          `Parsed ${count} certificates. Showing preview of row #1.`,
-        );
+        console.log(`Parsed ${count} certificates. Showing preview of row #1.`);
       }
 
       lucide.createIcons();
@@ -1584,27 +1807,90 @@ function handleBulkUpload() {
 }
 
 /**
+ * Show the bulk progress modal
+ */
+function showBulkProgressModal() {
+  const modal = document.getElementById("bulk-progress-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+}
+
+/**
+ * Hide the bulk progress modal
+ */
+function hideBulkProgressModal() {
+  const modal = document.getElementById("bulk-progress-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+/**
+ * Update the bulk progress modal UI
+ */
+function updateBulkProgress(current, total, recipient, saved, errors) {
+  const progressText = document.getElementById("bulk-progress-text");
+  const progressBar = document.getElementById("bulk-progress-bar");
+  const currentRecipient = document.getElementById("bulk-current-recipient");
+  const successCount = document.getElementById("bulk-success-count");
+  const errorCount = document.getElementById("bulk-error-count");
+
+  if (progressText) {
+    progressText.textContent = `${current} / ${total}`;
+  }
+
+  if (progressBar) {
+    const percentage = Math.round((current / total) * 100);
+    progressBar.style.width = `${percentage}%`;
+  }
+
+  if (currentRecipient) {
+    currentRecipient.textContent = recipient || "-";
+  }
+
+  if (successCount) {
+    successCount.textContent = saved;
+  }
+
+  if (errorCount) {
+    errorCount.textContent = errors;
+  }
+}
+
+/**
  * Bulk generate — save all parsed CSV records to Firestore
  */
 async function handleBulkGenerate() {
   if (!state.user) {
-    alert(t('mustBeLoggedInBulk'));
+    alert(t("mustBeLoggedInBulk"));
     return;
   }
 
   if (state.bulkCertificates.length === 0) {
-    alert(t('noRecords'));
+    alert(t("noRecords"));
     return;
   }
 
   const count = state.bulkCertificates.length;
-  const confirmed = confirm(t('bulkConfirm').replace('{count}', count));
+  const confirmed = confirm(t("bulkConfirm").replace("{count}", count));
   if (!confirmed) return;
 
   let saved = 0;
   let errors = 0;
 
-  for (const cert of state.bulkCertificates) {
+  // Show progress modal
+  showBulkProgressModal();
+  updateBulkProgress(0, count, "-", 0, 0);
+
+  // Process each certificate
+  for (let i = 0; i < state.bulkCertificates.length; i++) {
+    const cert = state.bulkCertificates[i];
+
+    // Update progress before processing
+    updateBulkProgress(i + 1, count, cert.recipient, saved, errors);
+
     try {
       const newId =
         "CERT-" + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -1626,12 +1912,27 @@ async function handleBulkGenerate() {
       console.error("Error saving bulk cert:", err);
       errors++;
     }
+
+    // Update progress after processing
+    updateBulkProgress(i + 1, count, cert.recipient, saved, errors);
+
+    // Small delay to allow UI to update
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
 
-  const plural = saved !== 1 ? (state.currentLang === 'es' ? 's' : 's') : '';
-  const errorMsg = errors > 0 ? t('bulkFailed').replace('{errors}', errors) : '';
-  alert(t('bulkDone').replace('{saved}', saved).replace('{s}', plural).replace('{errors}', errorMsg));
-  
+  // Hide progress modal
+  hideBulkProgressModal();
+
+  const plural = saved !== 1 ? (state.currentLang === "es" ? "s" : "s") : "";
+  const errorMsg =
+    errors > 0 ? t("bulkFailed").replace("{errors}", errors) : "";
+  alert(
+    t("bulkDone")
+      .replace("{saved}", saved)
+      .replace("{s}", plural)
+      .replace("{errors}", errorMsg),
+  );
+
   state.bulkCertificates = [];
 
   const statsEl = document.getElementById("bulk-stats");
@@ -1913,12 +2214,12 @@ function completeLogin(userData) {
   state.user = userData;
   state.data.issuer = userData.company;
   state.data.logo = userData.logoUrl || defaultLogo;
-  
+
   // Initialize skills array if not present
   if (!state.user.skills) {
     state.user.skills = [];
   }
-  
+
   // Reset certificate skills on login
   state.data.skills = [];
 
@@ -1956,7 +2257,7 @@ function completeLogin(userData) {
 
   switchView("create");
   setTimeout(handleResize, 100);
-  
+
   // Render skills UI after a brief delay to ensure DOM is ready
   setTimeout(() => {
     renderCertificateSkillsSelector();
@@ -2169,7 +2470,7 @@ function renderThemeList(container, context) {
  */
 function openDownloadModal(data) {
   // Parse skills if it's a string (encoded JSON)
-  if (data && data.skills && typeof data.skills === 'string') {
+  if (data && data.skills && typeof data.skills === "string") {
     try {
       data.skills = JSON.parse(decodeURIComponent(data.skills));
     } catch (e) {
@@ -2177,7 +2478,7 @@ function openDownloadModal(data) {
       data.skills = [];
     }
   }
-  
+
   // Use provided data or fall back to current editor data
   state.modalData = data || { ...state.data };
   state.modalTheme = state.theme; // Default to current theme
@@ -2285,14 +2586,15 @@ function renderCertificateToTarget(targetElement, data, theme) {
   const d = data;
   const logoSrc = d.logo || defaultLogo;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
-  
+
   // Build skills HTML if skills exist
   const skills = d.skills || [];
-  const skillsHtml = skills.length > 0 
-    ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
-        ${skills.map(skill => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
-       </div>` 
-    : "";
+  const skillsHtml =
+    skills.length > 0
+      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+        ${skills.map((skill) => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
+       </div>`
+      : "";
 
   let template = "";
 
@@ -2328,12 +2630,13 @@ function renderCertificateToTarget(targetElement, data, theme) {
     `;
   } else if (theme === "underwater") {
     // Skills HTML for underwater theme
-    const underwaterSkillsHtml = skills.length > 0 
-      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
-          ${skills.map(skill => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
-         </div>` 
-      : "";
-      
+    const underwaterSkillsHtml =
+      skills.length > 0
+        ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+          ${skills.map((skill) => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
+         </div>`
+        : "";
+
     template = `
       <div class="w-full h-full bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-700 p-16 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute inset-0 opacity-20">
@@ -2368,13 +2671,14 @@ function renderCertificateToTarget(targetElement, data, theme) {
     `;
   } else if (theme === "programming") {
     // Skills HTML for programming theme
-    const programmingSkillsHtml = skills.length > 0 
-      ? `<div class="mt-4">
+    const programmingSkillsHtml =
+      skills.length > 0
+        ? `<div class="mt-4">
           <div class="text-gray-500 text-sm">// Skills acquired</div>
-          <div class="text-base mt-1">skills = [${skills.map(s => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
-         </div>` 
-      : "";
-      
+          <div class="text-base mt-1">skills = [${skills.map((s) => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
+         </div>`
+        : "";
+
     template = `
       <div class="w-full h-full bg-gray-900 text-green-400 p-16 flex flex-col justify-between font-mono relative overflow-hidden">
         <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px);"></div>
@@ -2466,20 +2770,20 @@ async function openQRScanner() {
   const modal = document.getElementById("qr-scanner-modal");
   const errorBox = document.getElementById("qr-scanner-error");
   const errorText = document.getElementById("qr-scanner-error-text");
-  
+
   // Hide any previous errors
   if (errorBox) errorBox.classList.add("hidden");
-  
+
   // Show modal
   if (modal) modal.classList.remove("hidden");
-  
+
   // Re-initialize icons for the modal
-  if (typeof lucide !== 'undefined') {
+  if (typeof lucide !== "undefined") {
     lucide.createIcons();
   }
 
   // Check if html5-qrcode is available
-  if (typeof Html5Qrcode === 'undefined') {
+  if (typeof Html5Qrcode === "undefined") {
     showScannerError("QR scanner library not loaded. Please refresh the page.");
     return;
   }
@@ -2487,7 +2791,7 @@ async function openQRScanner() {
   try {
     // Create scanner instance
     state.qrScanner = new Html5Qrcode("qr-reader");
-    
+
     // Start scanning with camera
     await state.qrScanner.start(
       { facingMode: "environment" }, // Use back camera on mobile
@@ -2497,30 +2801,36 @@ async function openQRScanner() {
         aspectRatio: 1.0,
       },
       onQRCodeScanned,
-      onQRCodeScanError
+      onQRCodeScanError,
     );
-    
+
     console.log("QR Scanner started successfully");
   } catch (err) {
     console.error("Error starting QR scanner:", err);
-    
+
     // Handle specific errors
     let errorMessage = err.message || "Unable to access camera";
-    
+
     if (err.name === "NotAllowedError" || err.message?.includes("Permission")) {
-      errorMessage = state.currentLang === 'es' 
-        ? "Permiso de cámara denegado. Por favor permite el acceso a la cámara en tu navegador."
-        : "Camera permission denied. Please allow camera access in your browser settings.";
-    } else if (err.name === "NotFoundError" || err.message?.includes("not found")) {
-      errorMessage = state.currentLang === 'es'
-        ? "No se encontró ninguna cámara. Asegúrate de que tu dispositivo tiene una cámara."
-        : "No camera found. Please ensure your device has a camera.";
+      errorMessage =
+        state.currentLang === "es"
+          ? "Permiso de cámara denegado. Por favor permite el acceso a la cámara en tu navegador."
+          : "Camera permission denied. Please allow camera access in your browser settings.";
+    } else if (
+      err.name === "NotFoundError" ||
+      err.message?.includes("not found")
+    ) {
+      errorMessage =
+        state.currentLang === "es"
+          ? "No se encontró ninguna cámara. Asegúrate de que tu dispositivo tiene una cámara."
+          : "No camera found. Please ensure your device has a camera.";
     } else if (err.name === "NotReadableError") {
-      errorMessage = state.currentLang === 'es'
-        ? "La cámara está en uso por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara."
-        : "Camera is in use by another application. Close other apps that might be using the camera.";
+      errorMessage =
+        state.currentLang === "es"
+          ? "La cámara está en uso por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara."
+          : "Camera is in use by another application. Close other apps that might be using the camera.";
     }
-    
+
     showScannerError(errorMessage);
   }
 }
@@ -2530,7 +2840,7 @@ async function openQRScanner() {
  */
 async function closeQRScanner() {
   const modal = document.getElementById("qr-scanner-modal");
-  
+
   // Stop the scanner if it's running
   if (state.qrScanner) {
     try {
@@ -2542,7 +2852,7 @@ async function closeQRScanner() {
     }
     state.qrScanner = null;
   }
-  
+
   // Hide modal
   if (modal) modal.classList.add("hidden");
 }
@@ -2552,30 +2862,30 @@ async function closeQRScanner() {
  */
 function onQRCodeScanned(decodedText) {
   console.log("📱 QR Code scanned:", decodedText);
-  
+
   // Extract certificate ID from the scanned text
   // The QR code contains just the certificate ID (e.g., "CERT-XXXX")
   let certId = decodedText.trim().toUpperCase();
-  
+
   // If the QR code contains a URL, extract the ID from it
   if (certId.includes("/")) {
     const parts = certId.split("/");
     certId = parts[parts.length - 1];
   }
-  
+
   // Validate the ID format (should start with CERT-)
   if (!certId.startsWith("CERT-")) {
     showScannerError(
-      state.currentLang === 'es'
+      state.currentLang === "es"
         ? "El código QR escaneado no parece ser un certificado válido."
-        : "The scanned QR code doesn't appear to be a valid certificate."
+        : "The scanned QR code doesn't appear to be a valid certificate.",
     );
     return;
   }
-  
+
   // Close the scanner
   closeQRScanner();
-  
+
   // Determine if we're on the public page or dashboard
   if (!isDashboardPage) {
     // On public page, populate the verify input and trigger validation
@@ -2590,7 +2900,7 @@ function onQRCodeScanned(decodedText) {
       validateInput.value = certId;
     }
   }
-  
+
   // Trigger validation (function determines context via isDashboardPage)
   handleValidateCert(certId);
 }
@@ -2609,7 +2919,7 @@ function onQRCodeScanError(errorMessage) {
 function showScannerError(message) {
   const errorBox = document.getElementById("qr-scanner-error");
   const errorText = document.getElementById("qr-scanner-error-text");
-  
+
   if (errorText) errorText.textContent = message;
   if (errorBox) errorBox.classList.remove("hidden");
 }
@@ -2622,7 +2932,14 @@ window.closeQRScanner = closeQRScanner;
  * Open the public download modal (for index.html public validator)
  * Creates a simple modal if it doesn't exist, or uses the existing one
  */
-function openPublicDownloadModal(recipient, course, id, date, issuer, skillsParam) {
+function openPublicDownloadModal(
+  recipient,
+  course,
+  id,
+  date,
+  issuer,
+  skillsParam,
+) {
   // Parse skills from encoded parameter if provided
   let skills = [];
   if (skillsParam) {
@@ -2632,15 +2949,23 @@ function openPublicDownloadModal(recipient, course, id, date, issuer, skillsPara
       console.warn("Failed to parse skills parameter:", e);
     }
   }
-  
+
   // Store the certificate data
-  const certData = { recipient, course, id, date, issuer, logo: "default-logo.ico", skills };
+  const certData = {
+    recipient,
+    course,
+    id,
+    date,
+    issuer,
+    logo: "default-logo.ico",
+    skills,
+  };
   state.modalData = certData;
   state.modalTheme = state.theme || "academic";
 
   // Check if modal exists (it should be in index.html)
   const modal = document.getElementById("public-download-modal");
-  
+
   if (!modal) {
     // Create modal dynamically if it doesn't exist
     createPublicDownloadModal();
@@ -2757,8 +3082,8 @@ function createPublicDownloadModal() {
     </div>
   `;
 
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
   // Build theme list
   const listContainer = document.getElementById("public-theme-list-container");
   if (listContainer) {
@@ -2779,7 +3104,7 @@ function createPublicDownloadModal() {
       listContainer.appendChild(div);
     });
   }
-  
+
   lucide.createIcons();
 }
 
@@ -2788,7 +3113,7 @@ function createPublicDownloadModal() {
  */
 function selectPublicModalTheme(themeId) {
   state.modalTheme = themeId;
-  
+
   // Re-render theme list
   const listContainer = document.getElementById("public-theme-list-container");
   if (listContainer) {
@@ -2810,7 +3135,7 @@ function selectPublicModalTheme(themeId) {
       listContainer.appendChild(div);
     });
   }
-  
+
   renderPublicModalPreview();
   lucide.createIcons();
 }
@@ -2819,7 +3144,9 @@ function selectPublicModalTheme(themeId) {
  * Render the public modal preview with selected theme and data
  */
 function renderPublicModalPreview() {
-  const container = document.getElementById("public-modal-certificate-container");
+  const container = document.getElementById(
+    "public-modal-certificate-container",
+  );
   const wrapper = document.getElementById("public-modal-preview-wrapper");
 
   if (!container || !wrapper) return;
@@ -2890,14 +3217,15 @@ function renderCertificate() {
   const d = state.data;
   const logoSrc = d.logo || defaultLogo;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
-  
+
   // Build skills HTML if skills exist
   const skills = d.skills || [];
-  const skillsHtml = skills.length > 0 
-    ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
-        ${skills.map(skill => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
-       </div>` 
-    : "";
+  const skillsHtml =
+    skills.length > 0
+      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+        ${skills.map((skill) => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
+       </div>`
+      : "";
 
   let template = "";
 
@@ -2933,12 +3261,13 @@ function renderCertificate() {
     `;
   } else if (state.theme === "underwater") {
     // Skills HTML for underwater theme
-    const underwaterSkillsHtml = skills.length > 0 
-      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
-          ${skills.map(skill => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
-         </div>` 
-      : "";
-      
+    const underwaterSkillsHtml =
+      skills.length > 0
+        ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+          ${skills.map((skill) => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
+         </div>`
+        : "";
+
     template = `
       <div class="w-full h-full bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-700 p-16 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute inset-0 opacity-20">
@@ -2973,13 +3302,14 @@ function renderCertificate() {
     `;
   } else if (state.theme === "programming") {
     // Skills HTML for programming theme
-    const programmingSkillsHtml = skills.length > 0 
-      ? `<div class="mt-4">
+    const programmingSkillsHtml =
+      skills.length > 0
+        ? `<div class="mt-4">
           <div class="text-gray-500 text-sm">// Skills acquired</div>
-          <div class="text-base mt-1">skills = [${skills.map(s => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
-         </div>` 
-      : "";
-      
+          <div class="text-base mt-1">skills = [${skills.map((s) => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
+         </div>`
+        : "";
+
     template = `
       <div class="w-full h-full bg-gray-900 text-green-400 p-16 flex flex-col justify-between font-mono relative overflow-hidden">
         <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px);"></div>
