@@ -21,7 +21,9 @@ const state = {
     date: new Date().toLocaleDateString(),
     id: "",
     logo: "default-logo.ico",
+    skills: [], // Skills selected for this certificate
   },
+  newSkillInput: "", // Temporary input for new skill
 };
 
 // --- Date Helper Functions ---
@@ -155,24 +157,24 @@ function t(key) {
       // Alerts
       mustBeLoggedIn: "You must be logged in to save certificates",
       fillRequired: "Please fill in recipient name and course name",
-      certSaved: "✅ Certificate saved successfully!",
-      errorSaving: "❌ Error saving certificate. Please try again.",
+      certSaved: "Certificate saved successfully!",
+      errorSaving: "Error saving certificate. Please try again.",
       saving: "Saving...",
       saveRecord: "Save Record",
       // Settings
-      profileUpdated: "✅ Profile settings updated successfully!",
-      errorUpdating: "❌ Error updating settings. Please try again.",
+      profileUpdated: "Profile settings updated successfully!",
+      errorUpdating: "Error updating settings. Please try again.",
       deleteConfirm: "Are you sure you want to delete your account? Your certificates will remain available for public validation.",
-      deleteSuccess: "✅ Account deleted successfully!",
-      deleteError: "❌ Error deleting account. Please try again.",
-      deleteErrorRelog: "❌ For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
+      deleteSuccess: "Account deleted successfully!",
+      deleteError: "Error deleting account. Please try again.",
+      deleteErrorRelog: "For security reasons, you need to sign in again to delete your account. Please sign out and sign back in, then try again.",
       deleting: "Deleting...",
       deleteAccount: "Delete Account",
       // Bulk
       noRecords: "No records to generate. Please upload a CSV first.",
       bulkConfirm: "This will create {count} certificates. Continue?",
-      bulkDone: "✅ Done! {saved} certificate{s} saved.{errors}",
-      bulkFailed: " ⚠️ {errors} failed.",
+      bulkDone: "Done! {saved} certificate{s} saved.{errors}",
+      bulkFailed: "{errors} failed.",
       mustBeLoggedInBulk: "You must be logged in to generate certificates",
       // Themes
       themeAcademic: "Academic Standard",
@@ -187,14 +189,26 @@ function t(key) {
       editCert: "Edit Certificate",
       deleteCert: "Delete Certificate",
       deleteCertConfirm: "Are you sure you want to delete this certificate? This action cannot be undone.",
-      certDeleted: "✅ Certificate deleted successfully!",
-      certUpdated: "✅ Certificate updated successfully!",
-      errorDeleting: "❌ Error deleting certificate. Please try again.",
-      errorUpdating: "❌ Error updating certificate. Please try again.",
+      certDeleted: "Certificate deleted successfully!",
+      certUpdated: "Certificate updated successfully!",
+      errorDeleting: "Error deleting certificate. Please try again.",
+      errorUpdating: "Error updating certificate. Please try again.",
       updateRecord: "Update Record",
       cancel: "Cancel",
       creatingNew: "Creating New",
       editingCert: "Editing Certificate",
+      // Skills
+      skills: "Skills",
+      skillsAcquired: "Skills Acquired",
+      addSkill: "Add Skill",
+      removeSkill: "Remove Skill",
+      noSkills: "No skills added yet",
+      skillPlaceholder: "Enter a new skill",
+      selectSkills: "Select Skills",
+      skillsUpdated: "Skills updated successfully!",
+      errorSkillsUpdate: "Error updating skills. Please try again.",
+      addNewSkill: "Add new skill",
+      skillsLabel: "Skills (Optional)",
     },
     es: {
       // List view
@@ -206,24 +220,24 @@ function t(key) {
       // Alerts
       mustBeLoggedIn: "Debes iniciar sesión para guardar certificados",
       fillRequired: "Por favor completa el nombre del destinatario y el curso",
-      certSaved: "✅ ¡Certificado guardado exitosamente!",
-      errorSaving: "❌ Error al guardar el certificado. Por favor intenta de nuevo.",
+      certSaved: "¡Certificado guardado exitosamente!",
+      errorSaving: "Error al guardar el certificado. Por favor intenta de nuevo.",
       saving: "Guardando...",
       saveRecord: "Guardar Registro",
       // Settings
-      profileUpdated: "✅ ¡Ajustes de perfil actualizados exitosamente!",
-      errorUpdating: "❌ Error al actualizar ajustes. Por favor intenta de nuevo.",
+      profileUpdated: "¡Ajustes de perfil actualizados exitosamente!",
+      errorUpdating: "Error al actualizar ajustes. Por favor intenta de nuevo.",
       deleteConfirm: "¿Estás seguro de que quieres eliminar tu cuenta? Tus certificados permanecerán disponibles para validación pública.",
-      deleteSuccess: "✅ ¡Cuenta eliminada exitosamente!",
-      deleteError: "❌ Error al eliminar la cuenta. Por favor intenta de nuevo.",
-      deleteErrorRelog: "❌ Por razones de seguridad, necesitas iniciar sesión de nuevo para eliminar tu cuenta. Por favor cierra sesión e inicia de nuevo, luego intenta de nuevo.",
+      deleteSuccess: "¡Cuenta eliminada exitosamente!",
+      deleteError: "Error al eliminar la cuenta. Por favor intenta de nuevo.",
+      deleteErrorRelog: "Por razones de seguridad, necesitas iniciar sesión de nuevo para eliminar tu cuenta. Por favor cierra sesión e inicia de nuevo, luego intenta de nuevo.",
       deleting: "Eliminando...",
       deleteAccount: "Eliminar Cuenta",
       // Bulk
       noRecords: "No hay registros para generar. Por favor sube un CSV primero.",
       bulkConfirm: "Esto creará {count} certificados. ¿Continuar?",
-      bulkDone: "✅ ¡Listo! {saved} certificado{s} guardado{s}.{errors}",
-      bulkFailed: " ⚠️ {errors} fallaron.",
+      bulkDone: "¡Listo! {saved} certificado{s} guardado{s}.{errors}",
+      bulkFailed: "{errors} fallaron.",
       mustBeLoggedInBulk: "Debes iniciar sesión para generar certificados",
       // Themes
       themeAcademic: "Estándar Académico",
@@ -238,14 +252,26 @@ function t(key) {
       editCert: "Editar Certificado",
       deleteCert: "Eliminar Certificado",
       deleteCertConfirm: "¿Estás seguro de que quieres eliminar este certificado? Esta acción no se puede deshacer.",
-      certDeleted: "✅ ¡Certificado eliminado exitosamente!",
-      certUpdated: "✅ ¡Certificado actualizado exitosamente!",
-      errorDeleting: "❌ Error al eliminar el certificado. Por favor intenta de nuevo.",
-      errorUpdating: "❌ Error al actualizar el certificado. Por favor intenta de nuevo.",
+      certDeleted: "¡Certificado eliminado exitosamente!",
+      certUpdated: "¡Certificado actualizado exitosamente!",
+      errorDeleting: "Error al eliminar el certificado. Por favor intenta de nuevo.",
+      errorUpdating: "Error al actualizar el certificado. Por favor intenta de nuevo.",
       updateRecord: "Actualizar Registro",
       cancel: "Cancelar",
       creatingNew: "Creando Nuevo",
       editingCert: "Editando Certificado",
+      // Skills
+      skills: "Habilidades",
+      skillsAcquired: "Habilidades Adquiridas",
+      addSkill: "Agregar Habilidad",
+      removeSkill: "Eliminar Habilidad",
+      noSkills: "No hay habilidades agregadas",
+      skillPlaceholder: "Ingresa una nueva habilidad",
+      selectSkills: "Seleccionar Habilidades",
+      skillsUpdated: "¡Habilidades actualizadas exitosamente!",
+      errorSkillsUpdate: "Error al actualizar habilidades. Por favor intenta de nuevo.",
+      addNewSkill: "Agregar nueva habilidad",
+      skillsLabel: "Habilidades (Opcional)",
     }
   };
   return translations[lang]?.[key] || translations.en[key] || key;
@@ -712,6 +738,7 @@ function handleEditCertificate(certId) {
   state.data.issuer = cert.issuer;
   state.data.date = cert.date;
   state.data.id = cert.id;
+  state.data.skills = cert.skills || [];
 
   // Update form inputs
   const recipientInput = document.getElementById("input-recipient");
@@ -729,6 +756,9 @@ function handleEditCertificate(certId) {
 
   // Switch to create view and render
   switchView("create");
+  
+  // Re-render skills selector to show selected skills from certificate
+  renderCertificateSkillsSelector();
   renderCertificate();
 }
 
@@ -742,6 +772,7 @@ function handleCancelEdit() {
   // Clear form
   state.data.recipient = "";
   state.data.course = "";
+  state.data.skills = [];
   
   const recipientInput = document.getElementById("input-recipient");
   const courseInput = document.getElementById("input-course");
@@ -765,6 +796,9 @@ function handleCancelEdit() {
 
   // Update save button
   updateSaveButtonState();
+  
+  // Re-render skills selector to show cleared state
+  renderCertificateSkillsSelector();
   
   // Re-render certificate with reset date
   renderCertificate();
@@ -891,6 +925,7 @@ async function handleSaveCertificate() {
           course: state.data.course,
           issuer: state.data.issuer || state.user.company,
           date: state.data.date,
+          skills: state.data.skills || [],
           updatedAt: window.firestoreTimestamp(),
         },
       );
@@ -902,6 +937,7 @@ async function handleSaveCertificate() {
         course: state.data.course,
         issuer: state.data.issuer || state.user.company,
         date: state.data.date,
+        skills: state.data.skills || [],
         issuedByEmail: state.user.email,
         createdAt: window.firestoreTimestamp(),
         updatedAt: window.firestoreTimestamp(),
@@ -924,6 +960,7 @@ async function handleSaveCertificate() {
     // Clear input fields
     state.data.recipient = "";
     state.data.course = "";
+    state.data.skills = [];
     if (document.getElementById("input-recipient")) {
       document.getElementById("input-recipient").value = "";
     }
@@ -934,6 +971,8 @@ async function handleSaveCertificate() {
     // Update save button back to create mode
     updateSaveButtonState();
     
+    // Re-render skills selector to show cleared state
+    renderCertificateSkillsSelector();
     renderCertificate();
   } catch (error) {
     console.error("Error saving certificate:", error);
@@ -1023,11 +1062,20 @@ async function handleValidateCert(id) {
 
     if (certDoc.exists()) {
       const cert = certDoc.data();
+      
+      // Build skills display HTML if skills exist
+      const certSkills = cert.skills || [];
+      const skillsDisplayHtml = certSkills.length > 0 
+        ? `<p class="text-green-600 text-xs mt-1"><strong>${lang === 'es' ? 'Habilidades' : 'Skills'}:</strong> ${certSkills.join(', ')}</p>` 
+        : '';
+      
+      // Build skills parameter for download modals (escape the array for passing)
+      const skillsParam = certSkills.length > 0 ? encodeURIComponent(JSON.stringify(certSkills)) : '';
 
       // Build download button HTML based on context (public vs dashboard)
       const downloadBtnHtml = !isDashboardPage ? `
         <button
-          onclick="openPublicDownloadModal('${cert.recipient.replace(/'/g, "\\'")}', '${cert.course.replace(/'/g, "\\'")}', '${cert.id}', '${cert.date}', '${(cert.issuer || '').replace(/'/g, "\\'")}')"
+          onclick="openPublicDownloadModal('${cert.recipient.replace(/'/g, "\\'")}', '${cert.course.replace(/'/g, "\\'")}', '${cert.id}', '${cert.date}', '${(cert.issuer || '').replace(/'/g, "\\'")}', '${skillsParam}')"
           class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
         >
           <i data-lucide="download" class="h-4 w-4"></i>
@@ -1035,7 +1083,7 @@ async function handleValidateCert(id) {
         </button>
       ` : `
         <button
-          onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}'})"
+          onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || '').replace(/'/g, "\\'")}', skills: '${skillsParam}'})"
           class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
         >
           <i data-lucide="download" class="h-4 w-4"></i>
@@ -1050,6 +1098,7 @@ async function handleValidateCert(id) {
         <p>${t.issuedTo} <strong>${cert.recipient}</strong></p>
         <p>${t.course}: ${cert.course}</p>
         <p class="text-green-600 text-xs mt-1">${t.issuedBy} ${cert.issuer} ${t.on} ${cert.date}</p>
+        ${skillsDisplayHtml}
         ${downloadBtnHtml}
       `;
 
@@ -1059,6 +1108,7 @@ async function handleValidateCert(id) {
       state.data.issuer = cert.issuer;
       state.data.date = cert.date;
       state.data.id = cert.id;
+      state.data.skills = cert.skills || [];
 
       if (certContainer) certContainer.style.opacity = "1";
       renderCertificate();
@@ -1191,6 +1241,235 @@ async function handleDeleteUser() {
   }
 }
 
+// --- Skills Management Functions ---
+
+/**
+ * Add a new skill to user's skill list
+ */
+async function handleAddSkill(skill) {
+  if (!state.user || !skill || skill.trim() === "") return;
+  
+  const trimmedSkill = skill.trim();
+  
+  // Initialize skills array if it doesn't exist
+  if (!state.user.skills) {
+    state.user.skills = [];
+  }
+  
+  // Check if skill already exists
+  if (state.user.skills.includes(trimmedSkill)) {
+    return; // Skill already exists
+  }
+  
+  // Add skill locally
+  state.user.skills.push(trimmedSkill);
+  
+  try {
+    // Update in Firestore
+    await window.firestoreUpdateDoc(
+      window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+      {
+        skills: state.user.skills,
+        updatedAt: window.firestoreTimestamp(),
+      },
+    );
+    
+    // Re-render skills UI
+    renderSettingsSkillsList();
+    renderCertificateSkillsSelector();
+    
+    return true;
+  } catch (error) {
+    console.error("Error adding skill:", error);
+    // Revert local change
+    state.user.skills = state.user.skills.filter(s => s !== trimmedSkill);
+    alert(t('errorSkillsUpdate'));
+    return false;
+  }
+}
+
+/**
+ * Remove a skill from user's skill list
+ */
+async function handleRemoveSkill(skill) {
+  if (!state.user || !skill) return;
+  
+  // Initialize skills array if it doesn't exist
+  if (!state.user.skills) {
+    state.user.skills = [];
+  }
+  
+  // Remove skill locally
+  const previousSkills = [...state.user.skills];
+  state.user.skills = state.user.skills.filter(s => s !== skill);
+  
+  try {
+    // Update in Firestore
+    await window.firestoreUpdateDoc(
+      window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+      {
+        skills: state.user.skills,
+        updatedAt: window.firestoreTimestamp(),
+      },
+    );
+    
+    // Also remove from certificate skills if selected
+    state.data.skills = state.data.skills.filter(s => s !== skill);
+    
+    // Re-render skills UI
+    renderSettingsSkillsList();
+    renderCertificateSkillsSelector();
+    renderCertificate();
+    
+    return true;
+  } catch (error) {
+    console.error("Error removing skill:", error);
+    // Revert local change
+    state.user.skills = previousSkills;
+    alert(t('errorSkillsUpdate'));
+    return false;
+  }
+}
+
+/**
+ * Toggle a skill selection for the current certificate
+ */
+function toggleCertificateSkill(skill) {
+  if (!state.data.skills) {
+    state.data.skills = [];
+  }
+  
+  if (state.data.skills.includes(skill)) {
+    state.data.skills = state.data.skills.filter(s => s !== skill);
+  } else {
+    state.data.skills.push(skill);
+  }
+  
+  renderCertificateSkillsSelector();
+  renderCertificate();
+}
+
+/**
+ * Add a new skill directly from certificate creation (also adds to user's list)
+ */
+async function addNewSkillFromCertificate(skill) {
+  if (!skill || skill.trim() === "") return;
+  
+  const success = await handleAddSkill(skill);
+  if (success) {
+    // Also select the new skill for the certificate
+    if (!state.data.skills) {
+      state.data.skills = [];
+    }
+    state.data.skills.push(skill.trim());
+    renderCertificateSkillsSelector();
+    renderCertificate();
+  }
+  
+  // Clear the input
+  const input = document.getElementById("new-skill-input");
+  if (input) input.value = "";
+}
+
+/**
+ * Render the skills list in settings view
+ */
+function renderSettingsSkillsList() {
+  const container = document.getElementById("settings-skills-list");
+  if (!container) return;
+  
+  const skills = state.user?.skills || [];
+  
+  if (skills.length === 0) {
+    container.innerHTML = `
+      <div class="text-gray-400 text-sm italic py-4 text-center">
+        <span data-en>${t('noSkills')}</span>
+        <span data-es class="hidden">${t('noSkills')}</span>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = skills.map(skill => `
+    <div class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+      <span class="text-sm text-gray-700">${skill}</span>
+      <button
+        onclick="handleRemoveSkill('${skill.replace(/'/g, "\\'")}')"
+        class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
+        title="${t('removeSkill')}"
+      >
+        <i data-lucide="x" class="h-4 w-4"></i>
+      </button>
+    </div>
+  `).join("");
+  
+  lucide.createIcons();
+}
+
+/**
+ * Render the skills selector in certificate creation view
+ */
+function renderCertificateSkillsSelector() {
+  const container = document.getElementById("certificate-skills-selector");
+  if (!container) return;
+  
+  const userSkills = state.user?.skills || [];
+  const selectedSkills = state.data.skills || [];
+  
+  // Skills chips
+  let skillsHtml = "";
+  
+  if (userSkills.length > 0) {
+    skillsHtml = userSkills.map(skill => {
+      const isSelected = selectedSkills.includes(skill);
+      return `
+        <button
+          type="button"
+          onclick="toggleCertificateSkill('${skill.replace(/'/g, "\\'")}')"
+          class="px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+            isSelected 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }"
+        >
+          ${skill}
+        </button>
+      `;
+    }).join("");
+  }
+  
+  container.innerHTML = `
+    <div class="flex flex-wrap gap-2 mb-2">
+      ${skillsHtml}
+    </div>
+    <div class="flex gap-2">
+      <input
+        type="text"
+        id="new-skill-input"
+        class="flex-1 px-3 py-2 border rounded-md outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+        data-en-placeholder="${t('addNewSkill')}"
+        data-es-placeholder="${t('addNewSkill')}"
+        onkeypress="if(event.key === 'Enter') { event.preventDefault(); addNewSkillFromCertificate(this.value); }"
+      />
+      <button
+        type="button"
+        onclick="addNewSkillFromCertificate(document.getElementById('new-skill-input').value)"
+        class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-md text-sm font-medium hover:bg-indigo-200 transition-colors"
+      >
+        <i data-lucide="plus" class="h-4 w-4"></i>
+      </button>
+    </div>
+  `;
+  
+  lucide.createIcons();
+}
+
+// Expose skills functions globally
+window.handleAddSkill = handleAddSkill;
+window.handleRemoveSkill = handleRemoveSkill;
+window.toggleCertificateSkill = toggleCertificateSkill;
+window.addNewSkillFromCertificate = addNewSkillFromCertificate;
+
 /**
  * Initialize logo preview functionality for settings modal
  */
@@ -1291,7 +1570,7 @@ function handleBulkUpload() {
         renderCertificate();
 
         console.log(
-          `✅ Parsed ${count} certificates. Showing preview of row #1.`,
+          `Parsed ${count} certificates. Showing preview of row #1.`,
         );
       }
 
@@ -1634,6 +1913,14 @@ function completeLogin(userData) {
   state.user = userData;
   state.data.issuer = userData.company;
   state.data.logo = userData.logoUrl || defaultLogo;
+  
+  // Initialize skills array if not present
+  if (!state.user.skills) {
+    state.user.skills = [];
+  }
+  
+  // Reset certificate skills on login
+  state.data.skills = [];
 
   // If on index.html (landing page), redirect to dashboard
   if (!isDashboardPage) {
@@ -1669,6 +1956,12 @@ function completeLogin(userData) {
 
   switchView("create");
   setTimeout(handleResize, 100);
+  
+  // Render skills UI after a brief delay to ensure DOM is ready
+  setTimeout(() => {
+    renderCertificateSkillsSelector();
+    renderSettingsSkillsList();
+  }, 200);
 }
 
 // Expose completeLogin globally for the Firebase module script
@@ -1875,6 +2168,16 @@ function renderThemeList(container, context) {
  * Open the download modal with certificate data
  */
 function openDownloadModal(data) {
+  // Parse skills if it's a string (encoded JSON)
+  if (data && data.skills && typeof data.skills === 'string') {
+    try {
+      data.skills = JSON.parse(decodeURIComponent(data.skills));
+    } catch (e) {
+      console.warn("Failed to parse skills in openDownloadModal:", e);
+      data.skills = [];
+    }
+  }
+  
   // Use provided data or fall back to current editor data
   state.modalData = data || { ...state.data };
   state.modalTheme = state.theme; // Default to current theme
@@ -1982,6 +2285,14 @@ function renderCertificateToTarget(targetElement, data, theme) {
   const d = data;
   const logoSrc = d.logo || defaultLogo;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
+  
+  // Build skills HTML if skills exist
+  const skills = d.skills || [];
+  const skillsHtml = skills.length > 0 
+    ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+        ${skills.map(skill => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
+       </div>` 
+    : "";
 
   let template = "";
 
@@ -1994,11 +2305,12 @@ function renderCertificateToTarget(targetElement, data, theme) {
           <div class="text-6xl font-bold text-indigo-900 mb-2">Certificate</div>
           <div class="text-2xl text-indigo-700">of Achievement</div>
         </div>
-        <div class="text-center space-y-6">
+        <div class="text-center space-y-4">
           <p class="text-lg text-gray-700">This certificate is proudly presented to</p>
           <div class="text-5xl font-bold text-gray-900 font-handwriting">${d.recipient || "Recipient Name"}</div>
           <p class="text-lg text-gray-700">For outstanding performance and completion of</p>
           <div class="text-3xl font-semibold text-indigo-800">${d.course || "Course Name"}</div>
+          ${skillsHtml}
         </div>
         <div class="flex justify-between items-end">
           <div class="text-center flex-1">
@@ -2015,6 +2327,13 @@ function renderCertificateToTarget(targetElement, data, theme) {
       </div>
     `;
   } else if (theme === "underwater") {
+    // Skills HTML for underwater theme
+    const underwaterSkillsHtml = skills.length > 0 
+      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+          ${skills.map(skill => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
+         </div>` 
+      : "";
+      
     template = `
       <div class="w-full h-full bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-700 p-16 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute inset-0 opacity-20">
@@ -2026,11 +2345,12 @@ function renderCertificateToTarget(targetElement, data, theme) {
           <div class="text-5xl font-bold text-white drop-shadow-lg">Certificate</div>
           <div class="text-xl text-cyan-100">Of Completion</div>
         </div>
-        <div class="relative z-10 text-center space-y-6 bg-white/10 backdrop-blur-md rounded-2xl p-8">
+        <div class="relative z-10 text-center space-y-4 bg-white/10 backdrop-blur-md rounded-2xl p-8">
           <p class="text-white text-lg">This acknowledges that</p>
           <div class="text-5xl font-bold text-white font-handwriting drop-shadow">${d.recipient || "Recipient Name"}</div>
           <p class="text-white text-lg">Has successfully completed the course</p>
           <div class="text-3xl font-semibold text-cyan-100">${d.course || "Course Name"}</div>
+          ${underwaterSkillsHtml}
         </div>
         <div class="relative z-10 flex justify-between items-end text-white">
           <div class="text-center">
@@ -2047,6 +2367,14 @@ function renderCertificateToTarget(targetElement, data, theme) {
       </div>
     `;
   } else if (theme === "programming") {
+    // Skills HTML for programming theme
+    const programmingSkillsHtml = skills.length > 0 
+      ? `<div class="mt-4">
+          <div class="text-gray-500 text-sm">// Skills acquired</div>
+          <div class="text-base mt-1">skills = [${skills.map(s => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
+         </div>` 
+      : "";
+      
     template = `
       <div class="w-full h-full bg-gray-900 text-green-400 p-16 flex flex-col justify-between font-mono relative overflow-hidden">
         <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px);"></div>
@@ -2055,9 +2383,10 @@ function renderCertificateToTarget(targetElement, data, theme) {
           <div class="text-sm text-gray-500 mb-2">// Achievement Certificate</div>
           <div class="text-4xl font-bold text-green-400">class Achievement implements Success</div>
         </div>
-        <div class="relative z-10 space-y-4 text-lg">
+        <div class="relative z-10 space-y-3 text-lg">
           <div><span class="text-blue-400">const</span> recipient = <span class="text-yellow-300">"${d.recipient || "Recipient Name"}"</span></div>
           <div><span class="text-blue-400">const</span> achievement = <span class="text-yellow-300">"${d.course || "Course Name"}"</span></div>
+          ${programmingSkillsHtml}
           <div class="text-gray-500 text-sm mt-4">// Verified hash</div>
           <div class="text-xs text-gray-600">${d.id}</div>
         </div>
@@ -2171,7 +2500,7 @@ async function openQRScanner() {
       onQRCodeScanError
     );
     
-    console.log("✅ QR Scanner started successfully");
+    console.log("QR Scanner started successfully");
   } catch (err) {
     console.error("Error starting QR scanner:", err);
     
@@ -2207,7 +2536,7 @@ async function closeQRScanner() {
     try {
       await state.qrScanner.stop();
       state.qrScanner.clear();
-      console.log("✅ QR Scanner stopped");
+      console.log("QR Scanner stopped");
     } catch (err) {
       console.warn("Error stopping QR scanner:", err);
     }
@@ -2293,9 +2622,19 @@ window.closeQRScanner = closeQRScanner;
  * Open the public download modal (for index.html public validator)
  * Creates a simple modal if it doesn't exist, or uses the existing one
  */
-function openPublicDownloadModal(recipient, course, id, date, issuer) {
+function openPublicDownloadModal(recipient, course, id, date, issuer, skillsParam) {
+  // Parse skills from encoded parameter if provided
+  let skills = [];
+  if (skillsParam) {
+    try {
+      skills = JSON.parse(decodeURIComponent(skillsParam));
+    } catch (e) {
+      console.warn("Failed to parse skills parameter:", e);
+    }
+  }
+  
   // Store the certificate data
-  const certData = { recipient, course, id, date, issuer, logo: "default-logo.ico" };
+  const certData = { recipient, course, id, date, issuer, logo: "default-logo.ico", skills };
   state.modalData = certData;
   state.modalTheme = state.theme || "academic";
 
@@ -2551,6 +2890,14 @@ function renderCertificate() {
   const d = state.data;
   const logoSrc = d.logo || defaultLogo;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
+  
+  // Build skills HTML if skills exist
+  const skills = d.skills || [];
+  const skillsHtml = skills.length > 0 
+    ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+        ${skills.map(skill => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
+       </div>` 
+    : "";
 
   let template = "";
 
@@ -2563,11 +2910,12 @@ function renderCertificate() {
           <div class="text-6xl font-bold text-indigo-900 mb-2">Certificate</div>
           <div class="text-2xl text-indigo-700">of Achievement</div>
         </div>
-        <div class="text-center space-y-6">
+        <div class="text-center space-y-4">
           <p class="text-lg text-gray-700">This certificate is proudly presented to</p>
           <div class="text-5xl font-bold text-gray-900 font-handwriting">${d.recipient || "Recipient Name"}</div>
           <p class="text-lg text-gray-700">For outstanding performance and completion of</p>
           <div class="text-3xl font-semibold text-indigo-800">${d.course || "Course Name"}</div>
+          ${skillsHtml}
         </div>
         <div class="flex justify-between items-end">
           <div class="text-center flex-1">
@@ -2584,6 +2932,13 @@ function renderCertificate() {
       </div>
     `;
   } else if (state.theme === "underwater") {
+    // Skills HTML for underwater theme
+    const underwaterSkillsHtml = skills.length > 0 
+      ? `<div class="flex flex-wrap justify-center gap-2 mt-4">
+          ${skills.map(skill => `<span class="px-3 py-1 bg-white/20 text-white text-sm rounded-full border border-white/30">${skill}</span>`).join("")}
+         </div>` 
+      : "";
+      
     template = `
       <div class="w-full h-full bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-700 p-16 flex flex-col justify-between relative overflow-hidden">
         <div class="absolute inset-0 opacity-20">
@@ -2595,11 +2950,12 @@ function renderCertificate() {
           <div class="text-5xl font-bold text-white drop-shadow-lg">Certificate</div>
           <div class="text-xl text-cyan-100">Of Completion</div>
         </div>
-        <div class="relative z-10 text-center space-y-6 bg-white/10 backdrop-blur-md rounded-2xl p-8">
+        <div class="relative z-10 text-center space-y-4 bg-white/10 backdrop-blur-md rounded-2xl p-8">
           <p class="text-white text-lg">This acknowledges that</p>
           <div class="text-5xl font-bold text-white font-handwriting drop-shadow">${d.recipient || "Recipient Name"}</div>
           <p class="text-white text-lg">Has successfully completed the course</p>
           <div class="text-3xl font-semibold text-cyan-100">${d.course || "Course Name"}</div>
+          ${underwaterSkillsHtml}
         </div>
         <div class="relative z-10 flex justify-between items-end text-white">
           <div class="text-center">
@@ -2616,6 +2972,14 @@ function renderCertificate() {
       </div>
     `;
   } else if (state.theme === "programming") {
+    // Skills HTML for programming theme
+    const programmingSkillsHtml = skills.length > 0 
+      ? `<div class="mt-4">
+          <div class="text-gray-500 text-sm">// Skills acquired</div>
+          <div class="text-base mt-1">skills = [${skills.map(s => `<span class="text-green-300">"${s}"</span>`).join(", ")}]</div>
+         </div>` 
+      : "";
+      
     template = `
       <div class="w-full h-full bg-gray-900 text-green-400 p-16 flex flex-col justify-between font-mono relative overflow-hidden">
         <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px);"></div>
@@ -2624,9 +2988,10 @@ function renderCertificate() {
           <div class="text-sm text-gray-500 mb-2">// Achievement Certificate</div>
           <div class="text-4xl font-bold text-green-400">class Achievement implements Success</div>
         </div>
-        <div class="relative z-10 space-y-4 text-lg">
+        <div class="relative z-10 space-y-3 text-lg">
           <div><span class="text-blue-400">const</span> recipient = <span class="text-yellow-300">"${d.recipient || "Recipient Name"}"</span></div>
           <div><span class="text-blue-400">const</span> achievement = <span class="text-yellow-300">"${d.course || "Course Name"}"</span></div>
+          ${programmingSkillsHtml}
           <div class="text-gray-500 text-sm mt-4">// Verified hash</div>
           <div class="text-xs text-gray-600">${d.id}</div>
         </div>
