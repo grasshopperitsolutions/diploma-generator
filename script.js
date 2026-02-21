@@ -316,7 +316,7 @@ function t(key) {
   return translations[lang]?.[key] || translations.en[key] || key;
 }
 
-const defaultLogo = "default-logo.ico";
+const defaultLogo = "default-logo.jpeg";
 
 // Shared preview area element (moved between views)
 let previewArea = null;
@@ -2740,6 +2740,31 @@ function initializeNewDesign() {
 
   // Initialize the new public validator functionality
   initializePublicValidator();
+
+  // Initialize billing toggle for pricing section
+  initializeBillingToggle();
+}
+
+/**
+ * Initialize the billing toggle for pricing section
+ */
+function initializeBillingToggle() {
+  const billingToggle = document.getElementById("billing-toggle");
+  const priceDisplays = document.querySelectorAll(".price-display");
+
+  if (billingToggle && priceDisplays.length > 0) {
+    billingToggle.addEventListener("change", (e) => {
+      const isYearly = e.target.checked;
+
+      priceDisplays.forEach((display) => {
+        if (isYearly) {
+          display.innerText = "$" + display.getAttribute("data-yearly");
+        } else {
+          display.innerText = "$" + display.getAttribute("data-monthly");
+        }
+      });
+    });
+  }
 }
 
 /**

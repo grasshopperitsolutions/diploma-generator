@@ -109,6 +109,30 @@
         display: none;
       }
 
+      /* Toggle Switch CSS for Pricing */
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: #4f46e5;
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: #4f46e5;
+      }
+
+      /* Gradient Border for Pro Plan */
+      .gradient-border-card {
+        position: relative;
+        border-radius: 1.5rem;
+        background: white;
+      }
+      .gradient-border-card::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: 1.6rem;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        z-index: -1;
+      }
+
       /* Print Styles */
       @media print {
         @page {
@@ -192,6 +216,15 @@
           </div>
 
           <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+
+          <button
+            onclick="scrollToSection('pricing')"
+            class="hidden sm:flex items-center gap-2 bg-slate-100 text-slate-700 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-200 transition-all border border-slate-200"
+          >
+            <i data-lucide="credit-card" class="h-4 w-4"></i>
+            <span data-en>Pricing</span>
+            <span data-es class="hidden">Precios</span>
+          </button>
 
           <button
             onclick="scrollToSection('validator')"
@@ -283,8 +316,8 @@
                 onclick="openAuth('login')"
                 class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all"
               >
-                <span data-en>Get Started for Free</span>
-                <span data-es class="hidden">Comienza gratis</span>
+                <span data-en>Get Started</span>
+                <span data-es class="hidden">Comienza</span>
               </button>
               <button
                 onclick="scrollToSection('validator')"
@@ -339,6 +372,88 @@
           </div>
         </div>
       </header>
+
+      <!-- VALUE PROPOSITION SECTION -->
+      <section class="py-16 bg-white border-y border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            class="bg-slate-50 p-8 rounded-2xl border border-slate-100 shadow-sm max-w-4xl mx-auto"
+          >
+            <h2
+              class="text-2xl font-bold text-slate-900 mb-4 flex items-center"
+            >
+              <i data-lucide="clock" class="w-6 h-6 text-indigo-600 mr-2"></i>
+              <span data-en>Still creating certificates one by one?</span>
+              <span data-es class="hidden"
+                >¿Sigues creando certificados uno por uno?</span
+              >
+            </h2>
+            <div class="space-y-4 text-slate-600 leading-relaxed">
+              <p>
+                <span data-en
+                  >Still creating certificates one by one in Word or Canva? That
+                  not only consumes valuable hours… it also opens the door to
+                  errors, rework, and an unprofessional experience.</span
+                >
+                <span data-es class="hidden"
+                  >¿Sigues creando certificados uno por uno en Word o Canva? Eso
+                  no solo consume horas valiosas… también abre la puerta a
+                  errores, retrabajos y una experiencia poco profesional.</span
+                >
+              </p>
+              <p class="font-semibold text-slate-900">
+                <span data-en
+                  >With our digital certificate generator, you instantly elevate
+                  the perceived value of your courses and workshops.</span
+                >
+                <span data-es class="hidden"
+                  >Con nuestro generador de certificados digitales elevas
+                  instantáneamente el valor percibido de tus cursos y
+                  talleres.</span
+                >
+              </p>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2">
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-4 h-4 text-green-500"
+                  ></i>
+                  <span data-en>Design once, generate hundreds.</span>
+                  <span data-es class="hidden"
+                    >Diseña una vez, genera cientos.</span
+                  >
+                </li>
+                <li class="flex items-center gap-2">
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-4 h-4 text-green-500"
+                  ></i>
+                  <span data-en>Integrated QR verification.</span>
+                  <span data-es class="hidden">Verificación QR integrada.</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i
+                    data-lucide="check-circle-2"
+                    class="w-4 h-4 text-green-500"
+                  ></i>
+                  <span data-en
+                    >Strengthen your personal or business brand.</span
+                  >
+                  <span data-es class="hidden"
+                    >Refuerza tu marca personal o empresarial.</span
+                  >
+                </li>
+              </ul>
+              <p class="text-sm italic text-slate-500">
+                <span data-en>Less time operating. More time growing.</span>
+                <span data-es class="hidden"
+                  >Menos tiempo operando. Más tiempo creciendo.</span
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- SERVICES SECTION -->
       <section id="services" class="py-24 px-6 bg-white">
@@ -439,6 +554,431 @@
                   manual.</span
                 >
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRICING SECTION -->
+      <section id="pricing" class="py-24 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+          <!-- Pricing Header -->
+          <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">
+              <span data-en>Simple, Transparent Pricing</span>
+              <span data-es class="hidden"
+                >Precios Simples y Transparentes</span
+              >
+            </h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-10">
+              <span data-en
+                >Choose the plan that fits your institution. No hidden fees.
+                Validate your certificates forever.</span
+              >
+              <span data-es class="hidden"
+                >Elige el plan que se adapte a tu institución. Sin cargos
+                ocultos. Valida tus certificados para siempre.</span
+              >
+            </p>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center space-x-4 mb-12">
+              <span class="text-slate-600 font-medium">
+                <span data-en>Monthly</span>
+                <span data-es class="hidden">Mensual</span>
+              </span>
+              <div
+                class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"
+              >
+                <input
+                  type="checkbox"
+                  name="toggle"
+                  id="billing-toggle"
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-slate-300 appearance-none cursor-pointer transition-all duration-300 z-10 top-0 left-0"
+                />
+                <label
+                  for="billing-toggle"
+                  class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer transition-colors duration-300"
+                ></label>
+              </div>
+              <span class="text-slate-900 font-bold flex items-center">
+                <span data-en>Yearly</span>
+                <span data-es class="hidden">Anual</span>
+                <span
+                  class="ml-2 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full"
+                >
+                  <span data-en>Save 16%</span>
+                  <span data-es class="hidden">Ahorra 16%</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Pricing Cards -->
+          <div class="grid md:grid-cols-3 gap-8 items-start">
+            <!-- Tier 1: Starter -->
+            <div
+              class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 class="text-xl font-bold text-slate-900 mb-2">
+                <span data-en>Starter</span>
+                <span data-es class="hidden">Inicial</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-6 h-10">
+                <span data-en
+                  >Perfect for solopreneurs and small workshops.</span
+                >
+                <span data-es class="hidden"
+                  >Perfecto para emprendedores y pequeños talleres.</span
+                >
+              </p>
+              <div class="mb-6">
+                <span
+                  class="text-4xl font-extrabold text-slate-900 price-display"
+                  data-monthly="19"
+                  data-yearly="190"
+                  >$19</span
+                >
+                <span class="text-slate-500">
+                  <span data-en>/mo</span>
+                  <span data-es class="hidden">/mes</span>
+                </span>
+              </div>
+              <button
+                onclick="openAuth('register')"
+                class="block w-full text-center bg-slate-100 text-slate-900 font-semibold py-3 rounded-xl hover:bg-slate-200 transition-colors mb-8"
+              >
+                <span data-en>Start Free Trial</span>
+                <span data-es class="hidden">Prueba Gratis</span>
+              </button>
+              <ul class="space-y-4 text-sm text-slate-600">
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <b>50</b> &nbsp;<span data-en>Credits / month</span
+                  ><span data-es class="hidden">Créditos / mes</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Basic Themes</span
+                  ><span data-es class="hidden">Temas Básicos</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Logo Upload Included</span
+                  ><span data-es class="hidden">Sube tu propio Logo</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Unlimited QR Validation</span
+                  ><span data-es class="hidden">Validación QR Ilimitada</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-slate-300 mr-3"
+                  ></i>
+                  <span data-en>Help Center Support</span
+                  ><span data-es class="hidden"
+                    >Soporte via Centro de Ayuda</span
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tier 2: Professional (Most Popular) -->
+            <div class="gradient-border-card p-8 md:-mt-4 shadow-xl">
+              <div
+                class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-1 rounded-full text-xs font-bold tracking-wide uppercase"
+              >
+                <span data-en>Most Popular</span>
+                <span data-es class="hidden">Más Popular</span>
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2">
+                <span data-en>Professional</span>
+                <span data-es class="hidden">Profesional</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-6 h-10">
+                <span data-en
+                  >For academies and enterprises scaling their
+                  credentials.</span
+                >
+                <span data-es class="hidden"
+                  >Para academias y empresas escalando sus credenciales.</span
+                >
+              </p>
+              <div class="mb-6">
+                <span
+                  class="text-4xl font-extrabold text-slate-900 price-display"
+                  data-monthly="49"
+                  data-yearly="490"
+                  >$49</span
+                >
+                <span class="text-slate-500">
+                  <span data-en>/mo</span>
+                  <span data-es class="hidden">/mes</span>
+                </span>
+              </div>
+              <button
+                onclick="openAuth('register')"
+                class="block w-full text-center bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all mb-8"
+              >
+                <span data-en>Get Started</span>
+                <span data-es class="hidden">Comenzar Ahora</span>
+              </button>
+              <ul class="space-y-4 text-sm text-slate-700">
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-600 mr-3"
+                  ></i>
+                  <b>200</b> &nbsp;<span data-en>Credits / month</span
+                  ><span data-es class="hidden">Créditos / mes</span>
+                </li>
+                <li class="flex items-center font-semibold text-indigo-900">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-600 mr-3"
+                  ></i>
+                  <span data-en>All Premium Themes</span
+                  ><span data-es class="hidden">Todos los Temas Premium</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-600 mr-3"
+                  ></i>
+                  <span data-en>Logo Upload Included</span
+                  ><span data-es class="hidden">Sube tu propio Logo</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-600 mr-3"
+                  ></i>
+                  <span data-en>Unlimited QR Validation</span
+                  ><span data-es class="hidden">Validación QR Ilimitada</span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-600 mr-3"
+                  ></i>
+                  <span data-en>Priority Email/Chat Support</span
+                  ><span data-es class="hidden"
+                    >Soporte Prioritario Email/Chat</span
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tier 3: Prestigious -->
+            <div
+              class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+            >
+              <h3 class="text-xl font-bold text-slate-900 mb-2">
+                <span data-en>Prestigious</span>
+                <span data-es class="hidden">Prestigioso</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-6 h-10">
+                <span data-en
+                  >Full control and custom design engines for top
+                  institutions.</span
+                >
+                <span data-es class="hidden"
+                  >Control total y motor de diseño para instituciones top.</span
+                >
+              </p>
+              <div class="mb-6 h-10 flex items-center">
+                <span class="text-2xl font-bold text-slate-900">
+                  <span data-en>Custom Pricing</span>
+                  <span data-es class="hidden">Precio a Medida</span>
+                </span>
+              </div>
+              <a
+                href="mailto:support@grasshoppersolutions.online"
+                class="block w-full text-center bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors mb-8"
+              >
+                <span data-en>Contact Us</span>
+                <span data-es class="hidden">Contáctanos</span>
+              </a>
+              <ul class="space-y-4 text-sm text-slate-600">
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Unlimited / Custom Credits</span
+                  ><span data-es class="hidden"
+                    >Créditos Ilimitados / A medida</span
+                  >
+                </li>
+                <li class="flex items-center font-semibold text-slate-900">
+                  <i
+                    data-lucide="sparkles"
+                    class="w-5 h-5 text-yellow-500 mr-3"
+                  ></i>
+                  <span data-en>Full Design Engine</span
+                  ><span data-es class="hidden">Motor de Diseño Completo</span>
+                  <span
+                    class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded ml-2"
+                  >
+                    <span data-en>Soon</span>
+                    <span data-es class="hidden">Pronto</span>
+                  </span>
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Custom Fonts & Layouts</span
+                  ><span data-es class="hidden"
+                    >Fuentes y Diseños Personalizados</span
+                  >
+                </li>
+                <li class="flex items-center">
+                  <i
+                    data-lucide="check"
+                    class="w-5 h-5 text-indigo-500 mr-3"
+                  ></i>
+                  <span data-en>Dedicated Account Manager</span
+                  ><span data-es class="hidden">Account Manager Dedicado</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Credit Top-up Section -->
+          <div
+            class="mt-20 bg-indigo-50 border-y border-indigo-100 rounded-3xl py-16 px-8"
+          >
+            <div class="max-w-4xl mx-auto text-center">
+              <h3 class="text-3xl font-bold text-slate-900 mb-4">
+                <span data-en>Need Extra Fuel?</span>
+                <span data-es class="hidden"
+                  >¿Necesitas Combustible Extra?</span
+                >
+              </h3>
+              <p class="text-slate-600 mb-10">
+                <span data-en
+                  >Big graduating class this month? Don't upgrade your whole
+                  plan. Just grab a credit pack. Credits never expire while your
+                  subscription is active.</span
+                >
+                <span data-es class="hidden"
+                  >¿Clase grande este mes? No cambies tu plan entero. Solo
+                  compra un paquete de créditos. Los créditos no expiran
+                  mientras tu suscripción esté activa.</span
+                >
+              </p>
+
+              <div class="grid sm:grid-cols-3 gap-6">
+                <!-- Small Pack -->
+                <div
+                  class="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm"
+                >
+                  <div class="text-indigo-600 mb-2">
+                    <i data-lucide="zap" class="w-8 h-8 mx-auto"></i>
+                  </div>
+                  <h4 class="font-bold text-slate-900 text-lg mb-1">
+                    <span data-en>Small Pack</span>
+                    <span data-es class="hidden">Paquete Pequeño</span>
+                  </h4>
+                  <div class="text-2xl font-black text-slate-900 mb-4">
+                    20
+                    <span class="text-sm font-medium text-slate-500"
+                      ><span data-en>Credits</span
+                      ><span data-es class="hidden">Créditos</span></span
+                    >
+                  </div>
+                  <button
+                    class="w-full bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    $10
+                  </button>
+                  <p class="text-xs text-slate-400 mt-3">
+                    $0.50 / <span data-en>credit</span
+                    ><span data-es class="hidden">crédito</span>
+                  </p>
+                </div>
+                <!-- Medium Pack -->
+                <div
+                  class="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm"
+                >
+                  <div class="text-indigo-600 mb-2">
+                    <i data-lucide="zap" class="w-8 h-8 mx-auto"></i>
+                  </div>
+                  <h4 class="font-bold text-slate-900 text-lg mb-1">
+                    <span data-en>Medium Pack</span>
+                    <span data-es class="hidden">Paquete Mediano</span>
+                  </h4>
+                  <div class="text-2xl font-black text-slate-900 mb-4">
+                    100
+                    <span class="text-sm font-medium text-slate-500"
+                      ><span data-en>Credits</span
+                      ><span data-es class="hidden">Créditos</span></span
+                    >
+                  </div>
+                  <button
+                    class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    $40
+                  </button>
+                  <p class="text-xs text-slate-400 mt-3">
+                    $0.40 / <span data-en>credit</span
+                    ><span data-es class="hidden">crédito</span>
+                  </p>
+                </div>
+                <!-- Large Pack -->
+                <div
+                  class="bg-white p-6 rounded-2xl border-2 border-indigo-400 shadow-md relative"
+                >
+                  <div
+                    class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-500 text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    <span data-en>Best Value</span>
+                    <span data-es class="hidden">Mejor Valor</span>
+                  </div>
+                  <div class="text-indigo-600 mb-2">
+                    <i
+                      data-lucide="zap"
+                      class="w-8 h-8 mx-auto fill-indigo-100"
+                    ></i>
+                  </div>
+                  <h4 class="font-bold text-slate-900 text-lg mb-1">
+                    <span data-en>Large Pack</span>
+                    <span data-es class="hidden">Paquete Grande</span>
+                  </h4>
+                  <div class="text-2xl font-black text-slate-900 mb-4">
+                    500
+                    <span class="text-sm font-medium text-slate-500"
+                      ><span data-en>Credits</span
+                      ><span data-es class="hidden">Créditos</span></span
+                    >
+                  </div>
+                  <button
+                    class="w-full bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    $150
+                  </button>
+                  <p class="text-xs text-slate-400 mt-3">
+                    $0.30 / <span data-en>credit</span
+                    ><span data-es class="hidden">crédito</span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
