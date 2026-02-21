@@ -399,7 +399,7 @@
           </div>
           <div class="flex items-center gap-4">
             <!-- Language Toggle -->
-            <div
+            <!-- <div
               class="flex bg-slate-100 p-1 rounded-xl border border-slate-200"
             >
               <button
@@ -416,7 +416,7 @@
               >
                 ES
               </button>
-            </div>
+            </div> -->
 
             <button
               onclick="switchView('settings')"
@@ -1292,6 +1292,7 @@
               : user.email.split("@")[0],
             company: userData?.company || "",
             logoUrl: userData?.logoUrl || "",
+            language: userData?.language || "en", // Load saved language preference
             skills: userData?.skills || [],
           });
         } else {

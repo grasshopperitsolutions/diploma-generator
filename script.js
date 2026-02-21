@@ -74,7 +74,7 @@ function handleDateChange(inputValue) {
 window.handleDateChange = handleDateChange;
 
 // --- Language Toggle Function ---
-function setLanguage(lang) {
+async function setLanguage(lang) {
   state.currentLang = lang;
 
   // Toggle visibility of language-specific elements
@@ -159,6 +159,23 @@ function setLanguage(lang) {
     state.certificates.length > 0
   ) {
     renderCertificateList();
+  }
+
+  // Save language preference to Firestore if user is logged in
+  if (state.user?.uid && window.firebaseDB && window.firestoreUpdateDoc && window.firestoreDoc) {
+    try {
+      await window.firestoreUpdateDoc(
+        window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+        {
+          language: lang,
+          updatedAt: window.firestoreTimestamp(),
+        }
+      );
+      // Update local state
+      state.user.language = lang;
+    } catch (error) {
+      console.error("Error saving language preference:", error);
+    }
   }
 }
 
@@ -1367,6 +1384,7 @@ async function handleSaveSettings(e) {
   const lastName = document.getElementById("set-lname").value;
   const company = document.getElementById("set-company").value;
   const logoUrl = document.getElementById("set-logo").value;
+  const language = state.currentLang; // Get current language from state
 
   const saveBtn = e.target.querySelector("button[type='submit']");
   saveBtn.disabled = true;
@@ -1381,6 +1399,7 @@ async function handleSaveSettings(e) {
         lastName,
         company,
         logoUrl: logoUrl || "",
+        language,
         updatedAt: window.firestoreTimestamp(),
       },
     );
@@ -1391,6 +1410,7 @@ async function handleSaveSettings(e) {
     state.user.name = `${firstName} ${lastName}`;
     state.user.company = company;
     state.user.logoUrl = logoUrl;
+    state.user.language = language;
     state.data.issuer = company;
     state.data.logo = logoUrl || defaultLogo;
 
@@ -2089,6 +2109,8 @@ async function handleAuthAction(e, type) {
           : email.split("@")[0],
         company: userData?.company || "",
         logoUrl: userData?.logoUrl || "",
+        language: userData?.language || "en", // Load saved language preference
+        skills: userData?.skills || [], // Load skills array
       });
     } else if (type === "register") {
       const email = document.getElementById("reg-email").value;
@@ -2126,6 +2148,7 @@ async function handleAuthAction(e, type) {
           lastName: lname,
           company: company || "",
           logoUrl: logoUrl || "",
+          language: state.currentLang || "en", // Save initial language preference
           createdAt: window.firestoreTimestamp(),
           updatedAt: window.firestoreTimestamp(),
         },
@@ -2222,6 +2245,11 @@ function completeLogin(userData) {
 
   // Reset certificate skills on login
   state.data.skills = [];
+
+  // Apply saved language preference (if different from current)
+  if (userData.language && userData.language !== state.currentLang) {
+    setLanguage(userData.language);
+  }
 
   // If on index.html (landing page), redirect to dashboard
   if (!isDashboardPage) {
