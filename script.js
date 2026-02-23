@@ -255,6 +255,9 @@ window.handleDateChange = handleDateChange;
 async function setLanguage(lang) {
   state.currentLang = lang;
 
+  // Save language preference to localStorage for persistence across sessions
+  localStorage.setItem('certifypro_language', lang);
+
   // Toggle visibility of language-specific elements
   document.querySelectorAll("[data-en]").forEach((el) => {
     el.classList.toggle("hidden", lang !== "en");
@@ -2975,6 +2978,42 @@ function renderCertificateToTarget(targetElement, data, theme) {
 
 // --- New Design Features ---
 function initializeNewDesign() {
+  // Restore saved language preference from localStorage
+  const savedLanguage = localStorage.getItem('certifypro_language');
+  if (savedLanguage && savedLanguage !== state.currentLang) {
+    state.currentLang = savedLanguage;
+    // Apply language to UI elements
+    document.querySelectorAll("[data-en]").forEach((el) => {
+      el.classList.toggle("hidden", savedLanguage !== "en");
+    });
+    document.querySelectorAll("[data-es]").forEach((el) => {
+      el.classList.toggle("hidden", savedLanguage !== "es");
+    });
+    // Update placeholders
+    document.querySelectorAll("[data-en-placeholder]").forEach((el) => {
+      el.placeholder =
+        savedLanguage === "en"
+          ? el.getAttribute("data-en-placeholder")
+          : el.getAttribute("data-es-placeholder");
+    });
+    // Update language toggle button states
+    const btnEn = document.getElementById("btn-en");
+    const btnEs = document.getElementById("btn-es");
+    if (btnEn && btnEs) {
+      if (savedLanguage === "en") {
+        btnEn.className =
+          "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+        btnEs.className =
+          "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+      } else {
+        btnEs.className =
+          "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+        btnEn.className =
+          "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+      }
+    }
+  }
+
   // Set current year in footer
   const yearEl = document.getElementById("year");
   if (yearEl) {
