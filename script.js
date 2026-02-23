@@ -25,7 +25,7 @@ const state = {
     issuer: "",
     date: new Date().toLocaleDateString(),
     id: "",
-    logo: "default-logo.ico",
+    logo: "favicon.svg",
     skills: [], // Skills selected for this certificate
   },
   newSkillInput: "", // Temporary input for new skill
@@ -516,7 +516,7 @@ function t(key) {
   return translations[lang]?.[key] || translations.en[key] || key;
 }
 
-const defaultLogo = "default-logo.jpeg";
+const defaultLogo = "favicon.svg";
 
 // Shared preview area element (moved between views)
 let previewArea = null;
@@ -1957,7 +1957,7 @@ function initializeSettingsLogoPreview() {
         logoPreview.classList.remove("hidden");
         logoPreviewImg.src = url;
         logoPreviewImg.onerror = () => {
-          logoPreviewImg.src = "default-logo.ico";
+          logoPreviewImg.src = "favicon.svg";
         };
       } else {
         logoPreview.classList.add("hidden");
@@ -2199,7 +2199,7 @@ function downloadSampleCSV() {
   });
 
   const csvContent = [
-    "recipient,course,date",
+    "recipient,course,date(mm/dd/yyyy)",
     `John Smith,Web Development Fundamentals,${dates[0]}`,
     `Sarah Johnson,Advanced JavaScript,${dates[1]}`,
     `Michael Brown,React Native Development,${dates[2]}`,
@@ -2280,7 +2280,7 @@ function toggleAuthMode(mode) {
           logoPreview.classList.remove("hidden");
           logoPreviewImg.src = url;
           logoPreviewImg.onerror = () => {
-            logoPreviewImg.src = "default-logo.ico";
+            logoPreviewImg.src = "favicon.svg";
           };
         } else {
           logoPreview.classList.add("hidden");
@@ -3243,7 +3243,7 @@ function openPublicDownloadModal(
     id,
     date,
     issuer,
-    logo: "default-logo.ico",
+    logo: "favicon.svg",
     skills,
   };
   state.modalData = certData;
