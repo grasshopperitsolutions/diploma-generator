@@ -34,7 +34,7 @@ const state = {
 // --- Credits Configuration ---
 const CREDITS_CONFIG = {
   tiers: {
-    free: { max: 50, label: { en: "Free", es: "Gratis" } },
+    free: { max: 0, label: { en: "Free", es: "Gratis" } },
     starter: { max: 50, label: { en: "Starter", es: "Inicial" } },
     professional: {
       max: 200,
@@ -42,7 +42,8 @@ const CREDITS_CONFIG = {
     },
     enterprise: { max: 1000, label: { en: "Enterprise", es: "Empresa" } },
   },
-  defaultCredits: 15, // Starting credits for new users
+  defaultMonthlyCredits: 0, // Starting monthly credits for new users
+  defaultExtraCredits: 15, // Starting extra credits for new users
   defaultTier: "free", // Default tier for new users
   stripeUrl: "https://buy.stripe.com/5kQdR8bwK17teKIgQIaR20a",
 };
@@ -67,35 +68,57 @@ function getTierLabel(tier, lang = "en") {
 // --- Credits Management Functions ---
 
 /**
+ * Get total credits (sum of monthly and extra)
+ */
+function getTotalCredits() {
+  const monthlyCredits = state.user?.monthlyCredits ?? 0;
+  const extraCredits = state.user?.extraCredits ?? 0;
+  return monthlyCredits + extraCredits;
+}
+
+/**
  * Check if user has enough credits
  */
 function hasEnoughCredits(amount = 1) {
-  const currentCredits = state.user?.credits ?? 0;
-  return currentCredits >= amount;
+  return getTotalCredits() >= amount;
 }
 
 /**
  * Deduct credits from user's Firestore profile
+ * Priority: First deduct from monthlyCredits, then from extraCredits
  */
 async function deductCredits(amount = 1) {
   if (!state.user?.uid) {
     throw new Error("User not logged in");
   }
 
-  const currentCredits = state.user.credits ?? 0;
-  const newCredits = Math.max(0, currentCredits - amount);
+  let monthlyCredits = state.user.monthlyCredits ?? 0;
+  let extraCredits = state.user.extraCredits ?? 0;
+
+  // Deduct from monthly first
+  if (monthlyCredits >= amount) {
+    monthlyCredits -= amount;
+    amount = 0;
+  } else {
+    amount -= monthlyCredits;
+    monthlyCredits = 0;
+    // Then deduct from extra credits
+    extraCredits = Math.max(0, extraCredits - amount);
+  }
 
   try {
     await window.firestoreUpdateDoc(
       window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
       {
-        credits: newCredits,
+        monthlyCredits: monthlyCredits,
+        extraCredits: extraCredits,
         updatedAt: window.firestoreTimestamp(),
       },
     );
 
     // Update local state
-    state.user.credits = newCredits;
+    state.user.monthlyCredits = monthlyCredits;
+    state.user.extraCredits = extraCredits;
 
     // Update UI
     renderCreditsDisplay();
@@ -109,26 +132,27 @@ async function deductCredits(amount = 1) {
 
 /**
  * Add credits to user's Firestore profile (for purchases)
+ * Adds to extraCredits
  */
 async function addCredits(amount) {
   if (!state.user?.uid) {
     throw new Error("User not logged in");
   }
 
-  const currentCredits = state.user.credits ?? 0;
-  const newCredits = currentCredits + amount;
+  const currentExtraCredits = state.user.extraCredits ?? 0;
+  const newExtraCredits = currentExtraCredits + amount;
 
   try {
     await window.firestoreUpdateDoc(
       window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
       {
-        credits: newCredits,
+        extraCredits: newExtraCredits,
         updatedAt: window.firestoreTimestamp(),
       },
     );
 
     // Update local state
-    state.user.credits = newCredits;
+    state.user.extraCredits = newExtraCredits;
 
     // Update UI
     renderCreditsDisplay();
@@ -147,12 +171,14 @@ function renderCreditsDisplay() {
   const container = document.getElementById("credits-display");
   if (!container || !state.user) return;
 
-  const currentCredits = state.user.credits ?? 0;
+  const monthlyCredits = state.user.monthlyCredits ?? 0;
+  const extraCredits = state.user.extraCredits ?? 0;
+  const totalCredits = monthlyCredits + extraCredits;
   const userTier = state.user.tier || CREDITS_CONFIG.defaultTier;
   const maxCredits = getMaxCreditsForTier(userTier);
-  const isOverflow = currentCredits > maxCredits;
-  const percentage = Math.min((currentCredits / maxCredits) * 100, 100);
-  const bonusCredits = isOverflow ? currentCredits - maxCredits : 0;
+  const isOverflow = totalCredits > maxCredits;
+  const percentage = Math.min((totalCredits / maxCredits) * 100, 100);
+  const bonusCredits = isOverflow ? totalCredits - maxCredits : 0;
 
   const lang = state.currentLang || "en";
   const tierLabel = getTierLabel(userTier, lang);
@@ -170,7 +196,7 @@ function renderCreditsDisplay() {
           <span class="text-xs font-bold uppercase tracking-wider text-blue-600">${tierLabel}</span>
         </div>
         <div class="text-sm font-bold text-slate-700">
-          <span class="dyn-current">${currentCredits}</span>
+          <span class="dyn-current">${totalCredits}</span>
           <span class="text-slate-400 text-xs font-medium ml-0.5">/ <span class="dyn-max">${maxCredits}</span></span>
         </div>
       </div>
@@ -204,6 +230,7 @@ function renderCreditsDisplay() {
 }
 
 // Expose credits functions globally
+window.getTotalCredits = getTotalCredits;
 window.hasEnoughCredits = hasEnoughCredits;
 window.deductCredits = deductCredits;
 window.addCredits = addCredits;
@@ -256,7 +283,7 @@ async function setLanguage(lang) {
   state.currentLang = lang;
 
   // Save language preference to localStorage for persistence across sessions
-  localStorage.setItem('certifypro_language', lang);
+  localStorage.setItem("certifypro_language", lang);
 
   // Toggle visibility of language-specific elements
   document.querySelectorAll("[data-en]").forEach((el) => {
@@ -1678,6 +1705,7 @@ async function handleDeleteUser() {
     // Handle specific error cases
     if (error.code === "auth/requires-recent-login") {
       alert(t("deleteErrorRelog"));
+      logout();
     } else {
       alert(t("deleteError"));
     }
@@ -2106,7 +2134,7 @@ async function handleBulkGenerate() {
   // Check if user has enough credits
   if (!hasEnoughCredits(count)) {
     const lang = state.currentLang || "en";
-    const currentCredits = state.user.credits ?? 0;
+    const currentCredits = getTotalCredits();
     const insufficientMsg =
       lang === "es"
         ? `No tienes suficientes créditos. Necesitas ${count} créditos pero solo tienes ${currentCredits}. Por favor compra más créditos para continuar.`
@@ -2342,7 +2370,10 @@ async function handleAuthAction(e, type) {
         logoUrl: userData?.logoUrl || "",
         language: userData?.language || "en", // Load saved language preference
         skills: userData?.skills || [], // Load skills array
-        credits: userData?.credits ?? CREDITS_CONFIG.defaultCredits, // Load credits
+        monthlyCredits:
+          userData?.monthlyCredits ?? CREDITS_CONFIG.defaultMonthlyCredits, // Load monthly credits
+        extraCredits:
+          userData?.extraCredits ?? CREDITS_CONFIG.defaultExtraCredits, // Load extra credits
         tier: userData?.tier || CREDITS_CONFIG.defaultTier, // Load tier
       });
     } else if (type === "register") {
@@ -2383,7 +2414,8 @@ async function handleAuthAction(e, type) {
           logoUrl: logoUrl || "",
           language: state.currentLang || "en", // Save initial language preference
           tier: CREDITS_CONFIG.defaultTier, // Default tier for new users
-          credits: CREDITS_CONFIG.defaultCredits, // Give new users starting credits
+          monthlyCredits: CREDITS_CONFIG.defaultMonthlyCredits, // Starting monthly credits (0)
+          extraCredits: CREDITS_CONFIG.defaultExtraCredits, // Starting extra credits (15)
           createdAt: window.firestoreTimestamp(),
           updatedAt: window.firestoreTimestamp(),
         },
@@ -2979,7 +3011,7 @@ function renderCertificateToTarget(targetElement, data, theme) {
 // --- New Design Features ---
 function initializeNewDesign() {
   // Restore saved language preference from localStorage
-  const savedLanguage = localStorage.getItem('certifypro_language');
+  const savedLanguage = localStorage.getItem("certifypro_language");
   if (savedLanguage && savedLanguage !== state.currentLang) {
     state.currentLang = savedLanguage;
     // Apply language to UI elements

@@ -1299,7 +1299,8 @@
             logoUrl: userData?.logoUrl || "",
             language: userData?.language || "en", // Load saved language preference
             skills: userData?.skills || [],
-            credits: userData?.credits ?? 0,
+            monthlyCredits: userData?.monthlyCredits ?? 0, // Load monthly credits
+            extraCredits: userData?.extraCredits ?? 15, // Load extra credits
             tier: userData?.tier || "free",
           });
         } else {
