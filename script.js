@@ -31,6 +31,184 @@ const state = {
   newSkillInput: "", // Temporary input for new skill
 };
 
+// --- Credits Configuration ---
+const CREDITS_CONFIG = {
+  tiers: {
+    free: { max: 50, label: { en: "Free", es: "Gratis" } },
+    starter: { max: 50, label: { en: "Starter", es: "Inicial" } },
+    professional: {
+      max: 200,
+      label: { en: "Professional", es: "Profesional" },
+    },
+    enterprise: { max: 1000, label: { en: "Enterprise", es: "Empresa" } },
+  },
+  defaultCredits: 15, // Starting credits for new users
+  defaultTier: "free", // Default tier for new users
+  stripeUrl: "https://buy.stripe.com/5kQdR8bwK17teKIgQIaR20a",
+};
+
+/**
+ * Get max credits for a user based on their tier
+ */
+function getMaxCreditsForTier(tier) {
+  return CREDITS_CONFIG.tiers[tier]?.max || CREDITS_CONFIG.tiers.starter.max;
+}
+
+/**
+ * Get tier label for display
+ */
+function getTierLabel(tier, lang = "en") {
+  return (
+    CREDITS_CONFIG.tiers[tier]?.label[lang] ||
+    CREDITS_CONFIG.tiers.starter.label[lang]
+  );
+}
+
+// --- Credits Management Functions ---
+
+/**
+ * Check if user has enough credits
+ */
+function hasEnoughCredits(amount = 1) {
+  const currentCredits = state.user?.credits ?? 0;
+  return currentCredits >= amount;
+}
+
+/**
+ * Deduct credits from user's Firestore profile
+ */
+async function deductCredits(amount = 1) {
+  if (!state.user?.uid) {
+    throw new Error("User not logged in");
+  }
+
+  const currentCredits = state.user.credits ?? 0;
+  const newCredits = Math.max(0, currentCredits - amount);
+
+  try {
+    await window.firestoreUpdateDoc(
+      window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+      {
+        credits: newCredits,
+        updatedAt: window.firestoreTimestamp(),
+      },
+    );
+
+    // Update local state
+    state.user.credits = newCredits;
+
+    // Update UI
+    renderCreditsDisplay();
+
+    return true;
+  } catch (error) {
+    console.error("Error deducting credits:", error);
+    throw error;
+  }
+}
+
+/**
+ * Add credits to user's Firestore profile (for purchases)
+ */
+async function addCredits(amount) {
+  if (!state.user?.uid) {
+    throw new Error("User not logged in");
+  }
+
+  const currentCredits = state.user.credits ?? 0;
+  const newCredits = currentCredits + amount;
+
+  try {
+    await window.firestoreUpdateDoc(
+      window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+      {
+        credits: newCredits,
+        updatedAt: window.firestoreTimestamp(),
+      },
+    );
+
+    // Update local state
+    state.user.credits = newCredits;
+
+    // Update UI
+    renderCreditsDisplay();
+
+    return true;
+  } catch (error) {
+    console.error("Error adding credits:", error);
+    throw error;
+  }
+}
+
+/**
+ * Render the credits display in the header
+ */
+function renderCreditsDisplay() {
+  const container = document.getElementById("credits-display");
+  if (!container || !state.user) return;
+
+  const currentCredits = state.user.credits ?? 0;
+  const userTier = state.user.tier || CREDITS_CONFIG.defaultTier;
+  const maxCredits = getMaxCreditsForTier(userTier);
+  const isOverflow = currentCredits > maxCredits;
+  const percentage = Math.min((currentCredits / maxCredits) * 100, 100);
+  const bonusCredits = isOverflow ? currentCredits - maxCredits : 0;
+
+  const lang = state.currentLang || "en";
+  const tierLabel = getTierLabel(userTier, lang);
+  const getMoreLabel =
+    lang === "es" ? "Obtener Más Créditos" : "Get More Credits";
+  const bonusLabel =
+    lang === "es"
+      ? `+${bonusCredits} Créditos Bonus`
+      : `+${bonusCredits} Bonus Credits`;
+
+  container.innerHTML = `
+    <div class="flex flex-col gap-1 w-48">
+      <div class="flex justify-between items-end">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold uppercase tracking-wider text-blue-600">${tierLabel}</span>
+        </div>
+        <div class="text-sm font-bold text-slate-700">
+          <span class="dyn-current">${currentCredits}</span>
+          <span class="text-slate-400 text-xs font-medium ml-0.5">/ <span class="dyn-max">${maxCredits}</span></span>
+        </div>
+      </div>
+      <!-- Progress Bar Track -->
+      <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+        <!-- Progress Fill -->
+        <div
+          class="dyn-progress-bar h-full rounded-full transition-all duration-300 ${isOverflow ? "bg-amber-400" : "bg-blue-600"}"
+          style="width: ${percentage}%"
+        ></div>
+      </div>
+      ${
+        isOverflow
+          ? `
+        <div class="text-[10px] text-amber-600 font-medium text-right mt-0.5">
+          ${bonusLabel}
+        </div>
+      `
+          : ""
+      }
+      <a
+        href="${CREDITS_CONFIG.stripeUrl}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium text-right mt-0.5 hover:underline transition-colors"
+      >
+        ${getMoreLabel}
+      </a>
+    </div>
+  `;
+}
+
+// Expose credits functions globally
+window.hasEnoughCredits = hasEnoughCredits;
+window.deductCredits = deductCredits;
+window.addCredits = addCredits;
+window.renderCreditsDisplay = renderCreditsDisplay;
+
 // --- Date Helper Functions ---
 /**
  * Convert a date string to YYYY-MM-DD format for date input
@@ -162,14 +340,19 @@ async function setLanguage(lang) {
   }
 
   // Save language preference to Firestore if user is logged in
-  if (state.user?.uid && window.firebaseDB && window.firestoreUpdateDoc && window.firestoreDoc) {
+  if (
+    state.user?.uid &&
+    window.firebaseDB &&
+    window.firestoreUpdateDoc &&
+    window.firestoreDoc
+  ) {
     try {
       await window.firestoreUpdateDoc(
         window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
         {
           language: lang,
           updatedAt: window.firestoreTimestamp(),
-        }
+        },
       );
       // Update local state
       state.user.language = lang;
@@ -1135,6 +1318,18 @@ async function handleSaveCertificate() {
     return;
   }
 
+  // Check credits (only for new certificates, not edits)
+  const isEditing = !!state.editingCertificateId;
+  if (!isEditing && !hasEnoughCredits(1)) {
+    const lang = state.currentLang || "en";
+    const insufficientMsg =
+      lang === "es"
+        ? "No tienes suficientes créditos. Por favor compra más créditos para continuar."
+        : "You don't have enough credits. Please purchase more credits to continue.";
+    alert(insufficientMsg);
+    return;
+  }
+
   const saveBtn = document.querySelector(
     "#view-create button[onclick*='handleSaveCertificate']",
   );
@@ -1181,6 +1376,16 @@ async function handleSaveCertificate() {
     }
 
     alert(isEditing ? t("certUpdated") : t("certSaved"));
+
+    // Deduct credits for new certificates (not edits)
+    if (!isEditing) {
+      try {
+        await deductCredits(1);
+      } catch (creditError) {
+        console.error("Error deducting credits:", creditError);
+        // Certificate was saved, but credits weren't deducted - log for manual reconciliation
+      }
+    }
 
     // Clear editing state
     state.editingCertificateId = null;
@@ -1894,6 +2099,19 @@ async function handleBulkGenerate() {
   }
 
   const count = state.bulkCertificates.length;
+
+  // Check if user has enough credits
+  if (!hasEnoughCredits(count)) {
+    const lang = state.currentLang || "en";
+    const currentCredits = state.user.credits ?? 0;
+    const insufficientMsg =
+      lang === "es"
+        ? `No tienes suficientes créditos. Necesitas ${count} créditos pero solo tienes ${currentCredits}. Por favor compra más créditos para continuar.`
+        : `You don't have enough credits. You need ${count} credits but only have ${currentCredits}. Please purchase more credits to continue.`;
+    alert(insufficientMsg);
+    return;
+  }
+
   const confirmed = confirm(t("bulkConfirm").replace("{count}", count));
   if (!confirmed) return;
 
@@ -1942,6 +2160,16 @@ async function handleBulkGenerate() {
 
   // Hide progress modal
   hideBulkProgressModal();
+
+  // Deduct credits for successfully saved certificates
+  if (saved > 0) {
+    try {
+      await deductCredits(saved);
+    } catch (creditError) {
+      console.error("Error deducting bulk credits:", creditError);
+      // Certificates were saved, but credits weren't deducted - log for manual reconciliation
+    }
+  }
 
   const plural = saved !== 1 ? (state.currentLang === "es" ? "s" : "s") : "";
   const errorMsg =
@@ -2111,6 +2339,8 @@ async function handleAuthAction(e, type) {
         logoUrl: userData?.logoUrl || "",
         language: userData?.language || "en", // Load saved language preference
         skills: userData?.skills || [], // Load skills array
+        credits: userData?.credits ?? CREDITS_CONFIG.defaultCredits, // Load credits
+        tier: userData?.tier || CREDITS_CONFIG.defaultTier, // Load tier
       });
     } else if (type === "register") {
       const email = document.getElementById("reg-email").value;
@@ -2149,6 +2379,8 @@ async function handleAuthAction(e, type) {
           company: company || "",
           logoUrl: logoUrl || "",
           language: state.currentLang || "en", // Save initial language preference
+          tier: CREDITS_CONFIG.defaultTier, // Default tier for new users
+          credits: CREDITS_CONFIG.defaultCredits, // Give new users starting credits
           createdAt: window.firestoreTimestamp(),
           updatedAt: window.firestoreTimestamp(),
         },
@@ -2290,6 +2522,7 @@ function completeLogin(userData) {
   setTimeout(() => {
     renderCertificateSkillsSelector();
     renderSettingsSkillsList();
+    renderCreditsDisplay();
   }, 200);
 }
 

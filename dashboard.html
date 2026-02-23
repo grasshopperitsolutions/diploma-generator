@@ -398,6 +398,10 @@
             <span class="font-bold text-gray-900">CertifyPro</span>
           </div>
           <div class="flex items-center gap-4">
+            <!-- Credits Display -->
+            <div id="credits-display" class="hidden md:block">
+              <!-- Credits UI rendered by JS -->
+            </div>
             <!-- Language Toggle -->
             <!-- <div
               class="flex bg-slate-100 p-1 rounded-xl border border-slate-200"
@@ -1294,6 +1298,8 @@
             logoUrl: userData?.logoUrl || "",
             language: userData?.language || "en", // Load saved language preference
             skills: userData?.skills || [],
+            credits: userData?.credits ?? 0,
+            tier: userData?.tier || "free",
           });
         } else {
           // No user logged in, redirect to index
