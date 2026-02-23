@@ -146,6 +146,61 @@
           transform: scale(1);
         }
       }
+
+      /* Toggle Switch CSS - 3D Flip Style */
+      .toggle-switch-container {
+        perspective: 300px;
+        display: inline-block;
+      }
+      
+      .toggle-switch {
+        position: relative;
+        width: 120px;
+        height: 40px;
+        transform-style: preserve-3d;
+        transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        cursor: pointer;
+      }
+      
+      .toggle-switch.flipped {
+        transform: rotateY(180deg);
+      }
+      
+      .toggle-switch-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease;
+      }
+      
+      .toggle-switch:hover .toggle-switch-face {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      .toggle-switch-front {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+      }
+      
+      .toggle-switch-back {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        transform: rotateY(180deg);
+      }
+      
+      .toggle-switch-icon {
+        margin-right: 6px;
+        width: 16px;
+        height: 16px;
+      }
     </style>
   </head>
   <body
@@ -283,6 +338,223 @@
               <span data-es class="hidden">Cancelar</span>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIPTION MODAL -->
+    <div
+      id="subscription-modal"
+      class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col modal-enter"
+      >
+        <!-- Modal Header -->
+        <div
+          class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10 flex-shrink-0"
+        >
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">
+              <span data-en>Upgrade Your Plan</span>
+              <span data-es class="hidden">Sube tu Plan</span>
+            </h2>
+            <p class="text-sm text-gray-500">
+              <span data-en>Choose the plan that fits your needs</span>
+              <span data-es class="hidden">Elige el plan que se adapte a tus necesidades</span>
+            </p>
+          </div>
+          <button
+            onclick="closeSubscriptionModal()"
+            class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-50 transition-colors"
+          >
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="flex-grow overflow-y-auto p-8 bg-gray-50">
+          <!-- Billing Toggle - 3D Flip Switch -->
+          <div class="flex flex-col items-center justify-center gap-4 mb-10">
+            <div class="toggle-switch-container">
+              <div id="subscription-toggle-switch" class="toggle-switch" onclick="toggleSubscriptionBillingFlip()">
+                <div class="toggle-switch-face toggle-switch-front">
+                  <svg class="toggle-switch-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <span data-en>Monthly</span>
+                  <span data-es class="hidden">Mensual</span>
+                </div>
+                <div class="toggle-switch-face toggle-switch-back">
+                  <svg class="toggle-switch-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                  <span data-en>Yearly</span>
+                  <span data-es class="hidden">Anual</span>
+                </div>
+              </div>
+            </div>
+            <div id="subscription-yearly-savings" class="hidden bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+              <span data-en>🎉 Save 16% with yearly!</span>
+              <span data-es class="hidden">🎉 ¡Ahorra 16% con anual!</span>
+            </div>
+          </div>
+
+          <!-- Pricing Cards -->
+          <div class="grid md:grid-cols-3 gap-6 items-start">
+            <!-- Tier 1: Starter -->
+            <div
+              class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 class="text-lg font-bold text-slate-900 mb-2">
+                <span data-en>Starter</span>
+                <span data-es class="hidden">Inicial</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-4 h-8">
+                <span data-en>Perfect for solopreneurs and small workshops.</span>
+                <span data-es class="hidden">Perfecto para emprendedores y pequeños talleres.</span>
+              </p>
+              <div class="mb-4">
+                <span
+                  class="text-3xl font-extrabold text-slate-900"
+                  id="starter-price"
+                >$19</span>
+                <span class="text-slate-500">
+                  <span data-en>/mo</span>
+                  <span data-es class="hidden">/mes</span>
+                </span>
+              </div>
+              <a
+                id="starter-link"
+                href="https://buy.stripe.com/14A00ieIWbM7fOM580aR207"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block w-full text-center bg-slate-100 text-slate-900 font-semibold py-2.5 rounded-xl hover:bg-slate-200 transition-colors mb-6"
+              >
+                <span data-en>Subscribe</span>
+                <span data-es class="hidden">Suscribirse</span>
+              </a>
+              <ul class="space-y-3 text-sm text-slate-600">
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-500 mr-2"></i>
+                  <b>50</b>&nbsp;<span data-en>Credits / month</span><span data-es class="hidden">Créditos / mes</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-500 mr-2"></i>
+                  <span data-en>Basic Themes</span><span data-es class="hidden">Temas Básicos</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-500 mr-2"></i>
+                  <span data-en>Unlimited QR Validation</span><span data-es class="hidden">Validación QR Ilimitada</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tier 2: Professional (Most Popular) -->
+            <div class="gradient-border-card p-6 md:-mt-2 shadow-xl">
+              <div
+                class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase"
+              >
+                <span data-en>Most Popular</span>
+                <span data-es class="hidden">Más Popular</span>
+              </div>
+              <h3 class="text-lg font-bold text-slate-900 mb-2">
+                <span data-en>Professional</span>
+                <span data-es class="hidden">Profesional</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-4 h-8">
+                <span data-en>For academies and enterprises scaling their credentials.</span>
+                <span data-es class="hidden">Para academias y empresas escalando sus credenciales.</span>
+              </p>
+              <div class="mb-4">
+                <span
+                  class="text-3xl font-extrabold text-slate-900"
+                  id="professional-price"
+                >$49</span>
+                <span class="text-slate-500">
+                  <span data-en>/mo</span>
+                  <span data-es class="hidden">/mes</span>
+                </span>
+              </div>
+              <a
+                id="professional-link"
+                href="https://buy.stripe.com/aFa7sK6cqg2n9qo2ZSaR205"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block w-full text-center bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all mb-6"
+              >
+                <span data-en>Subscribe</span>
+                <span data-es class="hidden">Suscribirse</span>
+              </a>
+              <ul class="space-y-3 text-sm text-slate-700">
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-600 mr-2"></i>
+                  <b>200</b>&nbsp;<span data-en>Credits / month</span><span data-es class="hidden">Créditos / mes</span>
+                </li>
+                <li class="flex items-center font-semibold text-indigo-900">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-600 mr-2"></i>
+                  <span data-en>All Premium Themes</span><span data-es class="hidden">Todos los Temas Premium</span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-600 mr-2"></i>
+                  <span data-en>Priority Email/Chat Support</span><span data-es class="hidden">Soporte Prioritario Email/Chat</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Tier 3: Prestigious -->
+            <div
+              class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+            >
+              <h3 class="text-lg font-bold text-slate-900 mb-2">
+                <span data-en>Prestigious</span>
+                <span data-es class="hidden">Prestigioso</span>
+              </h3>
+              <p class="text-slate-500 text-sm mb-4 h-8">
+                <span data-en>Full control and custom design for top institutions.</span>
+                <span data-es class="hidden">Control total y diseño a medida para instituciones top.</span>
+              </p>
+              <div class="mb-4 h-9 flex items-center">
+                <span class="text-xl font-bold text-slate-900">
+                  <span data-en>Custom Pricing</span>
+                  <span data-es class="hidden">Precio a Medida</span>
+                </span>
+              </div>
+              <a
+                id="prestigious-link"
+                href="mailto:grasshopper.it.solutions@gmail.com?subject=CertifyPro%20-%20support"
+                class="block w-full text-center bg-slate-900 text-white font-semibold py-2.5 rounded-xl hover:bg-slate-800 transition-colors mb-6"
+              >
+                <span data-en>Contact Us</span>
+                <span data-es class="hidden">Contáctanos</span>
+              </a>
+              <ul class="space-y-3 text-sm text-slate-600">
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-500 mr-2"></i>
+                  <span data-en>Unlimited / Custom Credits</span><span data-es class="hidden">Créditos Ilimitados / A medida</span>
+                </li>
+                <li class="flex items-center font-semibold text-slate-900">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-yellow-500 mr-2"></i>
+                  <span data-en>Full Design Engine</span><span data-es class="hidden">Motor de Diseño Completo</span>
+                  <span class="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded ml-1">
+                    <span data-en>Soon</span>
+                    <span data-es class="hidden">Pronto</span>
+                  </span>
+                </li>
+                <li class="flex items-center">
+                  <i data-lucide="check" class="w-4 h-4 text-indigo-500 mr-2"></i>
+                  <span data-en>Dedicated Account Manager</span><span data-es class="hidden">Account Manager Dedicado</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="px-8 py-4 border-t border-gray-100 bg-white flex justify-center items-center gap-2 z-10 flex-shrink-0"
+        >
+          <p class="text-sm text-gray-500">
+            <span data-en>Questions? Contact us at</span>
+            <span data-es class="hidden">¿Preguntas? Contáctanos en</span>
+            <a href="mailto:grasshopper.it.solutions@gmail.com" class="text-indigo-600 font-medium hover:underline">grasshopper.it.solutions@gmail.com</a>
+          </p>
         </div>
       </div>
     </div>

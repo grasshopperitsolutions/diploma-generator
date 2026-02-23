@@ -189,6 +189,8 @@ function renderCreditsDisplay() {
       ? `+${bonusCredits} Créditos Bonus`
       : `+${bonusCredits} Bonus Credits`;
 
+  const upgradeLabel = lang === "es" ? "Subir de Plan" : "Upgrade Plan";
+
   container.innerHTML = `
     <div class="flex flex-col gap-1 w-48">
       <div class="flex justify-between items-end">
@@ -217,14 +219,23 @@ function renderCreditsDisplay() {
       `
           : ""
       }
-      <a
-        href="${CREDITS_CONFIG.stripeUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium text-right mt-0.5 hover:underline transition-colors"
-      >
-        ${getMoreLabel}
-      </a>
+      <div class="flex justify-end gap-2 mt-0.5">
+        <button
+          href="${CREDITS_CONFIG.stripeUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+        >
+          ${getMoreLabel}
+        </button>
+        <span class="text-slate-300">|</span>
+        <button
+          onclick="openSubscriptionModal()"
+          class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+        >
+          ${upgradeLabel}
+        </button>
+      </div>
     </div>
   `;
 }
@@ -3232,26 +3243,58 @@ function initializeNewDesign() {
 }
 
 /**
- * Initialize the billing toggle for pricing section
+ * Initialize the billing toggle for pricing section (3D Flip Switch)
  */
 function initializeBillingToggle() {
-  const billingToggle = document.getElementById("billing-toggle");
-  const priceDisplays = document.querySelectorAll(".price-display");
-
-  if (billingToggle && priceDisplays.length > 0) {
-    billingToggle.addEventListener("change", (e) => {
-      const isYearly = e.target.checked;
-
-      priceDisplays.forEach((display) => {
-        if (isYearly) {
-          display.innerText = "$" + display.getAttribute("data-yearly");
-        } else {
-          display.innerText = "$" + display.getAttribute("data-monthly");
-        }
-      });
-    });
-  }
+  // Track the flip state
+  window.billingFlipState = false;
+  
+  // Update prices based on current state
+  updateBillingPrices(false);
 }
+
+/**
+ * Toggle the billing flip switch (3D Flip animation)
+ */
+function toggleBillingFlip() {
+  const toggleSwitch = document.getElementById("billing-toggle-switch");
+  const savingsBadge = document.getElementById("yearly-savings");
+  
+  if (!toggleSwitch) return;
+  
+  // Toggle state
+  window.billingFlipState = !window.billingFlipState;
+  
+  // Apply flip animation
+  if (window.billingFlipState) {
+    toggleSwitch.classList.add("flipped");
+    if (savingsBadge) savingsBadge.classList.remove("hidden");
+  } else {
+    toggleSwitch.classList.remove("flipped");
+    if (savingsBadge) savingsBadge.classList.add("hidden");
+  }
+  
+  // Update prices
+  updateBillingPrices(window.billingFlipState);
+}
+
+/**
+ * Update billing prices based on yearly/monthly selection
+ */
+function updateBillingPrices(isYearly) {
+  const priceDisplays = document.querySelectorAll(".price-display");
+  
+  priceDisplays.forEach((display) => {
+    if (isYearly) {
+      display.innerText = "$" + display.getAttribute("data-yearly");
+    } else {
+      display.innerText = "$" + display.getAttribute("data-monthly");
+    }
+  });
+}
+
+// Expose toggle function globally
+window.toggleBillingFlip = toggleBillingFlip;
 
 /**
  * Initialize the public validator section with mock functionality
@@ -3438,6 +3481,121 @@ function showScannerError(message) {
 // Expose QR scanner functions globally
 window.openQRScanner = openQRScanner;
 window.closeQRScanner = closeQRScanner;
+
+// --- Subscription Modal Functions ---
+
+// Subscription URLs configuration
+const SUBSCRIPTION_URLS = {
+  starter: {
+    monthly: "https://buy.stripe.com/14A00ieIWbM7fOM580aR207",
+    yearly: "https://buy.stripe.com/5kQ5kC1WabM79qo43WaR204",
+  },
+  professional: {
+    monthly: "https://buy.stripe.com/aFa7sK6cqg2n9qo2ZSaR205",
+    yearly: "https://buy.stripe.com/00waEWeIW6rNfOMdEwaR206",
+  },
+  prestigious: {
+    email: "mailto:grasshopper.it.solutions@gmail.com?subject=CertifyPro%20-%20support",
+  },
+};
+
+// Track current billing state for subscription modal
+let subscriptionIsYearly = false;
+
+/**
+ * Open the subscription modal
+ */
+function openSubscriptionModal() {
+  const modal = document.getElementById("subscription-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    // Reset to monthly billing on open
+    subscriptionIsYearly = false;
+    const toggle = document.getElementById("subscription-billing-toggle");
+    if (toggle) toggle.checked = false;
+    updateSubscriptionPrices();
+    lucide.createIcons();
+  }
+}
+
+/**
+ * Close the subscription modal
+ */
+function closeSubscriptionModal() {
+  const modal = document.getElementById("subscription-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+/**
+ * Toggle between monthly and yearly billing (3D Flip Switch)
+ */
+function toggleSubscriptionBillingFlip() {
+  const toggleSwitch = document.getElementById("subscription-toggle-switch");
+  const savingsBadge = document.getElementById("subscription-yearly-savings");
+  
+  if (!toggleSwitch) return;
+  
+  // Toggle state
+  subscriptionIsYearly = !subscriptionIsYearly;
+  
+  // Apply flip animation
+  if (subscriptionIsYearly) {
+    toggleSwitch.classList.add("flipped");
+    if (savingsBadge) savingsBadge.classList.remove("hidden");
+  } else {
+    toggleSwitch.classList.remove("flipped");
+    if (savingsBadge) savingsBadge.classList.add("hidden");
+  }
+  
+  // Update prices
+  updateSubscriptionPrices();
+}
+
+/**
+ * Toggle between monthly and yearly billing (legacy checkbox version)
+ */
+function toggleSubscriptionBilling(isYearly) {
+  subscriptionIsYearly = isYearly;
+  updateSubscriptionPrices();
+}
+
+/**
+ * Update prices and links based on billing selection
+ */
+function updateSubscriptionPrices() {
+  const starterPrice = document.getElementById("starter-price");
+  const professionalPrice = document.getElementById("professional-price");
+  const starterLink = document.getElementById("starter-link");
+  const professionalLink = document.getElementById("professional-link");
+
+  // Update prices
+  if (starterPrice) {
+    starterPrice.textContent = subscriptionIsYearly ? "$190" : "$19";
+  }
+  if (professionalPrice) {
+    professionalPrice.textContent = subscriptionIsYearly ? "$490" : "$49";
+  }
+
+  // Update links
+  if (starterLink) {
+    starterLink.href = subscriptionIsYearly
+      ? SUBSCRIPTION_URLS.starter.yearly
+      : SUBSCRIPTION_URLS.starter.monthly;
+  }
+  if (professionalLink) {
+    professionalLink.href = subscriptionIsYearly
+      ? SUBSCRIPTION_URLS.professional.yearly
+      : SUBSCRIPTION_URLS.professional.monthly;
+  }
+}
+
+// Expose subscription modal functions globally
+window.openSubscriptionModal = openSubscriptionModal;
+window.closeSubscriptionModal = closeSubscriptionModal;
+window.toggleSubscriptionBilling = toggleSubscriptionBilling;
+window.toggleSubscriptionBillingFlip = toggleSubscriptionBillingFlip;
 
 /**
  * Open the public download modal (for index.html public validator)
