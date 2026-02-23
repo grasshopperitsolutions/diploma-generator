@@ -52,7 +52,9 @@ const CREDITS_CONFIG = {
  * Get max credits for a user based on their tier
  */
 function getMaxCreditsForTier(tier) {
-  return CREDITS_CONFIG.tiers[tier]?.max || CREDITS_CONFIG.tiers.starter.max;
+  const tierData = CREDITS_CONFIG.tiers[tier];
+  // Use nullish coalescing to properly handle 0 (free tier)
+  return tierData?.max ?? CREDITS_CONFIG.tiers.starter.max;
 }
 
 /**
@@ -190,9 +192,10 @@ function renderCreditsDisplay() {
       : `+${bonusCredits} Bonus Credits`;
 
   const upgradeLabel = lang === "es" ? "Subir de Plan" : "Upgrade Plan";
+  const isFreeTier = userTier === "free";
 
   container.innerHTML = `
-    <div class="flex flex-col gap-1 w-48">
+    <div class="flex flex-col w-48">
       <div class="flex justify-between items-end">
         <div class="flex items-center gap-1.5">
           <span class="text-xs font-bold uppercase tracking-wider text-blue-600">${tierLabel}</span>
@@ -220,15 +223,21 @@ function renderCreditsDisplay() {
           : ""
       }
       <div class="flex justify-end gap-2 mt-0.5">
-        <button
-          href="${CREDITS_CONFIG.stripeUrl}"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
-        >
-          ${getMoreLabel}
-        </button>
-        <span class="text-slate-300">|</span>
+        ${
+          !isFreeTier
+            ? `
+          <button
+            href="${CREDITS_CONFIG.stripeUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
+          >
+            ${getMoreLabel}
+          </button>
+          <span class="text-slate-300">|</span>
+        `
+            : ""
+        }
         <button
           onclick="openSubscriptionModal()"
           class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
@@ -364,6 +373,11 @@ async function setLanguage(lang) {
       indexBtnEn.className =
         "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
     }
+  }
+
+  // Update credits display to reflect tier label in new language
+  if (state.user) {
+    renderCreditsDisplay();
   }
 
   // Re-initialize icons after language change
@@ -3193,7 +3207,7 @@ function initializeNewDesign() {
           ? el.getAttribute("data-en-placeholder")
           : el.getAttribute("data-es-placeholder");
     });
-    // Update language toggle button states
+    // Update language toggle button states (header - dashboard)
     const btnEn = document.getElementById("btn-en");
     const btnEs = document.getElementById("btn-es");
     if (btnEn && btnEs) {
@@ -3207,6 +3221,40 @@ function initializeNewDesign() {
           "px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
         btnEn.className =
           "px-3 py-1 text-xs font-bold rounded-lg transition-all text-slate-500";
+      }
+    }
+
+    // Update settings language button states (settings page - dashboard)
+    const settingsBtnEn = document.getElementById("settings-btn-en");
+    const settingsBtnEs = document.getElementById("settings-btn-es");
+    if (settingsBtnEn && settingsBtnEs) {
+      if (savedLanguage === "en") {
+        settingsBtnEn.className =
+          "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+        settingsBtnEs.className =
+          "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+      } else {
+        settingsBtnEs.className =
+          "px-4 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-indigo-600";
+        settingsBtnEn.className =
+          "px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500";
+      }
+    }
+
+    // Update index.html language button states (if on index page)
+    const indexBtnEn = document.getElementById("lang-en");
+    const indexBtnEs = document.getElementById("lang-es");
+    if (indexBtnEn && indexBtnEs) {
+      if (savedLanguage === "en") {
+        indexBtnEn.className =
+          "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+        indexBtnEs.className =
+          "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
+      } else {
+        indexBtnEs.className =
+          "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-indigo-600 shadow-sm";
+        indexBtnEn.className =
+          "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-indigo-600";
       }
     }
   }
@@ -3248,7 +3296,7 @@ function initializeNewDesign() {
 function initializeBillingToggle() {
   // Track the flip state
   window.billingFlipState = false;
-  
+
   // Update prices based on current state
   updateBillingPrices(false);
 }
@@ -3259,12 +3307,12 @@ function initializeBillingToggle() {
 function toggleBillingFlip() {
   const toggleSwitch = document.getElementById("billing-toggle-switch");
   const savingsBadge = document.getElementById("yearly-savings");
-  
+
   if (!toggleSwitch) return;
-  
+
   // Toggle state
   window.billingFlipState = !window.billingFlipState;
-  
+
   // Apply flip animation
   if (window.billingFlipState) {
     toggleSwitch.classList.add("flipped");
@@ -3273,7 +3321,7 @@ function toggleBillingFlip() {
     toggleSwitch.classList.remove("flipped");
     if (savingsBadge) savingsBadge.classList.add("hidden");
   }
-  
+
   // Update prices
   updateBillingPrices(window.billingFlipState);
 }
@@ -3283,7 +3331,7 @@ function toggleBillingFlip() {
  */
 function updateBillingPrices(isYearly) {
   const priceDisplays = document.querySelectorAll(".price-display");
-  
+
   priceDisplays.forEach((display) => {
     if (isYearly) {
       display.innerText = "$" + display.getAttribute("data-yearly");
@@ -3495,7 +3543,8 @@ const SUBSCRIPTION_URLS = {
     yearly: "https://buy.stripe.com/00waEWeIW6rNfOMdEwaR206",
   },
   prestigious: {
-    email: "mailto:grasshopper.it.solutions@gmail.com?subject=CertifyPro%20-%20support",
+    email:
+      "mailto:grasshopper.it.solutions@gmail.com?subject=CertifyPro%20-%20support",
   },
 };
 
@@ -3534,12 +3583,12 @@ function closeSubscriptionModal() {
 function toggleSubscriptionBillingFlip() {
   const toggleSwitch = document.getElementById("subscription-toggle-switch");
   const savingsBadge = document.getElementById("subscription-yearly-savings");
-  
+
   if (!toggleSwitch) return;
-  
+
   // Toggle state
   subscriptionIsYearly = !subscriptionIsYearly;
-  
+
   // Apply flip animation
   if (subscriptionIsYearly) {
     toggleSwitch.classList.add("flipped");
@@ -3548,7 +3597,7 @@ function toggleSubscriptionBillingFlip() {
     toggleSwitch.classList.remove("flipped");
     if (savingsBadge) savingsBadge.classList.add("hidden");
   }
-  
+
   // Update prices
   updateSubscriptionPrices();
 }
