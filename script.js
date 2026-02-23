@@ -2269,6 +2269,43 @@ function closeAuth() {
   }, 200);
 }
 
+/**
+ * Toggle password visibility for password input fields
+ * @param {string} inputId - The ID of the password input field
+ * @param {HTMLElement} button - The button element that was clicked
+ */
+function togglePasswordVisibility(inputId, button) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  const isPassword = input.type === "password";
+  input.type = isPassword ? "text" : "password";
+
+  // Update icon:
+  // - When password is HIDDEN: show "eye-off" (crossed eye) to indicate hidden state
+  // - When password is VISIBLE: show "eye" to indicate visible state
+  const newIconName = isPassword ? "eye" : "eye-off";
+  
+  // Find either the <i> element or the SVG that Lucide created
+  const iconElement = button.querySelector("i, svg");
+  
+  if (iconElement) {
+    // Replace with a new icon element to ensure proper re-rendering
+    const newIcon = document.createElement("i");
+    newIcon.setAttribute("data-lucide", newIconName);
+    newIcon.className = "h-5 w-5";
+    iconElement.replaceWith(newIcon);
+    
+    // Re-render the icon
+    if (typeof lucide !== "undefined") {
+      lucide.createIcons();
+    }
+  }
+}
+
+// Expose password toggle function globally
+window.togglePasswordVisibility = togglePasswordVisibility;
+
 function clearAuthMessages() {
   const errEl = document.getElementById("auth-error");
   const sucEl = document.getElementById("auth-success");

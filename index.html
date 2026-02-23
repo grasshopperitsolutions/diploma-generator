@@ -1206,13 +1206,23 @@
                   <span data-es class="hidden">¿Olvidaste?</span>
                 </button>
               </div>
-              <input
-                type="password"
-                id="login-pass"
-                required
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                placeholder="••••••••"
-              />
+              <div class="relative">
+                <input
+                  type="password"
+                  id="login-pass"
+                  required
+                  class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility('login-pass', this)"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                  tabindex="-1"
+                >
+                  <i data-lucide="eye-off" class="h-5 w-5"></i>
+                </button>
+              </div>
             </div>
             <button
               type="submit"
@@ -1338,13 +1348,23 @@
                 <span data-en>Password</span>
                 <span data-es class="hidden">Contraseña</span>
               </label>
-              <input
-                type="password"
-                id="reg-pass"
-                required
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                placeholder="Min 6 characters"
-              />
+              <div class="relative">
+                <input
+                  type="password"
+                  id="reg-pass"
+                  required
+                  class="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  placeholder="Min 6 characters"
+                />
+                <button
+                  type="button"
+                  onclick="togglePasswordVisibility('reg-pass', this)"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                  tabindex="-1"
+                >
+                  <i data-lucide="eye-off" class="h-5 w-5"></i>
+                </button>
+              </div>
             </div>
             <button
               type="submit"
