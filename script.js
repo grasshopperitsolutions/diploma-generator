@@ -452,12 +452,10 @@ function t(key) {
       // Bulk
       noRecords: "No records to generate. Please upload a CSV first.",
       bulkConfirm:
-        "This will create {count} certificates without skills. Note: Skills cannot be added via bulk upload. You can edit individual certificates later to add skills. Continue?",
+        "This will create {count} certificate{s}. Continue?",
       bulkDone: "Done! {saved} certificate{s} saved.{errors}",
       bulkFailed: "{errors} failed.",
       mustBeLoggedInBulk: "You must be logged in to generate certificates",
-      bulkNoSkills:
-        "Note: Skills cannot be added via bulk upload. Edit certificates individually to add skills.",
       // Themes
       themeAcademic: "Academic Standard",
       themeAcademicDesc: "Classic & Elegant",
@@ -523,12 +521,10 @@ function t(key) {
       noRecords:
         "No hay registros para generar. Por favor sube un CSV primero.",
       bulkConfirm:
-        "Esto creará {count} certificados sin habilidades. Nota: Las habilidades no se pueden agregar mediante carga masiva. Puedes editar certificados individualmente después para agregar habilidades. ¿Continuar?",
+        "Esto creará {count} certificado{s}. ¿Continuar?",
       bulkDone: "¡Listo! {saved} certificado{s} guardado{s}.{errors}",
       bulkFailed: "{errors} fallaron.",
       mustBeLoggedInBulk: "Debes iniciar sesión para generar certificados",
-      bulkNoSkills:
-        "Nota: Las habilidades no se pueden agregar mediante carga masiva. Edita los certificados individualmente para agregar habilidades.",
       // Themes
       themeAcademic: "Estándar Académico",
       themeAcademicDesc: "Clásico y Elegante",
@@ -692,7 +688,7 @@ async function fetchUserCertificates() {
   const listContainer = document.getElementById("cert-list-body");
   listContainer.innerHTML = `
     <tr>
-      <td colspan="5" class="px-6 py-12 text-center">
+      <td colspan="7" class="px-6 py-12 text-center">
         <div class="flex flex-col items-center gap-2 text-gray-400">
           <i data-lucide="loader" class="animate-spin h-8 w-8 text-indigo-500"></i>
           <span class="text-sm">${t("loadingCerts")}</span>
@@ -746,7 +742,7 @@ async function fetchUserCertificates() {
     console.error("Error fetching certificates:", error);
     listContainer.innerHTML = `
       <tr>
-        <td colspan="5" class="px-6 py-12 text-center text-red-500">
+        <td colspan="7" class="px-6 py-12 text-center text-red-500">
           <p class="text-sm">${t("errorLoading")}</p>
           <p class="text-xs mt-2 text-gray-400">${error.message}</p>
         </td>
@@ -895,6 +891,21 @@ window.handlePageJump = handlePageJump;
 window.handleItemsPerPageChange = handleItemsPerPageChange;
 
 /**
+ * Format a Firestore timestamp to a readable date string
+ */
+function formatCreatedAt(timestamp) {
+  if (!timestamp) return "-";
+  
+  // Handle Firestore timestamp object with seconds
+  const seconds = timestamp.seconds || timestamp._seconds || 0;
+  const date = new Date(seconds * 1000);
+  
+  if (isNaN(date.getTime())) return "-";
+  
+  return date.toLocaleDateString();
+}
+
+/**
  * Render the certificate list in the UI
  */
 function renderCertificateList() {
@@ -909,7 +920,7 @@ function renderCertificateList() {
   if (state.certificates.length === 0) {
     listContainer.innerHTML = `
       <tr>
-        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
           <div class="flex flex-col items-center gap-3">
             <i data-lucide="file-text" class="h-12 w-12 opacity-30"></i>
             <p class="text-base">${t("noCerts")}</p>
@@ -931,7 +942,7 @@ function renderCertificateList() {
   if (state.filteredCertificates.length === 0 && state.searchQuery) {
     listContainer.innerHTML = `
       <tr>
-        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
           <div class="flex flex-col items-center gap-3">
             <i data-lucide="search-x" class="h-12 w-12 opacity-30"></i>
             <p class="text-base">${state.currentLang === "es" ? "No se encontraron resultados" : "No results found"}</p>
@@ -958,45 +969,60 @@ function renderCertificateList() {
 
   listContainer.innerHTML = paginatedCerts
     .map(
-      (cert) => `
+      (cert) => {
+        // Format createdAt timestamp
+        const createdAtStr = formatCreatedAt(cert.createdAt);
+        
+        // Build skills display (show first 2 with count)
+        const certSkills = cert.skills || [];
+        let skillsDisplay = "-";
+        if (certSkills.length > 0) {
+          if (certSkills.length <= 2) {
+            skillsDisplay = certSkills.join(", ");
+          } else {
+            skillsDisplay = `${certSkills.slice(0, 2).join(", ")} +${certSkills.length - 2}`;
+          }
+        }
+        
+        // Build skills parameter for download modal
+        const skillsParam = certSkills.length > 0 ? encodeURIComponent(JSON.stringify(certSkills)) : "";
+        
+        return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="px-6 py-4 font-medium">${cert.recipient}</td>
       <td class="px-6 py-4 text-gray-600">${cert.course}</td>
       <td class="px-6 py-4 text-gray-500">${cert.date}</td>
+      <td class="px-6 py-4 text-gray-500 text-sm">${createdAtStr}</td>
+      <td class="px-6 py-4 text-gray-500 text-sm max-w-[150px] truncate" title="${certSkills.join(", ")}">${skillsDisplay}</td>
       <td class="px-6 py-4 text-xs font-mono text-gray-400">${cert.id}</td>
       <td class="px-6 py-4">
-        <div class="flex items-center justify-end gap-2">
+        <div class="flex items-center justify-end gap-1">
           <button
             onclick="handleEditCertificate('${cert.id}')"
-            class="text-amber-600 hover:text-amber-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-amber-50 transition-colors"
+            class="text-amber-600 hover:text-amber-800 p-2 rounded hover:bg-amber-50 transition-colors"
             title="${t("edit")}"
           >
             <i data-lucide="pencil" class="h-4 w-4"></i>
-            <span data-en>${t("edit")}</span>
-            <span data-es class="hidden">${t("edit")}</span>
           </button>
           <button
             onclick="handleDeleteCertificate('${cert.id}')"
-            class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors"
+            class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-colors"
             title="${t("delete")}"
           >
             <i data-lucide="trash-2" class="h-4 w-4"></i>
-            <span data-en>${t("delete")}</span>
-            <span data-es class="hidden">${t("delete")}</span>
           </button>
           <button
-            onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || "").replace(/'/g, "\\'")}'})"
-            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
+            onclick="openDownloadModal({recipient: '${cert.recipient.replace(/'/g, "\\'")}', course: '${cert.course.replace(/'/g, "\\'")}', id: '${cert.id}', date: '${cert.date}', issuer: '${(cert.issuer || "").replace(/'/g, "\\'")}', skills: '${skillsParam}'})"
+            class="text-indigo-600 hover:text-indigo-800 p-2 rounded hover:bg-indigo-50 transition-colors"
             title="${t("download")}"
           >
             <i data-lucide="download" class="h-4 w-4"></i>
-            <span data-en>${t("download")}</span>
-            <span data-es class="hidden">${t("download")}</span>
           </button>
         </div>
       </td>
     </tr>
-  `,
+  `;
+      },
     )
     .join("");
 
@@ -1033,6 +1059,14 @@ function applyFiltersAndSort() {
   // Apply sorting
   if (state.sortColumn) {
     filtered.sort((a, b) => {
+      // Special handling for createdAt (Firestore timestamp)
+      if (state.sortColumn === "createdAt") {
+        const timeA = a.createdAt?.seconds || a.createdAt?._seconds || 0;
+        const timeB = b.createdAt?.seconds || b.createdAt?._seconds || 0;
+        return state.sortDirection === "asc" ? timeA - timeB : timeB - timeA;
+      }
+
+      // Standard string comparison for other columns
       let valA = a[state.sortColumn] || "";
       let valB = b[state.sortColumn] || "";
 
@@ -1125,7 +1159,7 @@ function clearCertificateFilters() {
  * Update sort icons to show current sort state
  */
 function updateSortIcons() {
-  const columns = ["recipient", "course", "date", "id"];
+  const columns = ["recipient", "course", "date", "createdAt", "id"];
 
   columns.forEach((col) => {
     const icon = document.getElementById(`sort-${col}`);
@@ -2141,6 +2175,7 @@ function initializeSettingsLogoPreview() {
 
 /**
  * Bulk upload — parse CSV and show preview of first record
+ * Supports optional 4th column for skills (separated by " - ")
  */
 function handleBulkUpload() {
   const fileInput = document.createElement("input");
@@ -2162,12 +2197,23 @@ function handleBulkUpload() {
         const line = lines[i].trim();
         if (!line) continue;
 
-        const [recipient, course, date] = line.split(",").map((s) => s.trim());
+        // Split by comma but handle the skills column (4th column) which may contain dashes
+        const parts = line.split(",").map((s) => s.trim());
+        const recipient = parts[0];
+        const course = parts[1];
+        const date = parts[2] || new Date().toLocaleDateString();
+        // Skills are in the 4th column, separated by " - "
+        const skillsRaw = parts[3] || "";
+        const skills = skillsRaw
+          ? skillsRaw.split(" - ").map((s) => s.trim()).filter((s) => s)
+          : [];
+
         if (recipient && course) {
           state.bulkCertificates.push({
             recipient,
             course,
             date: date || new Date().toLocaleDateString(),
+            skills,
           });
         }
       }
@@ -2186,6 +2232,7 @@ function handleBulkUpload() {
         state.data.recipient = first.recipient;
         state.data.course = first.course;
         state.data.date = first.date;
+        state.data.skills = first.skills || [];
         state.data.id = "CERT-BULK-PREVIEW";
 
         const certContainer = document.getElementById("certificate-container");
@@ -2259,6 +2306,7 @@ function updateBulkProgress(current, total, recipient, saved, errors) {
 
 /**
  * Bulk generate — save all parsed CSV records to Firestore
+ * Also auto-adds new skills to user's skills library
  */
 async function handleBulkGenerate() {
   if (!state.user) {
@@ -2285,7 +2333,32 @@ async function handleBulkGenerate() {
     return;
   }
 
-  const confirmed = confirm(t("bulkConfirm").replace("{count}", count));
+  // Collect all unique skills from bulk certificates
+  const allSkills = new Set();
+  state.bulkCertificates.forEach((cert) => {
+    if (cert.skills && cert.skills.length > 0) {
+      cert.skills.forEach((skill) => allSkills.add(skill));
+    }
+  });
+
+  // Build confirmation message
+  const lang = state.currentLang || "en";
+  let confirmMsg =
+    lang === "es"
+      ? `Esto creará ${count} certificado${count !== 1 ? "s" : ""}.`
+      : `This will create ${count} certificate${count !== 1 ? "s" : ""}.`;
+
+  if (allSkills.size > 0) {
+    const skillsText = Array.from(allSkills).join(", ");
+    confirmMsg +=
+      lang === "es"
+        ? `\n\nLas siguientes habilidades se agregarán a tu biblioteca: ${skillsText}`
+        : `\n\nThe following skills will be added to your library: ${skillsText}`;
+  }
+
+  confirmMsg += lang === "es" ? "\n\n¿Continuar?" : "\n\nContinue?";
+
+  const confirmed = confirm(confirmMsg);
   if (!confirmed) return;
 
   let saved = 0;
@@ -2313,6 +2386,7 @@ async function handleBulkGenerate() {
           course: cert.course,
           issuer: state.data.issuer || state.user.company,
           date: cert.date,
+          skills: cert.skills || [],
           issuedByEmail: state.user.email,
           createdAt: window.firestoreTimestamp(),
           updatedAt: window.firestoreTimestamp(),
@@ -2333,6 +2407,40 @@ async function handleBulkGenerate() {
 
   // Hide progress modal
   hideBulkProgressModal();
+
+  // Auto-add new skills to user's library
+  if (allSkills.size > 0 && state.user) {
+    // Initialize skills array if it doesn't exist
+    if (!state.user.skills) {
+      state.user.skills = [];
+    }
+
+    // Add new skills that don't already exist
+    const newSkills = Array.from(allSkills).filter(
+      (skill) => !state.user.skills.includes(skill),
+    );
+
+    if (newSkills.length > 0) {
+      state.user.skills = [...state.user.skills, ...newSkills];
+
+      try {
+        await window.firestoreUpdateDoc(
+          window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
+          {
+            skills: state.user.skills,
+            updatedAt: window.firestoreTimestamp(),
+          },
+        );
+
+        // Re-render skills UI
+        renderSettingsSkillsList();
+        renderCertificateSkillsSelector();
+      } catch (skillError) {
+        console.error("Error updating user skills:", skillError);
+        // Don't fail the whole operation, just log the error
+      }
+    }
+  }
 
   // Deduct credits for successfully saved certificates
   if (saved > 0) {
@@ -2362,6 +2470,7 @@ async function handleBulkGenerate() {
 
 /**
  * Download sample CSV template
+ * Includes optional skills column (4th column, skills separated by " - ")
  */
 function downloadSampleCSV() {
   const today = new Date();
@@ -2372,17 +2481,19 @@ function downloadSampleCSV() {
   });
 
   const csvContent = [
-    "recipient,course,date(mm/dd/yyyy)",
-    `John Smith,Web Development Fundamentals,${dates[0]}`,
-    `Sarah Johnson,Advanced JavaScript,${dates[1]}`,
-    `Michael Brown,React Native Development,${dates[2]}`,
-    `Emily Davis,Python for Data Science,${dates[3]}`,
-    `David Wilson,Cloud Computing Essentials,${dates[4]}`,
-    `Jessica Martinez,Cybersecurity Basics,${dates[5]}`,
-    `James Anderson,Mobile App Design,${dates[6]}`,
-    `Jennifer Taylor,Database Management,${dates[7]}`,
-    `Robert Thomas,Machine Learning Fundamentals,${dates[8]}`,
-    `Linda Garcia,Digital Marketing Strategy,${dates[9]}`,
+    "recipient,course,date,skills (optional - separate with \" - \")",
+    `John Smith,Web Development Fundamentals,${dates[0]},HTML - CSS - JavaScript`,
+    `Sarah Johnson,Advanced JavaScript,${dates[1]},JavaScript - React - Node.js`,
+    `Michael Brown,React Native Development,${dates[2]},React Native - Mobile Development - JavaScript`,
+    `Emily Davis,Python for Data Science,${dates[3]},Python - Data Analysis - Machine Learning`,
+    `David Wilson,Cloud Computing Essentials,${dates[4]},AWS - Cloud Architecture - DevOps`,
+    `Jessica Martinez,Cybersecurity Basics,${dates[5]},Network Security - Ethical Hacking - Encryption`,
+    `James Anderson,Mobile App Design,${dates[6]},UI Design - UX Design - Figma`,
+    `Jennifer Taylor,Database Management,${dates[7]},SQL - PostgreSQL - Database Design`,
+    `Robert Thomas,Machine Learning Fundamentals,${dates[8]},Python - TensorFlow - Neural Networks`,
+    `Linda Garcia,Digital Marketing Strategy,${dates[9]},SEO - Content Marketing - Analytics`,
+    `Alex Rivera,Full Stack Development,${dates[0]},`, // Example with no skills
+    `Maria Santos,Project Management,${dates[1]}`, // Example with no skills column
   ].join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv" });

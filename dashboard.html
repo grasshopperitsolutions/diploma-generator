@@ -839,6 +839,28 @@
                     </th>
                     <th
                       class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
+                      onclick="handleSort('createdAt')"
+                    >
+                      <div class="flex items-center gap-1">
+                        <span data-en>Created</span>
+                        <span data-es class="hidden">Creado</span>
+                        <i
+                          data-lucide="chevrons-up-down"
+                          class="h-3 w-3 sort-icon"
+                          id="sort-createdAt"
+                        ></i>
+                      </div>
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase"
+                    >
+                      <div class="flex items-center gap-1">
+                        <span data-en>Skills</span>
+                        <span data-es class="hidden">Habilidades</span>
+                      </div>
+                    </th>
+                    <th
+                      class="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:text-indigo-600 select-none"
                       onclick="handleSort('id')"
                     >
                       <div class="flex items-center gap-1">
@@ -1189,33 +1211,13 @@
               <p class="text-sm text-amber-800 leading-relaxed">
                 <span data-en
                   >Ensure your file has <strong>recipient</strong>,
-                  <strong>course</strong>, and optionally
-                  <strong>date</strong> columns.</span
+                  <strong>course</strong>, <strong>date</strong>, and optionally
+                  <strong>skills</strong> columns. Skills should be separated by " - ".</span
                 >
                 <span data-es class="hidden"
                   >Asegúrate de que tu archivo tenga columnas de
-                  <strong>recipient</strong>, <strong>course</strong>, y
-                  opcionalmente <strong>date</strong>.</span
-                >
-              </p>
-            </div>
-            <div
-              class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3"
-            >
-              <i
-                data-lucide="info"
-                class="text-amber-600 h-5 w-5 mt-0.5 flex-shrink-0"
-              ></i>
-              <p class="text-sm text-amber-800 leading-relaxed">
-                <span data-en
-                  >Note: <strong>Skills</strong> cannot be added via bulk
-                  upload. <strong>Edit</strong> certificates individually to add
-                  skills.</span
-                >
-                <span data-es class="hidden"
-                  >Nota: Las <strong>habilidades</strong> no se pueden agregar
-                  mediante carga masiva. <strong>Edita</strong> los certificados
-                  individualmente para agregar habilidades.</span
+                  <strong>recipient</strong>, <strong>course</strong>, <strong>date</strong>, y
+                  opcionalmente <strong>skills</strong>. Las habilidades deben separarse con " - ".</span
                 >
               </p>
             </div>
