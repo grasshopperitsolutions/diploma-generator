@@ -1665,6 +1665,123 @@ async function handleSaveSettings(e) {
 }
 
 /**
+ * Handle password update in settings
+ */
+async function handlePasswordUpdate() {
+  if (!state.user) {
+    alert(t("mustBeLoggedIn"));
+    return;
+  }
+
+  const currentPass = document.getElementById("set-current-pass").value;
+  const newPass = document.getElementById("set-new-pass").value;
+  const confirmPass = document.getElementById("set-confirm-pass").value;
+
+  // Validation
+  if (!currentPass || !newPass || !confirmPass) {
+    const lang = state.currentLang || "en";
+    alert(
+      lang === "es"
+        ? "Por favor completa todos los campos de contraseña"
+        : "Please fill in all password fields",
+    );
+    return;
+  }
+
+  if (newPass.length < 6) {
+    const lang = state.currentLang || "en";
+    alert(
+      lang === "es"
+        ? "La nueva contraseña debe tener al menos 6 caracteres"
+        : "New password must be at least 6 characters",
+    );
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    const lang = state.currentLang || "en";
+    alert(
+      lang === "es"
+        ? "Las contraseñas nuevas no coinciden"
+        : "New passwords do not match",
+    );
+    return;
+  }
+
+  const updateBtn = document.querySelector(
+    'button[onclick="handlePasswordUpdate()"]',
+  );
+  const originalBtnHtml = updateBtn.innerHTML;
+
+  updateBtn.disabled = true;
+  updateBtn.innerHTML = `<i data-lucide="loader" class="animate-spin h-4 w-4 inline mr-1"></i> ${state.currentLang === "es" ? "Actualizando..." : "Updating..."}`;
+  lucide.createIcons();
+
+  try {
+    const user = window.firebaseAuth.currentUser;
+    const email = user.email;
+
+    // Re-authenticate user with current password
+    const credential = window.firebaseEmailAuthProvider.credential(
+      email,
+      currentPass,
+    );
+    await window.firebaseReauthenticateWithCredential(user, credential);
+
+    // Update password
+    await window.firebaseUpdatePassword(user, newPass);
+
+    // Clear password fields
+    document.getElementById("set-current-pass").value = "";
+    document.getElementById("set-new-pass").value = "";
+    document.getElementById("set-confirm-pass").value = "";
+
+    const lang = state.currentLang || "en";
+    alert(
+      lang === "es"
+        ? "¡Contraseña actualizada exitosamente!"
+        : "Password updated successfully!",
+    );
+    logout();
+  } catch (error) {
+    console.error("Error updating password:", error);
+
+    const lang = state.currentLang || "en";
+    let errorMessage = error.message;
+
+    // Handle specific errors
+    if (
+      error.code === "auth/wrong-password" ||
+      error.code === "auth/invalid-credential"
+    ) {
+      errorMessage =
+        lang === "es"
+          ? "La contraseña actual es incorrecta"
+          : "Current password is incorrect";
+    } else if (error.code === "auth/requires-recent-login") {
+      errorMessage =
+        lang === "es"
+          ? "Por seguridad, por favor inicia sesión de nuevo y luego cambia tu contraseña"
+          : "For security, please sign in again and then change your password";
+    } else if (error.code === "auth/weak-password") {
+      errorMessage =
+        lang === "es"
+          ? "La nueva contraseña es muy débil"
+          : "New password is too weak";
+    }
+
+    alert(errorMessage);
+  } finally {
+    updateBtn.disabled = false;
+    updateBtn.innerHTML = originalBtnHtml;
+    lucide.createIcons();
+  }
+}
+
+// Expose password update function globally
+window.handlePasswordUpdate = handlePasswordUpdate;
+
+/**
  * Delete user account and all associated data
  */
 async function handleDeleteUser() {
@@ -2285,17 +2402,17 @@ function togglePasswordVisibility(inputId, button) {
   // - When password is HIDDEN: show "eye-off" (crossed eye) to indicate hidden state
   // - When password is VISIBLE: show "eye" to indicate visible state
   const newIconName = isPassword ? "eye" : "eye-off";
-  
+
   // Find either the <i> element or the SVG that Lucide created
   const iconElement = button.querySelector("i, svg");
-  
+
   if (iconElement) {
     // Replace with a new icon element to ensure proper re-rendering
     const newIcon = document.createElement("i");
     newIcon.setAttribute("data-lucide", newIconName);
     newIcon.className = "h-5 w-5";
     iconElement.replaceWith(newIcon);
-    
+
     // Re-render the icon
     if (typeof lucide !== "undefined") {
       lucide.createIcons();

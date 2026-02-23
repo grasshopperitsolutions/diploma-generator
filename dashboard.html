@@ -1192,6 +1192,111 @@
                   <span data-en>Update Profile</span>
                   <span data-es class="hidden">Actualizar Perfil</span>
                 </button>
+
+                <!-- Password Update Section -->
+                <div class="pt-4 border-t border-gray-100">
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-2"
+                  >
+                    <span data-en>Change Password</span>
+                    <span data-es class="hidden">Cambiar Contraseña</span>
+                  </label>
+                  <div class="space-y-3">
+                    <div>
+                      <label
+                        class="block text-xs font-medium text-gray-500 mb-1"
+                      >
+                        <span data-en>Current Password</span>
+                        <span data-es class="hidden">Contraseña Actual</span>
+                      </label>
+                      <div class="relative">
+                        <input
+                          type="password"
+                          id="set-current-pass"
+                          class="w-full px-4 py-2 pr-12 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                          data-en-placeholder="Enter current password"
+                          data-es-placeholder="Ingresa contraseña actual"
+                        />
+                        <button
+                          type="button"
+                          onclick="
+                            togglePasswordVisibility('set-current-pass', this)
+                          "
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                          tabindex="-1"
+                        >
+                          <i data-lucide="eye-off" class="h-5 w-5"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-xs font-medium text-gray-500 mb-1"
+                      >
+                        <span data-en>New Password</span>
+                        <span data-es class="hidden">Nueva Contraseña</span>
+                      </label>
+                      <div class="relative">
+                        <input
+                          type="password"
+                          id="set-new-pass"
+                          class="w-full px-4 py-2 pr-12 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                          data-en-placeholder="Enter new password (min 6 characters)"
+                          data-es-placeholder="Nueva contraseña (mín 6 caracteres)"
+                        />
+                        <button
+                          type="button"
+                          onclick="
+                            togglePasswordVisibility('set-new-pass', this)
+                          "
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                          tabindex="-1"
+                        >
+                          <i data-lucide="eye-off" class="h-5 w-5"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        class="block text-xs font-medium text-gray-500 mb-1"
+                      >
+                        <span data-en>Confirm New Password</span>
+                        <span data-es class="hidden"
+                          >Confirmar Nueva Contraseña</span
+                        >
+                      </label>
+                      <div class="relative">
+                        <input
+                          type="password"
+                          id="set-confirm-pass"
+                          class="w-full px-4 py-2 pr-12 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                          data-en-placeholder="Confirm new password"
+                          data-es-placeholder="Confirmar nueva contraseña"
+                        />
+                        <button
+                          type="button"
+                          onclick="
+                            togglePasswordVisibility('set-confirm-pass', this)
+                          "
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                          tabindex="-1"
+                        >
+                          <i data-lucide="eye-off" class="h-5 w-5"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onclick="handlePasswordUpdate()"
+                      class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <i data-lucide="key" class="h-4 w-4"></i>
+                      <span data-en>Update Password</span>
+                      <span data-es class="hidden">Actualizar Contraseña</span>
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onclick="handleDeleteUser()"
@@ -1230,6 +1335,9 @@
         onAuthStateChanged,
         signOut,
         deleteUser,
+        updatePassword,
+        EmailAuthProvider,
+        reauthenticateWithCredential,
       } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
       import {
         getFirestore,
@@ -1267,6 +1375,10 @@
       window.firebaseResetPassword = sendPasswordResetEmail;
       window.firebaseSignOut = signOut;
       window.firebaseDeleteUser = deleteUser;
+      window.firebaseUpdatePassword = updatePassword;
+      window.firebaseEmailAuthProvider = EmailAuthProvider;
+      window.firebaseReauthenticateWithCredential =
+        reauthenticateWithCredential;
 
       // Firestore
       window.firebaseDB = db;
