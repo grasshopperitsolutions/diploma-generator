@@ -10,6 +10,34 @@
 
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn, etc.) -->
+    <meta property="og:title" content="CertifyPro - Certifica en Segundos" />
+    <meta
+      property="og:description"
+      content="Crea certificados con código QR para tus cursos."
+    />
+    <meta
+      property="og:image"
+      content="https://grasshoppersolutions.online/diploma-generator/sharing.png"
+    />
+    <meta
+      property="og:url"
+      content="https://grasshoppersolutions.online/diploma-generator/"
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CertifyPro - Certifica en Segundos" />
+    <meta
+      name="twitter:description"
+      content="Crea certificados con código QR para tus cursos."
+    />
+    <meta
+      name="twitter:image"
+      content="https://grasshoppersolutions.online/diploma-generator/sharing.png"
+    />
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -116,20 +144,20 @@
         perspective: 300px;
         display: inline-block;
       }
-      
+
       .toggle-switch {
         position: relative;
         width: 120px;
         height: 40px;
         transform-style: preserve-3d;
-        transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
       }
-      
+
       .toggle-switch.flipped {
         transform: rotateY(180deg);
       }
-      
+
       .toggle-switch-face {
         position: absolute;
         width: 100%;
@@ -141,25 +169,29 @@
         justify-content: center;
         font-weight: 600;
         font-size: 14px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
         transition: box-shadow 0.3s ease;
       }
-      
+
       .toggle-switch:hover .toggle-switch-face {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
       }
-      
+
       .toggle-switch-front {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         color: white;
       }
-      
+
       .toggle-switch-back {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
         transform: rotateY(180deg);
       }
-      
+
       .toggle-switch-icon {
         margin-right: 6px;
         width: 16px;
@@ -632,20 +664,61 @@
             <!-- Billing Toggle - 3D Flip Switch -->
             <div class="flex flex-col items-center justify-center gap-4 mb-12">
               <div class="toggle-switch-container">
-                <div id="billing-toggle-switch" class="toggle-switch" onclick="toggleBillingFlip()">
+                <div
+                  id="billing-toggle-switch"
+                  class="toggle-switch"
+                  onclick="toggleBillingFlip()"
+                >
                   <div class="toggle-switch-face toggle-switch-front">
-                    <svg class="toggle-switch-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <svg
+                      class="toggle-switch-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
                     <span data-en>Monthly</span>
                     <span data-es class="hidden">Mensual</span>
                   </div>
                   <div class="toggle-switch-face toggle-switch-back">
-                    <svg class="toggle-switch-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                    <svg
+                      class="toggle-switch-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M12 2v4" />
+                      <path d="m16.2 7.8 2.9-2.9" />
+                      <path d="M18 12h4" />
+                      <path d="m16.2 16.2 2.9 2.9" />
+                      <path d="M12 18v4" />
+                      <path d="m4.9 19.1 2.9-2.9" />
+                      <path d="M2 12h4" />
+                      <path d="m4.9 4.9 2.9 2.9" />
+                    </svg>
                     <span data-en>Yearly</span>
                     <span data-es class="hidden">Anual</span>
                   </div>
                 </div>
               </div>
-              <div id="yearly-savings" class="hidden bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+              <div
+                id="yearly-savings"
+                class="hidden bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold animate-pulse"
+              >
                 <span data-en>🎉 Save 16% with yearly!</span>
                 <span data-es class="hidden">🎉 ¡Ahorra 16% con anual!</span>
               </div>
