@@ -31,6 +31,218 @@ const state = {
   newSkillInput: "", // Temporary input for new skill
 };
 
+// --- Firebase Storage Helper Functions ---
+
+/**
+ * Validate file for upload
+ */
+function validateLogoFile(file) {
+  if (!file) {
+    throw new Error("No file selected");
+  }
+
+  // Check file type
+  const allowedTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/svg+xml",
+    "image/gif",
+  ];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error(
+      "Invalid file type. Please upload PNG, JPEG, SVG, or GIF images only.",
+    );
+  }
+
+  // Check file size (max 2MB)
+  const maxSize = 2 * 1024 * 1024; // 2MB
+  if (file.size > maxSize) {
+    throw new Error("File too large. Please upload images under 2MB.");
+  }
+
+  return true;
+}
+
+/**
+ * Check if Firebase is initialized
+ */
+function checkFirebaseInitialized() {
+  if (
+    !window.firebaseStorage ||
+    !window.storageRef ||
+    !window.uploadBytes ||
+    !window.getDownloadURL
+  ) {
+    throw new Error("Firebase Storage not initialized. Please wait for Firebase to load.");
+  }
+}
+
+/**
+ * Upload a file to Firebase Storage with retry logic
+ */
+async function uploadFileToStorage(file, path) {
+  // Wait for Firebase to be initialized
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (attempts < maxAttempts) {
+    try {
+      if (
+        !window.firebaseStorage ||
+        !window.storageRef ||
+        !window.uploadBytes ||
+        !window.getDownloadURL
+      ) {
+        throw new Error("Firebase Storage not initialized");
+      }
+
+      const storageRef = window.storageRef(window.firebaseStorage, path);
+      const snapshot = await window.uploadBytes(storageRef, file);
+      return await window.getDownloadURL(snapshot.ref);
+    } catch (error) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      // Wait 500ms before retrying
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+}
+
+/**
+ * Generate a unique filename for storage
+ */
+function generateLogoFilename(userId, originalName) {
+  const timestamp = Date.now();
+  const extension = originalName.split(".").pop();
+  return `logos/${userId}/logo_${timestamp}.${extension}`;
+}
+
+
+/**
+ * Handle logo upload for settings - only store file reference, don't upload yet
+ */
+async function handleLogoUpload(input) {
+  const fileInput = input || document.getElementById("logo-upload-input");
+  const logoInput = document.getElementById("set-logo");
+  const previewContainer = document.getElementById("logo-preview-container");
+  const previewImg = document.getElementById("logo-preview");
+  const filenameDisplay = document.getElementById("logo-filename");
+  const filesizeDisplay = document.getElementById("logo-filesize");
+
+  if (!fileInput || !logoInput || !previewContainer || !previewImg) return;
+
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Please select a file to upload");
+    return;
+  }
+
+  try {
+    // Validate file
+    validateLogoFile(file);
+
+    // Store file reference for later upload
+    state.pendingLogoFile = file;
+
+    // Update preview with local file URL
+    const localURL = URL.createObjectURL(file);
+    previewContainer.classList.remove("hidden");
+    previewImg.src = localURL;
+    if (filenameDisplay) filenameDisplay.textContent = file.name;
+    if (filesizeDisplay) filesizeDisplay.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+
+    // Show upload pending indicator
+    logoInput.value = "File selected - will upload when profile is updated";
+
+    alert("Logo selected! It will be uploaded when you click 'Update Profile'.");
+  } catch (error) {
+    console.error("Error validating logo:", error);
+    alert("Error validating logo: " + error.message);
+  }
+}
+
+/**
+ * Remove the current logo
+ */
+function removeLogo() {
+  const logoInput = document.getElementById("set-logo");
+  const previewContainer = document.getElementById("logo-preview-container");
+  const previewImg = document.getElementById("logo-preview");
+  const filenameDisplay = document.getElementById("logo-filename");
+  const filesizeDisplay = document.getElementById("logo-filesize");
+
+  if (!logoInput || !previewContainer || !previewImg) return;
+
+  // Clear input
+  logoInput.value = "";
+
+  // Update state
+  state.data.logo = defaultLogo;
+  state.user.logoUrl = "";
+
+  // Hide preview
+  previewContainer.classList.add("hidden");
+  if (previewImg) previewImg.src = "";
+  if (filenameDisplay) filenameDisplay.textContent = "";
+  if (filesizeDisplay) filesizeDisplay.textContent = "";
+
+  // Update certificate preview
+  renderCertificate();
+
+  // Update user display
+  updateUserDisplay();
+
+  alert("Logo removed successfully!");
+}
+
+// Expose removeLogo function globally
+window.removeLogo = removeLogo;
+
+/**
+ * Handle logo upload for registration
+ */
+async function handleRegistrationLogoUpload() {
+  const fileInput = document.getElementById("reg-logo-file");
+  const logoInput = document.getElementById("reg-logo");
+  const previewImg = document.getElementById("reg-logo-preview-img");
+  const previewContainer = document.getElementById("reg-logo-preview");
+
+  if (!fileInput || !logoInput || !previewImg || !previewContainer) return;
+
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Please select a file to upload");
+    return;
+  }
+
+  try {
+    // Validate file
+    validateLogoFile(file);
+
+    // Generate filename
+    const filename = generateLogoFilename("temp", file.name);
+
+    // Upload file
+    const downloadURL = await uploadFileToStorage(file, filename);
+
+    // Update input and preview
+    logoInput.value = downloadURL;
+    previewContainer.classList.remove("hidden");
+    previewImg.src = downloadURL;
+
+    // Clear file input
+    fileInput.value = "";
+
+    alert("Logo uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading logo:", error);
+    alert("Error uploading logo: " + error.message);
+  }
+}
+
 // --- Credits Configuration ---
 const CREDITS_CONFIG = {
   tiers: {
@@ -451,8 +663,7 @@ function t(key) {
       deleteAccount: "Delete Account",
       // Bulk
       noRecords: "No records to generate. Please upload a CSV first.",
-      bulkConfirm:
-        "This will create {count} certificate{s}. Continue?",
+      bulkConfirm: "This will create {count} certificate{s}. Continue?",
       bulkDone: "Done! {saved} certificate{s} saved.{errors}",
       bulkFailed: "{errors} failed.",
       mustBeLoggedInBulk: "You must be logged in to generate certificates",
@@ -520,8 +731,7 @@ function t(key) {
       // Bulk
       noRecords:
         "No hay registros para generar. Por favor sube un CSV primero.",
-      bulkConfirm:
-        "Esto creará {count} certificado{s}. ¿Continuar?",
+      bulkConfirm: "Esto creará {count} certificado{s}. ¿Continuar?",
       bulkDone: "¡Listo! {saved} certificado{s} guardado{s}.{errors}",
       bulkFailed: "{errors} fallaron.",
       mustBeLoggedInBulk: "Debes iniciar sesión para generar certificados",
@@ -895,13 +1105,13 @@ window.handleItemsPerPageChange = handleItemsPerPageChange;
  */
 function formatCreatedAt(timestamp) {
   if (!timestamp) return "-";
-  
+
   // Handle Firestore timestamp object with seconds
   const seconds = timestamp.seconds || timestamp._seconds || 0;
   const date = new Date(seconds * 1000);
-  
+
   if (isNaN(date.getTime())) return "-";
-  
+
   return date.toLocaleDateString();
 }
 
@@ -968,26 +1178,28 @@ function renderCertificateList() {
   const paginatedCerts = getPaginatedCertificates();
 
   listContainer.innerHTML = paginatedCerts
-    .map(
-      (cert) => {
-        // Format createdAt timestamp
-        const createdAtStr = formatCreatedAt(cert.createdAt);
-        
-        // Build skills display (show first 2 with count)
-        const certSkills = cert.skills || [];
-        let skillsDisplay = "-";
-        if (certSkills.length > 0) {
-          if (certSkills.length <= 2) {
-            skillsDisplay = certSkills.join(", ");
-          } else {
-            skillsDisplay = `${certSkills.slice(0, 2).join(", ")} +${certSkills.length - 2}`;
-          }
+    .map((cert) => {
+      // Format createdAt timestamp
+      const createdAtStr = formatCreatedAt(cert.createdAt);
+
+      // Build skills display (show first 2 with count)
+      const certSkills = cert.skills || [];
+      let skillsDisplay = "-";
+      if (certSkills.length > 0) {
+        if (certSkills.length <= 2) {
+          skillsDisplay = certSkills.join(", ");
+        } else {
+          skillsDisplay = `${certSkills.slice(0, 2).join(", ")} +${certSkills.length - 2}`;
         }
-        
-        // Build skills parameter for download modal
-        const skillsParam = certSkills.length > 0 ? encodeURIComponent(JSON.stringify(certSkills)) : "";
-        
-        return `
+      }
+
+      // Build skills parameter for download modal
+      const skillsParam =
+        certSkills.length > 0
+          ? encodeURIComponent(JSON.stringify(certSkills))
+          : "";
+
+      return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="px-6 py-4 font-medium">${cert.recipient}</td>
       <td class="px-6 py-4 text-gray-600">${cert.course}</td>
@@ -1022,8 +1234,7 @@ function renderCertificateList() {
       </td>
     </tr>
   `;
-      },
-    )
+    })
     .join("");
 
   // Update pagination UI
@@ -1686,13 +1897,30 @@ async function handleSaveSettings(e) {
   lucide.createIcons();
 
   try {
+    let finalLogoUrl = logoUrl || "";
+
+    // Upload logo if there's a pending file
+    if (state.pendingLogoFile) {
+      // Validate file
+      validateLogoFile(state.pendingLogoFile);
+
+      // Generate filename
+      const filename = generateLogoFilename(state.user.uid, state.pendingLogoFile.name);
+
+      // Upload file
+      finalLogoUrl = await uploadFileToStorage(state.pendingLogoFile, filename);
+
+      // Clean up pending file
+      delete state.pendingLogoFile;
+    }
+
     await window.firestoreUpdateDoc(
       window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
       {
         firstName,
         lastName,
         company,
-        logoUrl: logoUrl || "",
+        logoUrl: finalLogoUrl,
         language,
         updatedAt: window.firestoreTimestamp(),
       },
@@ -1703,13 +1931,13 @@ async function handleSaveSettings(e) {
     state.user.lastName = lastName;
     state.user.name = `${firstName} ${lastName}`;
     state.user.company = company;
-    state.user.logoUrl = logoUrl;
+    state.user.logoUrl = finalLogoUrl;
     state.user.language = language;
     state.data.issuer = company;
-    state.data.logo = logoUrl || defaultLogo;
+    state.data.logo = finalLogoUrl || defaultLogo;
 
-    document.getElementById("user-display").innerText =
-      `${firstName} ${lastName}`;
+    // Update user display with logo
+    updateUserDisplay();
 
     alert(t("profileUpdated"));
     renderCertificate();
@@ -2174,6 +2402,42 @@ function initializeSettingsLogoPreview() {
 }
 
 /**
+ * Update the user display in the header to show logo and name
+ */
+function updateUserDisplay() {
+  const userDisplayEl = document.getElementById("user-display");
+  if (!userDisplayEl || !state.user) return;
+
+  const logoUrl = state.user.logoUrl || defaultLogo;
+  const userName = state.user.name || state.user.email?.split("@")[0] || "User";
+  const hasLogo = state.user.logoUrl && state.user.logoUrl !== defaultLogo;
+
+  // Create or update the user display content
+  if (hasLogo) {
+    // Show logo only (no settings icon)
+    userDisplayEl.innerHTML = `
+      <div class="flex items-center gap-2">
+        <img src="${logoUrl}" alt="User Logo" class="h-6 w-6 rounded-full object-cover border-2 border-white shadow-sm" onerror="this.src='${defaultLogo}'" />
+        <span class="font-medium">${userName}</span>
+      </div>
+    `;
+  } else {
+    // Show settings icon as default when no logo
+    userDisplayEl.innerHTML = `
+      <div class="flex items-center gap-2">
+        <i data-lucide="settings" class="h-4 w-4 "></i>
+        <span class="font-medium">${userName}</span>
+      </div>
+    `;
+  }
+  
+  // Re-render icons if lucide is available
+  if (typeof lucide !== "undefined") {
+    lucide.createIcons();
+  }
+}
+
+/**
  * Bulk upload — parse CSV and show preview of first record
  * Supports optional 4th column for skills (separated by " - ")
  */
@@ -2205,7 +2469,10 @@ function handleBulkUpload() {
         // Skills are in the 4th column, separated by " - "
         const skillsRaw = parts[3] || "";
         const skills = skillsRaw
-          ? skillsRaw.split(" - ").map((s) => s.trim()).filter((s) => s)
+          ? skillsRaw
+              .split(" - ")
+              .map((s) => s.trim())
+              .filter((s) => s)
           : [];
 
         if (recipient && course) {
@@ -2481,7 +2748,7 @@ function downloadSampleCSV() {
   });
 
   const csvContent = [
-    "recipient,course,date,skills (optional - separate with \" - \")",
+    'recipient,course,date,skills (optional - separate with " - ")',
     `John Smith,Web Development Fundamentals,${dates[0]},HTML - CSS - JavaScript`,
     `Sarah Johnson,Advanced JavaScript,${dates[1]},JavaScript - React - Node.js`,
     `Michael Brown,React Native Development,${dates[2]},React Native - Mobile Development - JavaScript`,
@@ -2814,12 +3081,8 @@ function completeLogin(userData) {
     return;
   }
 
-  // Update header display (dashboard page only)
-  const userDisplayEl = document.getElementById("user-display");
-  if (userDisplayEl) {
-    userDisplayEl.innerText = userData.name;
-    userDisplayEl.classList.remove("hidden");
-  }
+  // Update header display (dashboard page only) with logo
+  updateUserDisplay();
 
   // Populate settings form
   const fields = {
@@ -4044,6 +4307,7 @@ function renderCertificate() {
   if (!container) return;
 
   const d = state.data;
+  // Use storage URL directly if available, otherwise use local file
   const logoSrc = d.logo || defaultLogo;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.id}`;
 

@@ -18,7 +18,7 @@
     />
     <meta
       property="og:image"
-      content="https://firebasestorage.googleapis.com/v0/b/diploma-generator-1c6af.firebasestorage.app/o/award-icon.png?alt=media&token=6434b8f6-fe6c-4ae0-882e-3820817b96c8"
+      content="https://firebasestorage.googleapis.com/v0/b/diploma-generator-1c6af.firebasestorage.app/o/defaults%2Faward-icon.png?alt=media&token=de8e2873-4f34-4c99-8db6-b32e82bafe24"
     />
     <meta
       property="og:url"
@@ -35,7 +35,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://firebasestorage.googleapis.com/v0/b/diploma-generator-1c6af.firebasestorage.app/o/award-icon.png?alt=media&token=6434b8f6-fe6c-4ae0-882e-3820817b96c8"
+      content="https://firebasestorage.googleapis.com/v0/b/diploma-generator-1c6af.firebasestorage.app/o/defaults%2Faward-icon.png?alt=media&token=de8e2873-4f34-4c99-8db6-b32e82bafe24"
     />
 
     <!-- Google Fonts -->
@@ -1642,6 +1642,13 @@
         deleteDoc,
         serverTimestamp,
       } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+      import {
+        getStorage,
+        ref as storageRef,
+        uploadBytes,
+        getDownloadURL,
+        deleteObject,
+      } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyCAl88I8PN2MEoXvV4vPRFFlGvS34wgQX0",
@@ -1656,6 +1663,7 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+      const storage = getStorage(app);
 
       // Auth
       window.firebaseAuth = auth;
@@ -1678,6 +1686,13 @@
       window.firestoreUpdateDoc = updateDoc;
       window.firestoreDeleteDoc = deleteDoc;
       window.firestoreTimestamp = serverTimestamp;
+
+      // Storage
+      window.firebaseStorage = storage;
+      window.storageRef = storageRef;
+      window.uploadBytes = uploadBytes;
+      window.getDownloadURL = getDownloadURL;
+      window.deleteObject = deleteObject;
 
       // Restore session on page load - redirect to dashboard if already logged in
       // We use a flag to prevent redirect during registration (when user is being created)
