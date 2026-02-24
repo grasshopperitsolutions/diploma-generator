@@ -74,7 +74,9 @@ function checkFirebaseInitialized() {
     !window.uploadBytes ||
     !window.getDownloadURL
   ) {
-    throw new Error("Firebase Storage not initialized. Please wait for Firebase to load.");
+    throw new Error(
+      "Firebase Storage not initialized. Please wait for Firebase to load.",
+    );
   }
 }
 
@@ -85,7 +87,7 @@ async function uploadFileToStorage(file, path) {
   // Wait for Firebase to be initialized
   let attempts = 0;
   const maxAttempts = 10;
-  
+
   while (attempts < maxAttempts) {
     try {
       if (
@@ -106,7 +108,7 @@ async function uploadFileToStorage(file, path) {
         throw error;
       }
       // Wait 500ms before retrying
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 }
@@ -119,7 +121,6 @@ function generateLogoFilename(userId, originalName) {
   const extension = originalName.split(".").pop();
   return `logos/${userId}/logo_${timestamp}.${extension}`;
 }
-
 
 /**
  * Handle logo upload for settings - only store file reference, don't upload yet
@@ -152,12 +153,15 @@ async function handleLogoUpload(input) {
     previewContainer.classList.remove("hidden");
     previewImg.src = localURL;
     if (filenameDisplay) filenameDisplay.textContent = file.name;
-    if (filesizeDisplay) filesizeDisplay.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+    if (filesizeDisplay)
+      filesizeDisplay.textContent = `${(file.size / 1024).toFixed(1)} KB`;
 
     // Show upload pending indicator
     logoInput.value = "File selected - will upload when profile is updated";
 
-    alert("Logo selected! It will be uploaded when you click 'Update Profile'.");
+    alert(
+      "Logo selected! It will be uploaded when you click 'Update Profile'.",
+    );
   } catch (error) {
     console.error("Error validating logo:", error);
     alert("Error validating logo: " + error.message);
@@ -202,15 +206,17 @@ function removeLogo() {
 window.removeLogo = removeLogo;
 
 /**
- * Handle logo upload for registration
+ * Handle logo upload for registration - store file reference only
  */
 async function handleRegistrationLogoUpload() {
   const fileInput = document.getElementById("reg-logo-file");
   const logoInput = document.getElementById("reg-logo");
   const previewImg = document.getElementById("reg-logo-preview-img");
   const previewContainer = document.getElementById("reg-logo-preview");
+  const filenameDisplay = document.getElementById("reg-logo-filename");
+  const filesizeDisplay = document.getElementById("reg-logo-filesize");
 
-  if (!fileInput || !logoInput || !previewImg || !previewContainer) return;
+  if (!fileInput || !previewImg || !previewContainer) return;
 
   const file = fileInput.files[0];
   if (!file) {
@@ -222,24 +228,21 @@ async function handleRegistrationLogoUpload() {
     // Validate file
     validateLogoFile(file);
 
-    // Generate filename
-    const filename = generateLogoFilename("temp", file.name);
+    // Store file reference for later upload (after user creation)
+    state.pendingRegistrationLogoFile = file;
 
-    // Upload file
-    const downloadURL = await uploadFileToStorage(file, filename);
-
-    // Update input and preview
-    logoInput.value = downloadURL;
+    // Update preview with local file URL
+    const localURL = URL.createObjectURL(file);
     previewContainer.classList.remove("hidden");
-    previewImg.src = downloadURL;
+    previewImg.src = localURL;
+    if (filenameDisplay) filenameDisplay.textContent = file.name;
+    if (filesizeDisplay)
+      filesizeDisplay.textContent = `${(file.size / 1024).toFixed(1)} KB`;
 
-    // Clear file input
-    fileInput.value = "";
-
-    alert("Logo uploaded successfully!");
+    alert("Logo selected! It will be uploaded after your account is created.");
   } catch (error) {
-    console.error("Error uploading logo:", error);
-    alert("Error uploading logo: " + error.message);
+    console.error("Error validating logo:", error);
+    alert("Error validating logo: " + error.message);
   }
 }
 
@@ -1905,7 +1908,10 @@ async function handleSaveSettings(e) {
       validateLogoFile(state.pendingLogoFile);
 
       // Generate filename
-      const filename = generateLogoFilename(state.user.uid, state.pendingLogoFile.name);
+      const filename = generateLogoFilename(
+        state.user.uid,
+        state.pendingLogoFile.name,
+      );
 
       // Upload file
       finalLogoUrl = await uploadFileToStorage(state.pendingLogoFile, filename);
@@ -1941,6 +1947,9 @@ async function handleSaveSettings(e) {
 
     alert(t("profileUpdated"));
     renderCertificate();
+
+    // Refresh the page to ensure all changes are applied
+    window.location.reload();
   } catch (error) {
     console.error("Error updating settings:", error);
     alert(t("errorUpdating"));
@@ -2430,7 +2439,7 @@ function updateUserDisplay() {
       </div>
     `;
   }
-  
+
   // Re-render icons if lucide is available
   if (typeof lucide !== "undefined") {
     lucide.createIcons();
@@ -2855,26 +2864,6 @@ function toggleAuthMode(mode) {
     if (title) title.innerText = "Create Account";
     if (subtitle) subtitle.innerText = "Start generating professional certs";
     if (regForm) regForm.classList.remove("auth-hidden");
-
-    // Add event listener for logo URL preview
-    const logoInput = document.getElementById("reg-logo");
-    const logoPreview = document.getElementById("reg-logo-preview");
-    const logoPreviewImg = document.getElementById("reg-logo-preview-img");
-
-    if (logoInput && logoPreview && logoPreviewImg) {
-      logoInput.addEventListener("input", () => {
-        const url = logoInput.value.trim();
-        if (url) {
-          logoPreview.classList.remove("hidden");
-          logoPreviewImg.src = url;
-          logoPreviewImg.onerror = () => {
-            logoPreviewImg.src = "favicon.svg";
-          };
-        } else {
-          logoPreview.classList.add("hidden");
-        }
-      });
-    }
   } else if (mode === "forgot") {
     if (title) title.innerText = "Reset Password";
     if (subtitle) subtitle.innerText = "We'll help you get back in";
@@ -2939,7 +2928,7 @@ async function handleAuthAction(e, type) {
       const fname = document.getElementById("reg-fname").value;
       const lname = document.getElementById("reg-lname").value;
       const company = document.getElementById("reg-company").value;
-      const logoUrl = document.getElementById("reg-logo").value;
+      const logoUrl = ""; // Removed reg-logo component
 
       if (pass.length < 6) {
         throw new Error("Password must be at least 6 characters");
@@ -2978,6 +2967,47 @@ async function handleAuthAction(e, type) {
         },
       );
 
+      // Upload logo if there's a pending file
+      let finalLogoUrl = logoUrl || "";
+      if (state.pendingRegistrationLogoFile) {
+        try {
+          // Validate file
+          validateLogoFile(state.pendingRegistrationLogoFile);
+
+          // Generate filename
+          const filename = generateLogoFilename(
+            userCredential.user.uid,
+            state.pendingRegistrationLogoFile.name,
+          );
+
+          // Upload file
+          finalLogoUrl = await uploadFileToStorage(
+            state.pendingRegistrationLogoFile,
+            filename,
+          );
+
+          // Update user document with logo URL
+          await window.firestoreUpdateDoc(
+            window.firestoreDoc(
+              window.firebaseDB,
+              "users",
+              userCredential.user.uid,
+            ),
+            {
+              logoUrl: finalLogoUrl,
+              updatedAt: window.firestoreTimestamp(),
+            },
+          );
+
+          // Clean up pending file
+          delete state.pendingRegistrationLogoFile;
+        } catch (uploadError) {
+          console.error("Error uploading registration logo:", uploadError);
+          // Continue without logo if upload fails
+          finalLogoUrl = "";
+        }
+      }
+
       // Clear registering flag - Firestore document is now created
       if (window.setRegisteringFlag) {
         window.setRegisteringFlag(false);
@@ -2997,7 +3027,6 @@ async function handleAuthAction(e, type) {
         "reg-fname",
         "reg-lname",
         "reg-company",
-        "reg-logo",
       ].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = "";
