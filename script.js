@@ -442,9 +442,7 @@ function renderCreditsDisplay() {
           !isFreeTier
             ? `
           <button
-            href="${CREDITS_CONFIG.stripeUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
+            onclick="window.open('${CREDITS_CONFIG.stripeUrl}', '_blank', 'noopener,noreferrer')"
             class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline transition-colors"
           >
             ${getMoreLabel}
