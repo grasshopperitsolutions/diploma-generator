@@ -60,6 +60,35 @@
         font-family: "Playfair Display", serif;
       }
 
+      /* Beta Badge Styles */
+      .beta-badge-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .beta-badge {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+        z-index: 10;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+
+      .beta-badge-hidden {
+        display: none !important;
+      }
+
       @keyframes float {
         0% {
           transform: translateY(0px) rotate(0deg);
@@ -271,9 +300,12 @@
           <div class="bg-indigo-600 p-1.5 rounded-lg">
             <i data-lucide="award" class="text-white h-6 w-6"></i>
           </div>
-          <span class="text-xl font-extrabold tracking-tight text-slate-900"
-            >CertifyPro</span
-          >
+          <div class="beta-badge-container" id="nav-beta-badge">
+            <span class="text-xl font-extrabold tracking-tight text-slate-900"
+              >CertifyPro</span
+            >
+            <span class="beta-badge">BETA</span>
+          </div>
         </div>
 
         <div class="flex items-center space-x-3 md:space-x-6">
@@ -365,22 +397,27 @@
                 >
               </span>
             </div>
-            <h1
-              class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-slate-900"
-            >
-              <span data-en
-                >Elevate Your
-                <span class="gradient-text italic font-serif">Credentials</span>
-                with Security.</span
+            <div class="beta-badge-container" id="hero-beta-badge">
+              <h1
+                class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-slate-900"
               >
-              <span data-es class="hidden"
-                >Eleva tus
-                <span class="gradient-text italic font-serif"
-                  >Credenciales</span
+                <span data-en
+                  >Elevate Your
+                  <span class="gradient-text italic font-serif"
+                    >Credentials</span
+                  >
+                  with Security.</span
                 >
-                con seguridad.</span
-              >
-            </h1>
+                <span data-es class="hidden"
+                  >Eleva tus
+                  <span class="gradient-text italic font-serif"
+                    >Credenciales</span
+                  >
+                  con seguridad.</span
+                >
+              </h1>
+              <span class="beta-badge">BETA</span>
+            </div>
             <p class="text-lg text-slate-600 leading-relaxed mb-10 max-w-lg">
               <span data-en
                 >Issue digital certificates in seconds. Empower your students
@@ -918,7 +955,7 @@
                 </span>
               </div>
               <a
-                href="mailto:support@grasshoppersolutions.online"
+                href="mailto:grasshopper.it.solutions@gmail.com?subject=CertifyPro%20-%20support"
                 class="block w-full text-center bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors mb-8"
               >
                 <span data-en>Contact Us</span>
@@ -1182,9 +1219,13 @@
               <div class="bg-slate-900 p-1.5 rounded-lg">
                 <i data-lucide="award" class="text-white h-5 w-5"></i>
               </div>
-              <span class="text-lg font-extrabold tracking-tight text-slate-900"
-                >CertifyPro</span
-              >
+              <div class="beta-badge-container" id="footer-beta-badge">
+                <span
+                  class="text-lg font-extrabold tracking-tight text-slate-900"
+                  >CertifyPro</span
+                >
+                <span class="beta-badge">BETA</span>
+              </div>
             </div>
             <div class="flex gap-8 text-sm font-semibold text-slate-500">
               <a href="#" class="hover:text-indigo-600">
@@ -1732,6 +1773,36 @@
         }
       });
       console.log("Firebase initialized");
+    </script>
+    <script>
+      // Beta Badge State Management
+      // This flag controls whether the beta badges are visible across the application
+      window.isBetaMode = true; // Set to false to hide all beta badges
+
+      // Initialize beta badge visibility on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        // Only show beta badges if in beta mode
+        if (!window.isBetaMode) {
+          // Hide all beta badges by adding the hidden class
+          const betaBadges = document.querySelectorAll(".beta-badge");
+          betaBadges.forEach((badge) => {
+            badge.classList.add("beta-badge-hidden");
+          });
+        }
+      });
+
+      // Function to toggle beta mode (for development/testing purposes)
+      window.toggleBetaMode = function () {
+        window.isBetaMode = !window.isBetaMode;
+        const betaBadges = document.querySelectorAll(".beta-badge");
+        betaBadges.forEach((badge) => {
+          if (window.isBetaMode) {
+            badge.classList.remove("beta-badge-hidden");
+          } else {
+            badge.classList.add("beta-badge-hidden");
+          }
+        });
+      };
     </script>
     <script src="script.js"></script>
   </body>

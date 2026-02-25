@@ -199,7 +199,7 @@ function removeLogo() {
   // Update user display
   updateUserDisplay();
 
-  alert("Logo removed successfully!");
+  // alert("Logo removed successfully!");
 }
 
 // Expose removeLogo function globally
@@ -882,9 +882,10 @@ function switchView(viewId) {
     fetchUserCertificates();
   }
 
-  // Initialize settings logo preview when settings view is loaded
+  // Initialize settings logo and signature preview when settings view is loaded
   if (viewId === "settings") {
     initializeSettingsLogoPreview();
+    initializeSettingsSignaturePreview();
   }
 
   lucide.createIcons();
@@ -1892,6 +1893,7 @@ async function handleSaveSettings(e) {
   const lastName = document.getElementById("set-lname").value;
   const company = document.getElementById("set-company").value;
   const logoUrl = document.getElementById("set-logo").value;
+  const signatureUrl = document.getElementById("set-signature").value;
   const language = state.currentLang; // Get current language from state
 
   const saveBtn = e.target.querySelector("button[type='submit']");
@@ -1901,6 +1903,7 @@ async function handleSaveSettings(e) {
 
   try {
     let finalLogoUrl = logoUrl || "";
+    let finalSignatureUrl = signatureUrl || "";
 
     // Upload logo if there's a pending file
     if (state.pendingLogoFile) {
@@ -1920,6 +1923,24 @@ async function handleSaveSettings(e) {
       delete state.pendingLogoFile;
     }
 
+    // Upload signature if there's a pending file
+    if (state.pendingSignatureFile) {
+      // Validate file
+      validateSignatureFile(state.pendingSignatureFile);
+
+      // Generate filename
+      const filename = generateSignatureFilename(
+        state.user.uid,
+        state.pendingSignatureFile.name,
+      );
+
+      // Upload file
+      finalSignatureUrl = await uploadFileToStorage(state.pendingSignatureFile, filename);
+
+      // Clean up pending file
+      delete state.pendingSignatureFile;
+    }
+
     await window.firestoreUpdateDoc(
       window.firestoreDoc(window.firebaseDB, "users", state.user.uid),
       {
@@ -1927,6 +1948,7 @@ async function handleSaveSettings(e) {
         lastName,
         company,
         logoUrl: finalLogoUrl,
+        signatureUrl: finalSignatureUrl,
         language,
         updatedAt: window.firestoreTimestamp(),
       },
@@ -1938,6 +1960,7 @@ async function handleSaveSettings(e) {
     state.user.name = `${firstName} ${lastName}`;
     state.user.company = company;
     state.user.logoUrl = finalLogoUrl;
+    state.user.signatureUrl = finalSignatureUrl;
     state.user.language = language;
     state.data.issuer = company;
     state.data.logo = finalLogoUrl || defaultLogo;
@@ -1958,6 +1981,133 @@ async function handleSaveSettings(e) {
     saveBtn.innerHTML = "Update Profile";
     lucide.createIcons();
   }
+}
+
+/**
+ * Generate a unique filename for signature storage
+ */
+function generateSignatureFilename(userId, originalName) {
+  const timestamp = Date.now();
+  const extension = originalName.split(".").pop();
+  return `signatures/${userId}/signature_${timestamp}.${extension}`;
+}
+
+/**
+ * Handle signature upload for settings - only store file reference, don't upload yet
+ */
+async function handleSignatureUpload(input) {
+  const fileInput = input || document.getElementById("signature-upload-input");
+  const signatureInput = document.getElementById("set-signature");
+  const previewContainer = document.getElementById("signature-preview-container");
+  const previewImg = document.getElementById("signature-preview");
+  const filenameDisplay = document.getElementById("signature-filename");
+  const filesizeDisplay = document.getElementById("signature-filesize");
+
+  if (!fileInput || !signatureInput || !previewContainer || !previewImg) return;
+
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("Please select a file to upload");
+    return;
+  }
+
+  try {
+    // Validate file
+    validateSignatureFile(file);
+
+    // Store file reference for later upload
+    state.pendingSignatureFile = file;
+
+    // Update preview with local file URL
+    const localURL = URL.createObjectURL(file);
+    previewContainer.classList.remove("hidden");
+    previewImg.src = localURL;
+    if (filenameDisplay) filenameDisplay.textContent = file.name;
+    if (filesizeDisplay)
+      filesizeDisplay.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+
+    // Show upload pending indicator
+    signatureInput.value = "File selected - will upload when profile is updated";
+
+    // Check if user has existing signature and warn about replacement
+    if (state.user?.signatureUrl && state.user.signatureUrl !== "") {
+      const lang = state.currentLang || "en";
+      const replaceMsg = lang === "es" 
+        ? "Se reemplazará tu firma existente con esta nueva subida." 
+        : "Your existing signature will be replaced with this new upload.";
+      alert(`${replaceMsg}\n\n${lang === "es" ? "Firma seleccionada! Se subirá al hacer clic en 'Actualizar Perfil'." : "Signature selected! It will be uploaded when you click 'Update Profile'."}`);
+    } else {
+      alert(
+        state.currentLang === "es" 
+          ? "Firma seleccionada! Se subirá al hacer clic en 'Actualizar Perfil'."
+          : "Signature selected! It will be uploaded when you click 'Update Profile'.",
+      );
+    }
+  } catch (error) {
+    console.error("Error validating signature:", error);
+    alert("Error validating signature: " + error.message);
+  }
+}
+
+/**
+ * Remove the current signature
+ */
+function removeSignature() {
+  const signatureInput = document.getElementById("set-signature");
+  const previewContainer = document.getElementById("signature-preview-container");
+  const previewImg = document.getElementById("signature-preview");
+  const filenameDisplay = document.getElementById("signature-filename");
+  const filesizeDisplay = document.getElementById("signature-filesize");
+
+  if (!signatureInput || !previewContainer || !previewImg) return;
+
+  // Clear input
+  signatureInput.value = "";
+
+  // Update state
+  state.user.signatureUrl = "";
+
+  // Hide preview
+  previewContainer.classList.add("hidden");
+  if (previewImg) previewImg.src = "";
+  if (filenameDisplay) filenameDisplay.textContent = "";
+  if (filesizeDisplay) filesizeDisplay.textContent = "";
+
+  // alert("Signature removed successfully!");
+}
+
+// Expose removeSignature function globally
+window.removeSignature = removeSignature;
+
+/**
+ * Validate signature file for upload
+ */
+function validateSignatureFile(file) {
+  if (!file) {
+    throw new Error("No file selected");
+  }
+
+  // Check file type
+  const allowedTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/svg+xml",
+    "image/gif",
+  ];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error(
+      "Invalid file type. Please upload PNG, JPEG, SVG, or GIF images only.",
+    );
+  }
+
+  // Check file size (max 2MB)
+  const maxSize = 2 * 1024 * 1024; // 2MB
+  if (file.size > maxSize) {
+    throw new Error("File too large. Please upload images under 2MB.");
+  }
+
+  return true;
 }
 
 /**
@@ -2369,42 +2519,64 @@ window.addNewSkillFromCertificate = addNewSkillFromCertificate;
  */
 function initializeSettingsLogoPreview() {
   const logoInput = document.getElementById("set-logo");
+  const previewContainer = document.getElementById("logo-preview-container");
+  const previewImg = document.getElementById("logo-preview");
 
-  if (logoInput) {
-    // Create preview element if it doesn't exist
-    let logoPreview = document.getElementById("settings-logo-preview");
-    if (!logoPreview) {
-      logoPreview = document.createElement("div");
-      logoPreview.id = "settings-logo-preview";
-      logoPreview.className =
-        "hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200";
-      logoPreview.innerHTML = `
-        <label class="block text-sm font-medium text-gray-700 mb-2">Logo Preview</label>
-        <div class="flex items-center gap-4">
-          <img id="settings-logo-preview-img" src="" alt="Logo Preview" class="h-16 w-16 object-contain" />
-          <div class="text-sm text-gray-500">
-            <p>Logo will appear on certificates</p>
-            <p class="mt-1">Recommended: PNG, SVG, or transparent background</p>
-          </div>
-        </div>
-      `;
-
-      // Insert preview after the logo input
-      logoInput.parentNode.insertBefore(logoPreview, logoInput.nextSibling);
+  if (logoInput && previewContainer && previewImg) {
+    // Show preview if there's already a logo URL
+    const currentLogoUrl = logoInput.value.trim();
+    if (currentLogoUrl) {
+      previewContainer.classList.remove("hidden");
+      previewImg.src = currentLogoUrl;
+      previewImg.onerror = () => {
+        previewImg.src = "favicon.svg";
+      };
     }
-
-    const logoPreviewImg = document.getElementById("settings-logo-preview-img");
 
     logoInput.addEventListener("input", () => {
       const url = logoInput.value.trim();
       if (url) {
-        logoPreview.classList.remove("hidden");
-        logoPreviewImg.src = url;
-        logoPreviewImg.onerror = () => {
-          logoPreviewImg.src = "favicon.svg";
+        previewContainer.classList.remove("hidden");
+        previewImg.src = url;
+        previewImg.onerror = () => {
+          previewImg.src = "favicon.svg";
         };
       } else {
-        logoPreview.classList.add("hidden");
+        previewContainer.classList.add("hidden");
+      }
+    });
+  }
+}
+
+/**
+ * Initialize signature preview functionality for settings modal
+ */
+function initializeSettingsSignaturePreview() {
+  const signatureInput = document.getElementById("set-signature");
+  const previewContainer = document.getElementById("signature-preview-container");
+  const previewImg = document.getElementById("signature-preview");
+
+  if (signatureInput && previewContainer && previewImg) {
+    // Show preview if there's already a signature URL
+    const currentSignatureUrl = signatureInput.value.trim();
+    if (currentSignatureUrl) {
+      previewContainer.classList.remove("hidden");
+      previewImg.src = currentSignatureUrl;
+      previewImg.onerror = () => {
+        previewContainer.classList.add("hidden");
+      };
+    }
+
+    signatureInput.addEventListener("input", () => {
+      const url = signatureInput.value.trim();
+      if (url) {
+        previewContainer.classList.remove("hidden");
+        previewImg.src = url;
+        previewImg.onerror = () => {
+          previewContainer.classList.add("hidden");
+        };
+      } else {
+        previewContainer.classList.add("hidden");
       }
     });
   }
@@ -3120,6 +3292,7 @@ function completeLogin(userData) {
     "set-email": userData.email,
     "set-company": userData.company,
     "set-logo": userData.logoUrl || "",
+    "set-signature": userData.signatureUrl || "",
   };
   Object.entries(fields).forEach(([id, value]) => {
     const el = document.getElementById(id);
@@ -3473,6 +3646,19 @@ function renderCertificateToTarget(targetElement, data, theme) {
         ${skills.map((skill) => `<span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full border border-indigo-200">${skill}</span>`).join("")}
        </div>`
       : "";
+
+  // Build signature HTML - show signature image if exists, otherwise show name in handwritten font
+  const signatureUrl = state.user?.signatureUrl || "";
+  const userName = state.user?.name || state.user?.email?.split("@")[0] || "Issuer";
+  const signatureHtml = signatureUrl
+    ? `<div class="mt-6">
+        <img src="${signatureUrl}" alt="Signature" class="h-16 w-auto object-contain" />
+        <div class="text-xs text-gray-500 mt-1">Authorized Signature</div>
+       </div>`
+    : `<div class="mt-6">
+        <div class="text-3xl font-handwriting text-gray-900">${userName}</div>
+        <div class="text-xs text-gray-500 mt-1">Authorized Signature</div>
+       </div>`;
 
   let template = "";
 
@@ -4349,6 +4535,15 @@ function renderCertificate() {
        </div>`
       : "";
 
+  // Build signature HTML if signature exists
+  const signatureUrl = state.user?.signatureUrl || "";
+  const signatureHtml = signatureUrl
+    ? `<div class="mt-6">
+        <img src="${signatureUrl}" alt="Signature" class="h-16 w-auto object-contain" />
+        <div class="text-xs text-gray-500 mt-1">Authorized Signature</div>
+       </div>`
+    : "";
+
   let template = "";
 
   if (state.theme === "academic") {
@@ -4419,6 +4614,7 @@ function renderCertificate() {
             <p class="text-sm text-cyan-200">Date</p>
           </div>
         </div>
+        ${signatureHtml}
         <div class="absolute bottom-4 left-16 text-xs text-white/60 font-mono">${d.id}</div>
       </div>
     `;
@@ -4458,6 +4654,7 @@ function renderCertificate() {
             <div class="text-xl text-green-300">${d.date}</div>
           </div>
         </div>
+        ${signatureHtml}
       </div>
     `;
   }

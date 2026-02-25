@@ -147,6 +147,35 @@
         }
       }
 
+      /* Beta Badge Styles */
+      .beta-badge-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .beta-badge {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+        z-index: 10;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+
+      .beta-badge-hidden {
+        display: none !important;
+      }
+
       /* Toggle Switch CSS - 3D Flip Style */
       .toggle-switch-container {
         perspective: 300px;
@@ -776,7 +805,10 @@
         >
           <div class="flex items-center space-x-2">
             <i data-lucide="award" class="h-6 w-6 text-indigo-600"></i>
-            <span class="font-bold text-gray-900">CertifyPro</span>
+            <div class="beta-badge-container" id="dashboard-beta-badge">
+              <span class="font-bold text-gray-900">CertifyPro</span>
+              <span class="beta-badge">BETA</span>
+            </div>
           </div>
           <div class="flex items-center gap-4">
             <!-- Credits Display -->
@@ -1553,6 +1585,94 @@
                   </div>
                 </div>
 
+                <div>
+                  <label
+                    class="block text-xs font-bold text-gray-400 uppercase mb-1"
+                  >
+                    <span data-en>Signature</span>
+                    <span data-es class="hidden">Firma</span>
+                  </label>
+                  <div class="space-y-3">
+                    <!-- Signature Upload Area -->
+                    <div
+                      class="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-indigo-300 transition-colors"
+                    >
+                      <input
+                        type="file"
+                        id="signature-upload-input"
+                        accept="image/*"
+                        class="hidden"
+                        onchange="handleSignatureUpload(this)"
+                      />
+                      <button
+                        type="button"
+                        onclick="
+                          document
+                            .getElementById('signature-upload-input')
+                            .click()
+                        "
+                        class="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors"
+                      >
+                        <i data-lucide="upload" class="h-4 w-4"></i>
+                        <span data-en>Upload Signature</span>
+                        <span data-es class="hidden">Subir Firma</span>
+                      </button>
+                      <p class="text-xs text-gray-500 mt-1">
+                        <span data-en>Recommended: PNG, max 2MB</span>
+                        <span data-es class="hidden"
+                          >Recomendado: PNG, máximo 2MB</span
+                        >
+                      </p>
+                    </div>
+
+                    <!-- Signature Preview -->
+                    <div id="signature-preview-container" class="hidden">
+                      <div class="flex items-center gap-3">
+                        <img
+                          id="signature-preview"
+                          class="h-16 w-32 object-contain border-2 border-gray-200 rounded-lg"
+                        />
+                        <div class="flex-1">
+                          <p
+                            class="text-sm font-medium text-gray-700"
+                            id="signature-filename"
+                          ></p>
+                          <p
+                            class="text-xs text-gray-500"
+                            id="signature-filesize"
+                          ></p>
+                        </div>
+                        <button
+                          type="button"
+                          onclick="removeSignature()"
+                          class="text-red-500 hover:text-red-700 p-1"
+                          title="Remove signature"
+                        >
+                          <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Signature URL Input (for manual entry) -->
+                    <div class="mt-3">
+                      <label
+                        class="block text-xs font-medium text-gray-500 mb-1"
+                      >
+                        <span data-en>Or enter signature URL manually</span>
+                        <span data-es class="hidden"
+                          >O ingresa URL de la firma manualmente</span
+                        >
+                      </label>
+                      <input
+                        type="text"
+                        id="set-signature"
+                        class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-1 focus:ring-indigo-500"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Language Preference -->
                 <div>
                   <label
@@ -1880,6 +2000,7 @@
               : user.email.split("@")[0],
             company: userData?.company || "",
             logoUrl: userData?.logoUrl || "",
+            signatureUrl: userData?.signatureUrl || "",
             language: userData?.language || "en", // Load saved language preference
             skills: userData?.skills || [],
             monthlyCredits: userData?.monthlyCredits ?? 0, // Load monthly credits
@@ -1894,5 +2015,30 @@
       console.log("Firebase initialized");
     </script>
     <script src="script.js"></script>
+
+    <!-- Beta Badge Logic -->
+    <script>
+      // Beta state flag - set to false to hide all badges
+      const IS_BETA = true;
+
+      // Initialize beta badges when DOM is ready
+      document.addEventListener("DOMContentLoaded", function () {
+        if (IS_BETA) {
+          // Show dashboard beta badge
+          const dashboardBadge = document.getElementById(
+            "dashboard-beta-badge",
+          );
+          if (dashboardBadge) {
+            dashboardBadge.classList.remove("beta-badge-hidden");
+          }
+        } else {
+          // Hide all beta badges
+          const badges = document.querySelectorAll(".beta-badge-container");
+          badges.forEach((badge) => {
+            badge.classList.add("beta-badge-hidden");
+          });
+        }
+      });
+    </script>
   </body>
 </html>
