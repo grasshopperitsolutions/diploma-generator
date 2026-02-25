@@ -3647,14 +3647,18 @@ function renderCertificateToTarget(targetElement, data, theme) {
        </div>`
       : "";
 
-  // Build signature HTML if signature exists
+  // Build signature HTML - show signature image if exists, otherwise show name in handwritten font
   const signatureUrl = state.user?.signatureUrl || "";
+  const userName = state.user?.name || state.user?.email?.split("@")[0] || "Issuer";
   const signatureHtml = signatureUrl
     ? `<div class="mt-6">
         <img src="${signatureUrl}" alt="Signature" class="h-16 w-auto object-contain" />
         <div class="text-xs text-gray-500 mt-1">Authorized Signature</div>
        </div>`
-    : "";
+    : `<div class="mt-6">
+        <div class="text-3xl font-handwriting text-gray-900">${userName}</div>
+        <div class="text-xs text-gray-500 mt-1">Authorized Signature</div>
+       </div>`;
 
   let template = "";
 
