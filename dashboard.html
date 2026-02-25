@@ -147,6 +147,35 @@
         }
       }
 
+      /* Beta Badge Styles */
+      .beta-badge-container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .beta-badge {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        opacity: 1;
+        transform: scale(0.8);
+        transition: all 0.2s ease;
+        z-index: 10;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+
+      .beta-badge-hidden {
+        display: none !important;
+      }
+
       /* Toggle Switch CSS - 3D Flip Style */
       .toggle-switch-container {
         perspective: 300px;
@@ -776,7 +805,10 @@
         >
           <div class="flex items-center space-x-2">
             <i data-lucide="award" class="h-6 w-6 text-indigo-600"></i>
-            <span class="font-bold text-gray-900">CertifyPro</span>
+            <div class="beta-badge-container" id="dashboard-beta-badge">
+              <span class="font-bold text-gray-900">CertifyPro</span>
+              <span class="beta-badge">BETA</span>
+            </div>
           </div>
           <div class="flex items-center gap-4">
             <!-- Credits Display -->
@@ -1575,7 +1607,9 @@
                       <button
                         type="button"
                         onclick="
-                          document.getElementById('signature-upload-input').click()
+                          document
+                            .getElementById('signature-upload-input')
+                            .click()
                         "
                         class="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors"
                       >
@@ -1981,5 +2015,30 @@
       console.log("Firebase initialized");
     </script>
     <script src="script.js"></script>
+
+    <!-- Beta Badge Logic -->
+    <script>
+      // Beta state flag - set to false to hide all badges
+      const IS_BETA = true;
+
+      // Initialize beta badges when DOM is ready
+      document.addEventListener("DOMContentLoaded", function () {
+        if (IS_BETA) {
+          // Show dashboard beta badge
+          const dashboardBadge = document.getElementById(
+            "dashboard-beta-badge",
+          );
+          if (dashboardBadge) {
+            dashboardBadge.classList.remove("beta-badge-hidden");
+          }
+        } else {
+          // Hide all beta badges
+          const badges = document.querySelectorAll(".beta-badge-container");
+          badges.forEach((badge) => {
+            badge.classList.add("beta-badge-hidden");
+          });
+        }
+      });
+    </script>
   </body>
 </html>
